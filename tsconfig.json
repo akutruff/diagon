@@ -8,7 +8,7 @@
       ],
       "@akutruff/*": [
         "packages/*/src"
-      ],
+      ]
     },
     "noEmit": true
   }
