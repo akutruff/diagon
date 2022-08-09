@@ -1,10 +1,11 @@
-import React from "react";
-import { render } from "react-dom";
-import { App } from "./app";
+/* eslint-disable jest/expect-expect */
+import React from 'react';
+import { render } from 'react-dom';
+import { App } from './app';
 
-describe("App", () => {
-  it("should render without crashing", () => {
-    const div = document.createElement("div");
+describe('App', () => {
+  it('should render without crashing', () => {
+    const div = document.createElement('div');
     render(<App />, div);
   });
 });

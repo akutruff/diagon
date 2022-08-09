@@ -5,7 +5,7 @@ const updateNextGreaterThan12Config = (config) => {
 
   // Next 12 has multiple TS loaders, and we need to update all of them.
   const tsRules = oneOfRule.oneOf.filter(
-    (rule) => rule.test && rule.test.toString().includes("tsx|ts")
+    (rule) => rule.test && rule.test.toString().includes('tsx|ts')
   );
 
   tsRules.forEach((rule) => {
@@ -19,7 +19,7 @@ const updateNextGreaterThan12Config = (config) => {
 const updateNextLessThan12Config = (config) => {
   // Next < 12 uses a single Babel loader.
   const tsRule = config.module.rules.find(
-    (rule) => rule.test && rule.test.toString().includes("tsx|ts")
+    (rule) => rule.test && rule.test.toString().includes('tsx|ts')
   );
 
   tsRule.include = undefined;

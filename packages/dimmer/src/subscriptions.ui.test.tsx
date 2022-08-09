@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import React, { FC, PropsWithChildren, ReactElement, useEffect } from 'react';
-import { act, fireEvent, render, RenderOptions, waitFor } from '@testing-library/react';
+import React, { FC, PropsWithChildren, ReactElement } from 'react';
+import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import { createRecordingProxy, resetEnvironment } from './dimmer';
 import { map_get } from './pathRecorder';
 import { Action } from '.';

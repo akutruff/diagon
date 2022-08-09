@@ -1,0 +1,52 @@
+{
+	"root": true,
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"experimentalObjectRestSpread": true
+		}
+	},
+	"parser": "@typescript-eslint/parser",
+	"plugins": [
+		"@typescript-eslint",
+		"jest"
+	],
+	"env": {
+		"node": true,
+		"es6": true
+	},
+	"rules": {
+		"no-console": 0,
+		"eqeqeq": "warn",
+		"no-cond-assign": 0,
+		"no-unused-vars": "off",
+		"@typescript-eslint/no-unused-vars": [
+			// "error"
+			"warn",
+			{
+				"argsIgnorePattern": "^_",
+				"varsIgnorePattern": "^_"
+			}
+		],
+		"no-extra-semi": "warn",
+		"semi": "off",
+		"@typescript-eslint/semi": "warn",
+		"quotes": "off",
+		"@typescript-eslint/quotes": [
+			"error",
+			"single",
+			{
+				"allowTemplateLiterals": true
+			}
+		],
+		"@typescript-eslint/explicit-module-boundary-types": "off",
+		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/no-non-null-assertion": "off",
+		"@typescript-eslint/no-empty-function": "off"
+	},
+	"extends": [
+		"plugin:jest/recommended",
+		"plugin:@typescript-eslint/recommended"
+	]
+}

@@ -1,5 +1,5 @@
 
-import { createRecordingDispatcher, createContext, resetEnvironment, clearContext, DispatchContext, Middleware, ObjectDelta } from '.';
+import { createRecordingDispatcher, createContext, resetEnvironment, clearContext, DispatchContext, ObjectDelta } from '.';
 import { isProxy } from './dimmer';
 import { Next } from './middleware';
 
@@ -197,7 +197,7 @@ describe('RecordingDispatcher', () => {
             expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
             expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
         });
- 
+
         it('supports nested async generators with awaits', async () => {
             const state: State = { prop0: 'hello', prop1: 2 };
 

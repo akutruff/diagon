@@ -1,12 +1,12 @@
-import type { StorybookConfig } from "@storybook/core-common";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { TsconfigPathsPlugin } from "tsconfig-paths-webpack-plugin";
+import type { StorybookConfig } from '@storybook/core-common';
+
+import { TsconfigPathsPlugin } from 'tsconfig-paths-webpack-plugin';
 
 const config: StorybookConfig = {
-  stories: ["../src/*.stories.tsx"],
+  stories: ['../src/*.stories.tsx'],
   addons: [],
-  framework: "@storybook/react",
-  core: { builder: "webpack5" },
+  framework: '@storybook/react',
+  core: { builder: 'webpack5' },
   webpackFinal: async (config) => {
     // eslint-disable-next-line no-param-reassign
     config.resolve.plugins = [
