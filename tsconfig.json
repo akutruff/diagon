@@ -3,9 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@akutruff/components/*": [
-        "packages/components/src/*"
-      ],
       "@akutruff/*": [
         "packages/*/src"
       ]

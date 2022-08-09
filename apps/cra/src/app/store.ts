@@ -29,7 +29,3 @@ export function createRootState(): RootState {
         counter: 0
     });
 }
-
-// export function initialize(state: RootState) {
-//     console.log('initializing: ', state);
-// }
