@@ -4,6 +4,7 @@
   "private": true,
   "version": "1.0.0",
   "dependencies": {
+    "@akutruff/dimmer": "*",
     "@akutruff/components": "*",
     "@akutruff/foo": "*",
     "react": "~18.2.0",

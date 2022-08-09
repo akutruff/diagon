@@ -17,6 +17,7 @@ importers:
   apps/cra:
     specifiers:
       '@akutruff/components': '*'
+      '@akutruff/dimmer': '*'
       '@akutruff/foo': '*'
       '@babel/core': ~7.18.0
       '@babel/plugin-syntax-flow': ~7.17.0
@@ -39,6 +40,7 @@ importers:
       typescript: ~4.7.4
     dependencies:
       '@akutruff/components': link:../../packages/components
+      '@akutruff/dimmer': link:../../packages/dimmer
       '@akutruff/foo': link:../../packages/foo
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
