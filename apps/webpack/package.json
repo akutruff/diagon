@@ -1,5 +1,5 @@
 {
-  "name": "@nighttrax/webpack-example",
+  "name": "@akutruff/webpack-example",
   "description": "Example of using webpack in a TS monorepo",
   "private": true,
   "version": "1.0.0",
@@ -8,7 +8,7 @@
     "build": "webpack"
   },
   "dependencies": {
-    "@nighttrax/bar": "*"
+    "@akutruff/bar": "*"
   },
   "devDependencies": {
     "rimraf": "~3.0.2",

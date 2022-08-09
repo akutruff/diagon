@@ -2,10 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@nighttrax/components/*": [
+      "@akutruff/components/*": [
         "../../packages/components/src/*"
       ],
-      "@nighttrax/*": [
+      "@akutruff/*": [
         "../../packages/*/src"
       ],
       "@components/*": [

@@ -1,5 +1,5 @@
 {
-  "name": "@nighttrax/bar",
+  "name": "@akutruff/bar",
   "version": "1.0.0",
   "main": "dist/index",
   "types": "dist/index",
@@ -13,7 +13,7 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@nighttrax/foo": "~1.0.0"
+    "@akutruff/foo": "~1.0.0"
   },
   "devDependencies": {
     "rimraf": "~3.0.2",

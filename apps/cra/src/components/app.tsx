@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@nighttrax/components/button';
-import { meaningOfLife } from '@nighttrax/foo';
+import { Button } from '@akutruff/components/button';
+import { meaningOfLife } from '@akutruff/foo';
 import { useTest } from '@hooks/test';
 
 export const App = () => {

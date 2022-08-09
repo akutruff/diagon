@@ -1,1 +1,1 @@
-import '@nighttrax/bar';
+import '@akutruff/bar';

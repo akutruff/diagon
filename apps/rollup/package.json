@@ -1,5 +1,5 @@
 {
-  "name": "@nighttrax/rollup-example",
+  "name": "@akutruff/rollup-example",
   "private": true,
   "version": "1.0.0",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "build": "rollup -c"
   },
   "dependencies": {
-    "@nighttrax/foo": "*"
+    "@akutruff/foo": "*"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "~8.3.0",
