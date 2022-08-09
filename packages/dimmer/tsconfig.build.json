@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/benchmarks/**",
+    "dist",
+    "**/*lodash*",
+    "src/**/test/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
+}
