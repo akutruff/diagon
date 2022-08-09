@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const ForkTSCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const { pathsToModuleNameMapper } = require('ts-jest');
@@ -63,7 +64,7 @@ module.exports = {
 
       moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
         // This has to match the baseUrl defined in tsconfig.json.
-        prefix: '<rootDir>/',
+        prefix: '<rootDir>/../../',
       }),
     },
   },

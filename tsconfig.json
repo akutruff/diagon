@@ -1,11 +1,17 @@
 {
   "extends": "./tsconfig.build.json",
-
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@nighttrax/components/*": ["packages/components/src/*"],
-      "@nighttrax/*": ["packages/*/src"]
+      "@nighttrax/components/*": [
+        "packages/components/src/*"
+      ],
+      "@nighttrax/*": [
+        "packages/*/src"
+      ],
+      "@kutruff/*": [
+        "packages/*/src"
+      ]
     },
     "noEmit": true
   }
