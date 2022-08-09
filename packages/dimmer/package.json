@@ -1,9 +1,14 @@
 {
   "name": "@akutruff/dimmer",
   "version": "0.1.0",
+  "description": "Mutable state management for object graphs and React",
+  "homepage": "https://github.com/akutruff/dimmer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akutruff/dimmer"
+  },
   "main": "dist/index",
   "types": "dist/index",
-  "private": true,
   "files": [
     "dist"
   ],
