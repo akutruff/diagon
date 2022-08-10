@@ -1,6 +1,6 @@
 {
   "name": "@akutruff/dimmer-react",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "description": "Mutable state management for object graphs and React",
   "homepage": "https://github.com/akutruff/dimmer",
   "repository": {
