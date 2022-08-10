@@ -1,0 +1,41 @@
+name: Publish NPM
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: latest
+
+      - name: Install Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Publish
+        run: pnpm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
