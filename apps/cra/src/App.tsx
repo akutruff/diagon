@@ -1,24 +1,19 @@
 import { elements } from '@akutruff/dimmer';
 import { PatchTrackerContext, usePatchTrackerContextValue, useMutator, useSnapshot } from '@akutruff/dimmer-react';
 import React, { ChangeEvent, FC, useState } from 'react';
-import { createRootState, Person, useRootState } from './app';
+import { createRootState, Person, useAppState } from './app';
 
 const Incrementor: FC = React.memo(() => {
-  const state = useRootState();
+  const state = useAppState();
   const [counter] = useSnapshot(state, state => [state.counter]);
-  const onIncrement = useMutator(state, state => state.counter++);
+  const increment = useMutator(state, state => state.counter++);
 
   console.log(`rendering <Counter/> ${counter}`);
 
   return (
     <div>
       <div>value: {counter}</div>
-      <button
-        type="button"
-        onClick={onIncrement}
-      >
-        Click me
-      </button>
+      <button type="button" onClick={increment}>Click me</button>
     </div>
   );
 });
@@ -36,13 +31,12 @@ const PersonDetails: FC<PersonDetailsProps> = React.memo(({ person, selector }) 
     <div style={{ marginTop: 10 }} onClick={() => selector && selector(person)}>
       <div>Name: {name}</div>
       <div>Age: {age}</div>
-
     </div>
   );
 });
 
 const PersonInspector: FC = React.memo(() => {
-  const state = useRootState();
+  const state = useAppState();
   const [name, age] = useSnapshot(state, state => [state.selectedPerson.name, state.selectedPerson.age]);
 
   const onChangeName = useMutator(state, (state, ev: ChangeEvent<HTMLInputElement>) => state.selectedPerson.name = ev.target.value);
@@ -59,7 +53,7 @@ const PersonInspector: FC = React.memo(() => {
 
 
 const AppContent: FC = React.memo(() => {
-  const state = useRootState();
+  const state = useAppState();
 
   const [people] = useSnapshot(state, state => [elements(state.people)]);
 
