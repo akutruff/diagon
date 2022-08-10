@@ -62,37 +62,18 @@ importers:
   packages/dimmer:
     specifiers:
       '@jest/types': ~28.1.3
-      '@testing-library/dom': ^8.17.1
-      '@testing-library/jest-dom': ^5.16.5
-      '@testing-library/react': ^13.3.0
-      '@testing-library/user-event': ^14.2.1
       '@types/jest': ~28.1.6
       '@types/node': ^18.6.5
-      '@types/react': ^18.0.17
-      '@types/react-dom': ^18.0.6
       jest: ~28.1.3
-      jest-environment-jsdom: ^28.1.3
-      react: ^18.2.0
-      react-dom: ^18.2.0
       rimraf: ~3.0.2
       ts-jest: ~28.0.7
       ts-node: ^10.9.1
       typescript: ~4.7.4
-    dependencies:
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
     devDependencies:
       '@jest/types': 28.1.3
-      '@testing-library/dom': 8.17.1
-      '@testing-library/jest-dom': 5.16.5
-      '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
-      '@testing-library/user-event': 14.4.3_wl4iynrlixafokvgqnhzlvigei
       '@types/jest': 28.1.6
       '@types/node': 18.6.5
-      '@types/react': 18.0.17
-      '@types/react-dom': 18.0.6
       jest: 28.1.3_ubchvo7cxgdavyfa6mg2b5a4oe
-      jest-environment-jsdom: 28.1.3
       rimraf: 3.0.2
       ts-jest: 28.0.7_lhw3xkmzugq5tscs3x2ndm4sby
       ts-node: 10.9.1_cvilj4l3ytrlnvtlqw3tscihve
