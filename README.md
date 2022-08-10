@@ -5,7 +5,7 @@
 
 # *Dimmer*
 
-State-management designed to minimize renders while stays out of your way and letting you write natural mutable code without comprimising object references. 
+State-management designed to minimize renders while staying out of your way and letting you write natural mutable code without sacrificing object references. 
 
 ```bash
 npm install @akutruff/dimmer @akutruff/dimmer-react # core and react bindings
@@ -17,8 +17,10 @@ Full React [example](apps/cra) with a [store](apps/cra/src/app/store.ts) and [co
 
 - [x] Object change recording
 - [x] Mutable coding style 
-- [x] Async mutation with render control and commit control
+- [x] Cyclic references
+- [x] Multiple references to same object in state graph
 - [x] Map, Set, and Array support
+- [x] Async mutation with rendering control and state change control
 - [x] Object property change subscriptions
 - [x] Time travel and undo / redo built-in
 - [x] React 18 support with useSyncExternalStore
@@ -27,7 +29,7 @@ Full React [example](apps/cra) with a [store](apps/cra/src/app/store.ts) and [co
 
 # Change recording with patches
 
-Everything in dimmer runs off tracking which properties change as your code executes. These changes are stored in patches just like a git commit.
+Dimmer tracks which properties change as your code executes. These changes are stored in patches just like a git commit.
 
 ```typescript
 import recordPatches from '@akutruff/dimmer'
