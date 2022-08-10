@@ -1,7 +1,6 @@
-import { ChangeEvent, FC, useState } from 'react';
-import React from 'react';
-import { DeltaTrackerContext, elements, useDeltaTrackerContextValue, useMutator, useSnapshot } from '@akutruff/dimmer';
-
+import { elements } from '@akutruff/dimmer';
+import { DeltaTrackerContext, useDeltaTrackerContextValue, useMutator, useSnapshot } from '@akutruff/dimmer-react';
+import React, { ChangeEvent, FC, useState } from 'react';
 import { createRootState, Person, useRootState } from './app';
 
 const Incrementor: FC = React.memo(() => {

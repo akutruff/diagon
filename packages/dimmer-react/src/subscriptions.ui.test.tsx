@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import React, { FC, PropsWithChildren, ReactElement } from 'react';
+import { Action, createDeltaTracker, createRecordingProxy, DeltaTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from '@akutruff/dimmer';
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
-import { createRecordingProxy, resetEnvironment } from './dimmer';
-import { map_get } from './pathRecorder';
-import { Action } from '.';
-import { createDeltaTracker, DeltaTracker, subscribe, subscribeDeep } from './subscriptions';
-import { useDispatch, useMutator, useSnapshot, useProjectedSnapshot, useDeepSnapshot, useSubscribedSnapshot } from './reactHooks';
+import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
 import { createDeltaTrackerContextValue, DeltaTrackerContext, DeltaTrackerContextValue } from './DeltaTrackerContext';
-import { useRef } from 'react';
-import { RecordingDispatcher } from './recordingDispatcher';
+import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from './reactHooks';
 
 interface DeltaTrackerAppProps {
     deltaTrackerContextValue: DeltaTrackerContextValue

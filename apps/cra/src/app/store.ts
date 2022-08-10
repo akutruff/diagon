@@ -1,4 +1,5 @@
-import { createRecordingProxy, useRootState as useDimmerRootState } from '@akutruff/dimmer';
+import { createRecordingProxy } from '@akutruff/dimmer';
+import { useRootState as useDimmerRootState } from '@akutruff/dimmer-react';
 
 export interface Person {
     id: number,
