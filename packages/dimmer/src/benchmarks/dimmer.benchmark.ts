@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Benchmark from 'benchmark';
 import { createDraft, setUseProxies, produce, setAutoFreeze, enableMapSet } from 'immer';
-import { createRecordingProxy, makeDeltaRecorder } from '../dimmer';
+import { createRecordingProxy, makePatchRecorder } from '../dimmer';
 import _ from 'lodash';
 import { suiteOptions } from './benchmarkOptions';
 
@@ -33,7 +33,7 @@ type TargetMap = ReturnType<typeof createTestMap>;
 
 const nativeMapReducer = (state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); };
 const immerMapReducer = produce((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
-const dimmerMapReducer = makeDeltaRecorder((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
+const dimmerMapReducer = makePatchRecorder((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
 
 const mapIterations = 100;
 
@@ -83,7 +83,7 @@ type TargetMapWithChildren = ReturnType<typeof createTestMapWithChildren>;
 
 const nativeMapWithChildren = (state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); };
 const immerMapWithChildren = produce((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
-const dimmerMapWithChildren = makeDeltaRecorder((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
+const dimmerMapWithChildren = makePatchRecorder((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
 
 const mapWithChildrenIterations = 100;
 
@@ -183,7 +183,7 @@ const complicatedIterations = 100;
 
 const nativeCopyGraphReducer = (state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); };
 const immerCopyGraphReducer = produce((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
-const dimmerCopyGraphReducer = makeDeltaRecorder((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
+const dimmerCopyGraphReducer = makePatchRecorder((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
 
 suite = new Benchmark.Suite('Big Copies', { ...suiteOptions, ...{} });
 suite
@@ -212,7 +212,7 @@ suite
 
 const nativeComplicatedGraphReducer = (state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); };
 const immerComplicatedGraphReducer = produce((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
-const dimmerComplicatedGraphReducer = makeDeltaRecorder((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
+const dimmerComplicatedGraphReducer = makePatchRecorder((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
 
 suite = new Benchmark.Suite('Walk Complicated graph', { ...suiteOptions, ...{} });
 suite
@@ -264,7 +264,7 @@ type TargetObjectGraph = ReturnType<typeof createSmallObjectGraph>;
 
 const nativeObjectGraphReducer = (state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; };
 const immerObjectGraphReducer = produce((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
-const dimmerObjectGraphReducer = makeDeltaRecorder((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
+const dimmerObjectGraphReducer = makePatchRecorder((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
 
 const propertySettingIterations = 10000;
 
@@ -308,7 +308,7 @@ type Target = typeof target;
 
 const nativePropertySettingReducer = (state: Target, property: keyof Target, value: number) => { state[property] += value; };
 const immerPropertySettingReducer = produce((state: Target, property: keyof Target, value: number) => { state[property] += value; });
-const dimmerPropertySettingReducer = makeDeltaRecorder((state: Target, property: keyof Target, value: number) => { state[property] += value; });
+const dimmerPropertySettingReducer = makePatchRecorder((state: Target, property: keyof Target, value: number) => { state[property] += value; });
 
 suite = new Benchmark.Suite('Single object property setting', { ...suiteOptions, ...{} });
 suite

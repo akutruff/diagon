@@ -34,24 +34,24 @@ export interface DimmerContext {
     modified: Set<any>;
 }
 
-//export type ObjectDelta<T = unknown> = Partial<T>;
-export type ObjectDelta<T = unknown> = Map<keyof T, T[keyof T]>;
-export type ArrayDelta<T = unknown> = T[];
-export type MapDelta<K = unknown, V = unknown> = Map<K, V>;
-export type SetDelta<V = unknown> = Map<V, boolean>;
+//export type ObjectPatch<T = unknown> = Partial<T>;
+export type ObjectPatch<T = unknown> = Map<keyof T, T[keyof T]>;
+export type ArrayPatch<T = unknown> = T[];
+export type MapPatch<K = unknown, V = unknown> = Map<K, V>;
+export type SetPatch<V = unknown> = Map<V, boolean>;
 
 export type HistoryIndex<T> = [index: number, previous: T];
 
-export type Delta = ObjectDelta<unknown> | ArrayDelta<unknown> | MapDelta<unknown, unknown> | SetDelta<unknown>;
+export type Patch = ObjectPatch<unknown> | ArrayPatch<unknown> | MapPatch<unknown, unknown> | SetPatch<unknown>;
 
-export type InferDeltaType<T> =
+export type InferPatchType<T> =
     T extends Map<infer K, infer V>
-    ? MapDelta<K, V>
+    ? MapPatch<K, V>
     : T extends Array<infer E>
-    ? ArrayDelta<E>
+    ? ArrayPatch<E>
     : T extends Set<infer V>
-    ? SetDelta<V>
-    : ObjectDelta<T>;
+    ? SetPatch<V>
+    : ObjectPatch<T>;
 
 export type Action = { type: string };
 

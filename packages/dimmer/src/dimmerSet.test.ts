@@ -1,6 +1,6 @@
 import { DimmerSet } from './dimmerSet';
-import { clearContext, createRecordingProxy, asOriginal, isProxy, recordDeltas, resetEnvironment, deltaToTarget } from './dimmer';
-import {  ORIGINAL, PROXY } from './types';
+import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './dimmer';
+import { ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
 describe('DimmerSet', () => {
@@ -35,7 +35,7 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(valueProxy)).toEqual(true);
                 expect(dimmerSet.size).toEqual(1);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
             });
 
             it('retrieves value when initialized with proxy as key and then fetched with original.', () => {
@@ -49,7 +49,7 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(value)).toEqual(true);
                 expect(dimmerSet.size).toEqual(1);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
             });
         });
     });
@@ -61,7 +61,7 @@ describe('DimmerSet', () => {
             const dimmerSet = new DimmerSet<string>(target);
             dimmerSet.add('foo');
 
-            expect(dimmerSet.currentDelta.get('foo')).toEqual(false);
+            expect(dimmerSet.currentPatch.get('foo')).toEqual(false);
             expect(dimmerSet.has('foo')).toEqual(true);
             expect(target.has('foo')).toEqual(true);
         });
@@ -74,7 +74,7 @@ describe('DimmerSet', () => {
 
             expect(dimmerSet.size).toEqual(1);
 
-            expect(dimmerSet.currentDelta.has('foo')).toEqual(false);
+            expect(dimmerSet.currentPatch.has('foo')).toEqual(false);
             expect(dimmerSet.has('foo')).toEqual(true);
             expect(target.has('foo')).toEqual(true);
         });
@@ -94,8 +94,8 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(valueProxy)).toEqual(true);
                 expect(dimmerSet.size).toEqual(1);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentDelta.get(valueProxy)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(undefined);
 
 
                 expect(target.has(valueProxy)).toEqual(true);
@@ -115,8 +115,8 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(valueProxy)).toEqual(true);
                 expect(dimmerSet.size).toEqual(1);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
 
                 expect(target.has(value)).toEqual(true);
             });
@@ -130,7 +130,7 @@ describe('DimmerSet', () => {
             const dimmerSet = new DimmerSet<string>(target);
             dimmerSet.delete('foo');
 
-            expect(dimmerSet.currentDelta.has('foo')).toEqual(false);
+            expect(dimmerSet.currentPatch.has('foo')).toEqual(false);
             expect(dimmerSet.has('foo')).toEqual(false);
         });
 
@@ -141,7 +141,7 @@ describe('DimmerSet', () => {
 
             dimmerSet.delete('foo');
 
-            expect(dimmerSet.currentDelta.get('foo')).toEqual(true);
+            expect(dimmerSet.currentPatch.get('foo')).toEqual(true);
             expect(dimmerSet.has('foo')).toEqual(false);
         });
 
@@ -160,8 +160,8 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(valueProxy)).toEqual(false);
                 expect(dimmerSet.size).toEqual(0);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(true);
-                expect(dimmerSet.currentDelta.get(valueProxy)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(true);
+                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(undefined);
 
                 expect(target.has(value)).toEqual(false);
                 expect(target.has(valueProxy)).toEqual(false);
@@ -181,8 +181,8 @@ describe('DimmerSet', () => {
                 expect(dimmerSet.has(valueProxy)).toEqual(false);
                 expect(dimmerSet.size).toEqual(0);
 
-                expect(dimmerSet.currentDelta.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentDelta.get(valueProxy)).toEqual(true);
+                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(true);
 
                 expect(target.has(value)).toEqual(false);
                 expect(target.has(valueProxy)).toEqual(false);
@@ -220,9 +220,9 @@ describe('DimmerSet', () => {
 
             dimmerSet.clear();
 
-            expect(dimmerSet.currentDelta.get('foo')).toEqual(true);
-            expect(dimmerSet.currentDelta.get('bar')).toEqual(true);
-            expect(dimmerSet.currentDelta.get('bob')).toEqual(true);
+            expect(dimmerSet.currentPatch.get('foo')).toEqual(true);
+            expect(dimmerSet.currentPatch.get('bar')).toEqual(true);
+            expect(dimmerSet.currentPatch.get('bob')).toEqual(true);
 
             expect(dimmerSet.has('foo')).toEqual(false);
             expect(dimmerSet.has('bar')).toEqual(false);
@@ -334,13 +334,13 @@ describe('DimmerSet', () => {
             const dimmerSet = new DimmerSet<string>(target);
             dimmerSet.add('fooo');
 
-            expect(dimmerSet.currentDelta.size).toEqual(1);
+            expect(dimmerSet.currentPatch.size).toEqual(1);
 
-            const previous = dimmerSet.commitDelta();
+            const previous = dimmerSet.commitPatch();
 
-            expect(deltaToTarget.get(previous)).toBe(target);
+            expect(patchToTarget.get(previous)).toBe(target);
             expect(dimmerSet.size).toEqual(1);
-            expect(dimmerSet.currentDelta.size).toEqual(0);
+            expect(dimmerSet.currentPatch.size).toEqual(0);
         });
 
     });
@@ -360,14 +360,14 @@ describe('DimmerSet', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordDeltas((state: State) => state.setProp.add('fdfd'), state));
+            history.push(recordPatches((state: State) => state.setProp.add('fdfd'), state));
             expect((underlyingSet as any)[PROXY]).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingSet);
 
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
 
-            history.push(recordDeltas((state: State) => state.setProp.add('bob'), state));
+            history.push(recordPatches((state: State) => state.setProp.add('bob'), state));
 
             timeline = getObjectTimeline(history, underlyingSet);
 
@@ -380,18 +380,18 @@ describe('DimmerSet', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordDeltas((state: State) => state.add('fdfd'), state));
+            history.push(recordPatches((state: State) => state.add('fdfd'), state));
 
             let timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
 
-            history.push(recordDeltas((state: State) => state.add('bob'), state));
+            history.push(recordPatches((state: State) => state.add('bob'), state));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
             expect(timeline[1][1]).toEqual(new Map([['bob', false]]));
 
-            history.push(recordDeltas((state: State) => state.delete('fdfd'), state));
+            history.push(recordPatches((state: State) => state.delete('fdfd'), state));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[2][1]).toEqual(new Map([['fdfd', true]]));

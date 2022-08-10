@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { asOriginal, deltaToTarget, recordDeltas } from './dimmer';
+import { asOriginal, patchToTarget, recordPatches } from './dimmer';
 import { recordPath, PathRecord, MapKeys, AnyProperty } from './pathRecorder';
-import { ArrayDelta, Delta, MapDelta } from './types';
+import { ArrayPatch, Patch, MapPatch } from './types';
 import { Mutator } from '.';
 
 const propertyNodeType = 0;
@@ -51,14 +51,14 @@ function createMapKeyValueNode(parent: SubscriptionNodeData, key: any): MapKeyVa
     };
 }
 
-export interface DeltaTracker {
+export interface PatchTracker {
     version: number;
     rootNodes: Map<any, SubscriptionNodeData>;
     objectSubscriptions: Map<any, Set<SubscriptionNodeData>>;
-    history: Delta[][];
+    history: Patch[][];
 }
 
-export function createDeltaTracker(): DeltaTracker {
+export function createPatchTracker(): PatchTracker {
     return {
         version: 0,
         rootNodes: new Map<any, SubscriptionNodeData>(),
@@ -73,17 +73,17 @@ export function createDeltaTracker(): DeltaTracker {
 //  https://github.com/microsoft/TypeScript/issues/39244 
 interface IMutatorChangeRecorderTypes {
     mutatorChangeTrackingFactory: <TState extends object, TArgs extends unknown[], R = unknown>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, void>;
-    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(tracker: DeltaTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
+    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(tracker: PatchTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
 }
 
 export type MutatorChangeRecorder = IMutatorChangeRecorderTypes['mutatorChangeRecorder'];
 export type MutatorChangeRecorderFactory = IMutatorChangeRecorderTypes['mutatorChangeTrackingFactory'];
 
-export const createChangeRecorderFactory = (deltaTracker: DeltaTracker, trackChanges: MutatorChangeRecorder): MutatorChangeRecorderFactory => {
-    return mutator => (state, ...args) => trackChanges(deltaTracker, mutator, state, ...args);
+export const createChangeRecorderFactory = (patchTracker: PatchTracker, trackChanges: MutatorChangeRecorder): MutatorChangeRecorderFactory => {
+    return mutator => (state, ...args) => trackChanges(patchTracker, mutator, state, ...args);
 };
 
-export function subscribeObject(tracker: DeltaTracker, node: SubscriptionNodeData, objectToSubscribe: any) {
+export function subscribeObject(tracker: PatchTracker, node: SubscriptionNodeData, objectToSubscribe: any) {
     if (node.subscribedObject === objectToSubscribe) {
         return;
     }
@@ -120,7 +120,7 @@ export function isSubscribable(objectToSubscribe: any) {
     return objectToSubscribe && (typeof objectToSubscribe === 'object' || isCollection(objectToSubscribe));
 }
 
-export function unsubscribeObject(tracker: DeltaTracker, node: SubscriptionNodeData) {
+export function unsubscribeObject(tracker: PatchTracker, node: SubscriptionNodeData) {
     if (!node.subscribedObject)
         return;
     //TODO: assert that the current node is actually the subscribed node
@@ -145,7 +145,7 @@ function addCallback(node: SubscriptionNodeData, callback: () => unknown) {
     node.callbacks.add(callback);
 }
 
-function addPathToSubscriptions(tracker: DeltaTracker, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
+function addPathToSubscriptions(tracker: PatchTracker, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
     const childPropertiesToMonitor = Reflect.ownKeys(currentPathRecord);
 
     if (childPropertiesToMonitor.length === 0) {
@@ -199,7 +199,7 @@ function addPathToSubscriptions(tracker: DeltaTracker, callback: () => unknown, 
     return subscribedNodes;
 }
 
-export function subscribe<TState, R>(tracker: DeltaTracker, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
+export function subscribe<TState, R>(tracker: PatchTracker, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
     const originalState = asOriginal(state);
     const path = recordPath(pathAccessor);
     // console.log('subscribed path :>> ', path);
@@ -271,7 +271,7 @@ function getHighestCommonAncestors(nodes: Set<SubscriptionNodeData>) {
     return highestCommonAncestors;
 }
 
-function resubscribeAndGatherCallbacks(tracker: DeltaTracker, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
+function resubscribeAndGatherCallbacks(tracker: PatchTracker, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
     if (currentSubscriptionNode.callbacks) {
         for (const callback of currentSubscriptionNode.callbacks) {
             callbacksToFire.add(callback);
@@ -310,16 +310,16 @@ function getValueFromParent(node: SubscriptionNodeData) {
     }
 }
 
-export function getCallbacksAndUpdateSubscriptionsFromDeltas(tracker: DeltaTracker, deltas: Delta[]) {
+export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: PatchTracker, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
     // console.log('publishing');
-    for (const delta of deltas) {
-        // console.log('delta :>> ', delta);
-        const deltaTarget = deltaToTarget.get(delta);
-        const subscriptionNodes = tracker.objectSubscriptions.get(deltaTarget);
+    for (const patch of patches) {
+        // console.log('patch :>> ', patch);
+        const patchTarget = patchToTarget.get(patch);
+        const subscriptionNodes = tracker.objectSubscriptions.get(patchTarget);
 
         if (subscriptionNodes) {
-            const isTargetCollection = isCollection(deltaTarget);
+            const isTargetCollection = isCollection(patchTarget);
             for (const subscriptionNode of subscriptionNodes) {
 
                 if (isTargetCollection) {
@@ -330,8 +330,8 @@ export function getCallbacksAndUpdateSubscriptionsFromDeltas(tracker: DeltaTrack
                     }
                 }
 
-                if (subscriptionNode.mapKeyValues && deltaTarget instanceof Map) {
-                    for (const key of (delta as MapDelta<any, any>).keys()) {
+                if (subscriptionNode.mapKeyValues && patchTarget instanceof Map) {
+                    for (const key of (patch as MapPatch<any, any>).keys()) {
                         const nodeForValue = subscriptionNode.mapKeyValues.get(key);
                         if (nodeForValue) {
                             invalidatedNodes.add(nodeForValue);
@@ -340,18 +340,18 @@ export function getCallbacksAndUpdateSubscriptionsFromDeltas(tracker: DeltaTrack
                 } else if (subscriptionNode.children) {
                     //Symbol.iterator means the entire collection
 
-                    //TODO: decide if it's generally better to scan over subscriptions or what's changed in the delta.
+                    //TODO: decide if it's generally better to scan over subscriptions or what's changed in the patch.
 
                     // for (const [propertyKey, childNode] of subscriptionNode.children) {
-                    //     if (Reflect.has(delta, propertyKey!)) {
+                    //     if (Reflect.has(patch, propertyKey!)) {
                     //         invalidatedNodes.add(childNode);
                     //     }
                     // }
 
                     let hasFoundChangedProperty = false;
-                    if (delta instanceof Map) {
-                        for (const [changedPropertyName, deltaValue] of (delta as Map<any, any> | ArrayDelta).entries()) {
-                            if (deltaTarget[changedPropertyName] !== deltaValue) {
+                    if (patch instanceof Map) {
+                        for (const [changedPropertyName, patchValue] of (patch as Map<any, any> | ArrayPatch).entries()) {
+                            if (patchTarget[changedPropertyName] !== patchValue) {
                                 hasFoundChangedProperty = true;
                                 const nodeForProperty = subscriptionNode.children.get(changedPropertyName);
                                 if (nodeForProperty) {
@@ -360,8 +360,8 @@ export function getCallbacksAndUpdateSubscriptionsFromDeltas(tracker: DeltaTrack
                             }
                         }
                     } else {
-                        for (const changedPropertyName in delta) {
-                            if (deltaTarget[changedPropertyName] !== (delta as any)[changedPropertyName]) {
+                        for (const changedPropertyName in patch) {
+                            if (patchTarget[changedPropertyName] !== (patch as any)[changedPropertyName]) {
                                 hasFoundChangedProperty = true;
                                 const nodeForProperty = subscriptionNode.children.get(changedPropertyName);
                                 if (nodeForProperty) {
@@ -397,10 +397,10 @@ function isCollection(target: any) {
 }
 
 //This is the simplest form of getting recordings and subscriptions.  Undo/redo history code would want to snap this function in the main application.
-export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: DeltaTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
-    const deltas = recordDeltas(mutator, state, ...args);
+export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: PatchTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
+    const patches = recordPatches(mutator, state, ...args);
 
-    const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromDeltas(tracker, deltas);
+    const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(tracker, patches);
 
     //TODO: add history support externally
     //for consumers to do their own change tracking
@@ -437,7 +437,7 @@ export interface GenericSelectSubscribeFunctionRecurse {
 export type ChildSubscriberRecursive<TState> = (state: TState, subscribe: GenericSelectSubscribeFunctionRecurse) => SubscriptionCollection;
 
 export function subscribeRecursive<TState, TChildState>(
-    tracker: DeltaTracker,
+    tracker: PatchTracker,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
     subscribeToChildren: ChildSubscriberRecursive<TChildState>,
@@ -483,10 +483,10 @@ export function subscribeRecursive<TState, TChildState>(
 }
 
 export function subscribeDeep<TState, TChildState>(
-    tracker: DeltaTracker,
+    tracker: PatchTracker,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
-    subscribeToChildren: (deltaTracker: DeltaTracker, selectedChild: TChildState, callback: () => void) => SubscriptionCollection,
+    subscribeToChildren: (patchTracker: PatchTracker, selectedChild: TChildState, callback: () => void) => SubscriptionCollection,
     callback: () => void): Subscription {
 
     let currentChildSubscriptions: SubscriptionCollection;

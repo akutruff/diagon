@@ -1,5 +1,5 @@
 
-import { createRecordingProxy, asOriginal, isProxy, recordDeltas, resetEnvironment, tryGetProxy, getCurrentDelta } from './dimmer';
+import { createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, tryGetProxy, getCurrentPatch } from './dimmer';
 import { getObjectTimeline } from './history';
 
 describe('DimmerArray', () => {
@@ -52,8 +52,8 @@ describe('DimmerArray', () => {
         expect(isProxy(proxy[1])).toBeTruthy();
 
 
-        expect(getCurrentDelta(target)![1]).toMatchObject({ prop0: 'b' });
-        expect(getCurrentDelta(target)![1]).toBe(copyOfOriginal[1]);
+        expect(getCurrentPatch(target)![1]).toMatchObject({ prop0: 'b' });
+        expect(getCurrentPatch(target)![1]).toBe(copyOfOriginal[1]);
     });
 
     describe('splice()', () => {
@@ -77,21 +77,21 @@ describe('DimmerArray', () => {
             const proxy = createRecordingProxy(target);
             const poppedValue = proxy.pop();
             expect(isProxy(poppedValue)).toBeTruthy();
-            expect(getCurrentDelta(target)).toMatchObject([{ prop0: 'a' }, { prop0: 'b' }]);
+            expect(getCurrentPatch(target)).toMatchObject([{ prop0: 'a' }, { prop0: 'b' }]);
         });
     });
 
-    it('records deltas when set length to zero', () => {
+    it('records patches when set length to zero', () => {
         const state = [{ prop0: 'a' }, { prop0: 'b' }];
 
         const history = [];
-        history.push(recordDeltas((state: any[]) => state.length = 0, state));
+        history.push(recordPatches((state: any[]) => state.length = 0, state));
 
         const timeline = getObjectTimeline(history, state);
         const previous0 = timeline[0][1];
 
         expect(previous0).toEqual([{ prop0: 'a' }, { prop0: 'b' }]);
-        expect(getCurrentDelta(state)).toBeUndefined();        
+        expect(getCurrentPatch(state)).toBeUndefined();
     });
 
     describe('commitChanges()', () => {
@@ -99,18 +99,18 @@ describe('DimmerArray', () => {
             const state = [{ prop0: 'a' }, { prop0: 'b' }];
 
             const history = [];
-            history.push(recordDeltas((state) => state.push({ prop0: 'q' }), state));
-            history.push(recordDeltas((state) => state[2] = { prop0: 'r' }, state));
+            history.push(recordPatches((state) => state.push({ prop0: 'q' }), state));
+            history.push(recordPatches((state) => state[2] = { prop0: 'r' }, state));
 
             const timeline = getObjectTimeline(history, state);
             const previous0 = timeline[0][1];
 
             expect(previous0).toEqual([{ prop0: 'a' }, { prop0: 'b' }]);
-            expect(getCurrentDelta(state)).toBeUndefined();        
+            expect(getCurrentPatch(state)).toBeUndefined();
 
             const previous1 = timeline[1][1];
             expect(previous1).toEqual([{ prop0: 'a' }, { prop0: 'b' }, { prop0: 'q' }]);
-            expect(getCurrentDelta(state)).toBeUndefined();        
+            expect(getCurrentPatch(state)).toBeUndefined();
         });
     });
 });

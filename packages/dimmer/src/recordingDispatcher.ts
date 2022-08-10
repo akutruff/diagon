@@ -1,11 +1,11 @@
-import { clearContext, createContext, createRecordingProxy, Delta, Mutator, tryGetProxy } from '.';
-import { commitDeltas } from './dimmer';
+import { clearContext, createContext, createRecordingProxy, Patch, Mutator, tryGetProxy } from '.';
+import { commitPatches } from './dimmer';
 import { createPipeline, Middleware, Next, Pipeline } from './middleware';
 
 export interface DispatchContext<T extends object = object> {
     state: T;
     stateProxy?: T;
-    deltas?: Delta[];
+    patches?: Patch[];
     commandResult?: any;
     callstackDepth?: number;
 }
@@ -119,7 +119,7 @@ export const recordChangesMiddleware = (context: DispatchContext, next: Next) =>
             createContext();
             context.stateProxy = tryGetProxy(context.state) || createRecordingProxy(context.state);
             next();
-            context.deltas = commitDeltas();
+            context.patches = commitPatches();
         }
         finally {
             clearContext();

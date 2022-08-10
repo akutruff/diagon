@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import {  Mutator, AsyncMutator, asOriginal, subscribe, unsubscribe, DeltaTracker, Subscription, subscribeDeep, ChildSubscriberRecursive, subscribeRecursive } from '@akutruff/dimmer';
+import { Mutator, AsyncMutator, asOriginal, subscribe, unsubscribe, PatchTracker, Subscription, subscribeDeep, ChildSubscriberRecursive, subscribeRecursive } from '@akutruff/dimmer';
 import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
-import { DeltaTrackerContext } from '.';
+import { PatchTrackerContext } from '.';
 
 
 export const useRootState = () => {
-    const { state } = useContext(DeltaTrackerContext);
+    const { state } = useContext(PatchTrackerContext);
     return state;
 };
 
 export const useDispatch = () => {
-    const { dispatch, state } = useContext(DeltaTrackerContext);
+    const { dispatch, state } = useContext(PatchTrackerContext);
     const dispatchCallback = useCallback((args: any) => dispatch(state, args), [state, dispatch]);
     return dispatchCallback;
 };
 
 export const useMutator = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
-    const { recordingDispatcher } = useContext(DeltaTrackerContext);
+    const { recordingDispatcher } = useContext(PatchTrackerContext);
 
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutate(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
 
@@ -24,7 +24,7 @@ export const useMutator = <TState extends object, TArgs extends unknown[], R>(st
 };
 
 export const useMutatorAsync = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
-    const { recordingDispatcher } = useContext(DeltaTrackerContext);
+    const { recordingDispatcher } = useContext(PatchTrackerContext);
 
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutateAsync(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
 
@@ -33,15 +33,15 @@ export const useMutatorAsync = <TState extends object, TArgs extends unknown[], 
 
 export const useSnapshot = <TState extends object, TSnapshot>(state: TState, getSnapshot: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
     state = asOriginal(state);
-    const { deltaTracker } = useContext(DeltaTrackerContext);
+    const { patchTracker } = useContext(PatchTrackerContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(deltaTracker, getSnapshot), [deltaTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((listener: any) => {
-        const subscriptions = subscribe(deltaTracker, state, getSnapshot, listener);
+        const subscriptions = subscribe(patchTracker, state, getSnapshot, listener);
         return () => unsubscribe(subscriptions);
-    }, [deltaTracker, getSnapshotCallback]);
+    }, [patchTracker, getSnapshotCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
@@ -53,35 +53,35 @@ export const useProjectedSnapshot = <TState extends object, TSnapshot>(
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<any> = []): TSnapshot => {
     state = asOriginal(state);
-    const { deltaTracker } = useContext(DeltaTrackerContext);
+    const { patchTracker } = useContext(PatchTrackerContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(deltaTracker, getSnapshot), [deltaTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((listener: any) => {
-        const subscriptions = subscribe(deltaTracker, state, subscriber, listener);
+        const subscriptions = subscribe(patchTracker, state, subscriber, listener);
         return () => unsubscribe(subscriptions);
-    }, [deltaTracker, getSnapshotCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
+    }, [patchTracker, getSnapshotCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
 export const useSubscribedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
-    subscriber: (deltaTracker: DeltaTracker, state: TState, callback: () => void) => Subscription,
+    subscriber: (patchTracker: PatchTracker, state: TState, callback: () => void) => Subscription,
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { deltaTracker } = useContext(DeltaTrackerContext);
+    const { patchTracker } = useContext(PatchTrackerContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(deltaTracker, getSnapshot), [deltaTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const subscriberCallback = useCallback(subscriber, []);
 
     const sub = useCallback((listener: any) => {
-        const subscriptions = subscriber(deltaTracker, state, listener);
+        const subscriptions = subscriber(patchTracker, state, listener);
         return () => unsubscribe(subscriptions);
-    }, [deltaTracker, getSnapshotCallback, subscriberCallback]);
+    }, [patchTracker, getSnapshotCallback, subscriberCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
@@ -93,47 +93,47 @@ export const useRecursiveSnapshot = <TState extends object, TChildState, TSnapsh
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { deltaTracker } = useContext(DeltaTrackerContext);
+    const { patchTracker } = useContext(PatchTrackerContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(deltaTracker, getSnapshot), [deltaTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
     const sub = useCallback((listener: any) => {
-        const subscriptions = subscribeRecursive(deltaTracker, state, childSelector, subscribeToChildren, listener);
+        const subscriptions = subscribeRecursive(patchTracker, state, childSelector, subscribeToChildren, listener);
         return () => unsubscribe(subscriptions);
-    }, [deltaTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
+    }, [patchTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
 export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
     state: TState,
     childSelector: (state: TState) => TChildState,
-    subscribeToChildren: (deltaTracker: DeltaTracker, selectedChild: TChildState, callback: () => void) => Subscription,
+    subscribeToChildren: (patchTracker: PatchTracker, selectedChild: TChildState, callback: () => void) => Subscription,
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { deltaTracker } = useContext(DeltaTrackerContext);
+    const { patchTracker } = useContext(PatchTrackerContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(deltaTracker, getSnapshot), [deltaTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
     const sub = useCallback((listener: any) => {
-        const subscriptions = subscribeDeep(deltaTracker, state, childSelector, subscribeToChildren, listener);
+        const subscriptions = subscribeDeep(patchTracker, state, childSelector, subscribeToChildren, listener);
         return () => unsubscribe(subscriptions);
-    }, [deltaTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
+    }, [patchTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
-function createSnapshotMemoizer<TState extends object, TSnapshot>(deltaTracker: DeltaTracker, getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot) {
+function createSnapshotMemoizer<TState extends object, TSnapshot>(patchTracker: PatchTracker, getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot) {
     let previousVersion: number | undefined = undefined;
     let currentSnapshot: TSnapshot | undefined = undefined;
     return (state: TState) => {
-        if (previousVersion === undefined || previousVersion !== deltaTracker.version) {
+        if (previousVersion === undefined || previousVersion !== patchTracker.version) {
             currentSnapshot = getSnapshot(state, currentSnapshot);
-            previousVersion = deltaTracker.version;
+            previousVersion = patchTracker.version;
         }
         return currentSnapshot as TSnapshot;
     };

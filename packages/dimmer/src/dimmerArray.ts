@@ -1,5 +1,5 @@
-import { deltaToTarget, modified, objectToCurrentDelta, proxify } from './dimmer';
-import { ArrayDelta, ORIGINAL, PROXY } from './types';
+import { patchToTarget, modified, objectToCurrentPatch, proxify } from './dimmer';
+import { ArrayPatch, ORIGINAL, PROXY } from './types';
 
 export const dimmerArrayProxyHandler: ProxyHandler<any> = {
 
@@ -20,44 +20,44 @@ export const dimmerArrayProxyHandler: ProxyHandler<any> = {
 
     //TODO: set and delete are presently just copying all previous contents.  Perhaps this could be more piecemeal.
     set: function (target: any, propertyKey: PropertyKey, value: any/*, _receiver?: any*/) {
-        const currentDelta = objectToCurrentDelta.get(target);
-        if (!currentDelta) {
+        const currentPatch = objectToCurrentPatch.get(target);
+        if (!currentPatch) {
             modified.add(target);
 
-            const delta = createArrayDelta(target);
+            const patch = createArrayPatch(target);
 
-            delta.length = target.length;
+            patch.length = target.length;
             for (let i = 0; i < target.length; i++) {
-                delta[i] = target[i];
+                patch[i] = target[i];
             }
 
-            objectToCurrentDelta.set(target, delta);
+            objectToCurrentPatch.set(target, patch);
         }
 
         return Reflect.set(target, propertyKey, value);
     },
 
     deleteProperty(target, prop: PropertyKey) {
-        const currentDelta = objectToCurrentDelta.get(target);
-        if (!currentDelta) {
+        const currentPatch = objectToCurrentPatch.get(target);
+        if (!currentPatch) {
             modified.add(target);
-            const delta = createArrayDelta(target);
+            const patch = createArrayPatch(target);
 
-            delta.length = target.length;
+            patch.length = target.length;
             for (let i = 0; i < target.length; i++) {
-                delta[i] = target[i];
+                patch[i] = target[i];
             }
 
-            objectToCurrentDelta.set(target, delta);
+            objectToCurrentPatch.set(target, patch);
         }
 
         return Reflect.deleteProperty(target, prop);
     },
 };
 
-export function createArrayDelta<T>(target: T[]) {
-    const delta = [] as any as ArrayDelta;
-    deltaToTarget.set(delta, target);
-    return delta;
+export function createArrayPatch<T>(target: T[]) {
+    const patch = [] as any as ArrayPatch;
+    patchToTarget.set(patch, target);
+    return patch;
 }
 

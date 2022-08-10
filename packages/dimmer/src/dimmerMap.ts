@@ -1,5 +1,5 @@
-import { tryGetProxy, asOriginal, proxify, deltaToTarget, modified } from './dimmer';
-import { ORIGINAL, PROXY, NO_ENTRY, MapDelta, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
+import { tryGetProxy, asOriginal, proxify, patchToTarget, modified } from './dimmer';
+import { ORIGINAL, PROXY, NO_ENTRY, MapPatch, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
 
 export class DimmerMap<K, V> extends Map<K, V> implements DimmerProxyMetadata {
 
@@ -109,12 +109,12 @@ export class DimmerMap<K, V> extends Map<K, V> implements DimmerProxyMetadata {
         }
     }
 
-    commitDelta() {
-        const commitedDelta = new Map(super.entries()) as MapDelta<K, V>;
-        deltaToTarget.set(commitedDelta, this.target);
+    commitPatch() {
+        const commitedPatch = new Map(super.entries()) as MapPatch<K, V>;
+        patchToTarget.set(commitedPatch, this.target);
 
         super.clear();
-        return commitedDelta;
+        return commitedPatch;
     }
 
     get [DIMMER_ID](): DimmerId {
@@ -134,10 +134,10 @@ export class DimmerMap<K, V> extends Map<K, V> implements DimmerProxyMetadata {
     }
 }
 
-export function createMapDelta<K, V>(target: Map<K, V>) {
-    const delta = new Map<K, V>() as MapDelta<K, V>;
-    deltaToTarget.set(delta, target);
-    return delta;
+export function createMapPatch<K, V>(target: Map<K, V>) {
+    const patch = new Map<K, V>() as MapPatch<K, V>;
+    patchToTarget.set(patch, target);
+    return patch;
 }
 
 export function getKeyUsedByMap<K>(map: Map<K, unknown>, key: K, proxyOfKey = tryGetProxy(key), originalKey = asOriginal(key)) {

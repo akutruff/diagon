@@ -1,46 +1,46 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Action, createDeltaTracker, createRecordingProxy, DeltaTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from '@akutruff/dimmer';
+import { Action, createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from '@akutruff/dimmer';
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createDeltaTrackerContextValue, DeltaTrackerContext, DeltaTrackerContextValue } from './DeltaTrackerContext';
+import { createPatchTrackerContextValue, PatchTrackerContext, PatchTrackerContextValue } from './PatchTrackerContext';
 import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from './reactHooks';
 
-interface DeltaTrackerAppProps {
-    deltaTrackerContextValue: DeltaTrackerContextValue
+interface PatchTrackerAppProps {
+    patchTrackerContextValue: PatchTrackerContextValue
 }
 
-const DeltaTrackerApp: FC<PropsWithChildren<DeltaTrackerAppProps>> = ({ children, deltaTrackerContextValue }) => {
+const PatchTrackerApp: FC<PropsWithChildren<PatchTrackerAppProps>> = ({ children, patchTrackerContextValue }) => {
     return (
-        <DeltaTrackerContext.Provider value={deltaTrackerContextValue}>
+        <PatchTrackerContext.Provider value={patchTrackerContextValue}>
             {children}
-        </DeltaTrackerContext.Provider>
+        </PatchTrackerContext.Provider>
     );
 };
 
 type RestOfRenderOptions = Omit<RenderOptions, 'wrapper'>;
-const renderWithDeltaTracking = (ui: ReactElement, deltaTrackerProps: DeltaTrackerAppProps, options?: RestOfRenderOptions) => {
+const renderWithPatchTracking = (ui: ReactElement, patchTrackerProps: PatchTrackerAppProps, options?: RestOfRenderOptions) => {
     const rendered = render(ui, {
-        wrapper: (props: any) => <DeltaTrackerApp {...props} {...deltaTrackerProps} />,
+        wrapper: (props: any) => <PatchTrackerApp {...props} {...patchTrackerProps} />,
         ...options,
     });
     return rendered;
 };
 
 describe('subscriptions', () => {
-    let deltaTracker: DeltaTracker;
-    let deltaTrackerContextValue: DeltaTrackerContextValue;
+    let patchTracker: PatchTracker;
+    let patchTrackerContextValue: PatchTrackerContextValue;
     let recordingDispatcher: RecordingDispatcher;
 
     beforeEach(() => {
         resetEnvironment();
-        deltaTracker = createDeltaTracker();
+        patchTracker = createPatchTracker();
 
-        deltaTrackerContextValue = createDeltaTrackerContextValue({
+        patchTrackerContextValue = createPatchTrackerContextValue({
             state: undefined,
-            deltaTracker
+            patchTracker
         });
 
-        recordingDispatcher = deltaTrackerContextValue.recordingDispatcher;
+        recordingDispatcher = patchTrackerContextValue.recordingDispatcher;
     });
 
     describe('useProjectedSnapshot', () => {
@@ -71,7 +71,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -114,7 +114,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -155,7 +155,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name: bob');
 
@@ -200,7 +200,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name: bob');
             getByText('address: 123 Sycamore Lane');
@@ -250,7 +250,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name0: bob');
             getByText('name1: jane');
@@ -297,7 +297,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('item: bob');
             getByText('item: jane');
@@ -344,7 +344,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name: bob');
 
@@ -390,7 +390,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name: bob');
 
@@ -440,7 +440,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('name: bob');
 
@@ -476,7 +476,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -518,7 +518,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText, rerender } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText, rerender } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -557,9 +557,9 @@ describe('subscriptions', () => {
             interface IncrementAction extends Action { type: 'increment', value: number }
             type ActionTypes = IncrementAction;
 
-            deltaTrackerContextValue.state = state;
+            patchTrackerContextValue.state = state;
 
-            deltaTrackerContextValue.dispatch = recordingDispatcher.createMutator((state: State, action: ActionTypes) => {
+            patchTrackerContextValue.dispatch = recordingDispatcher.createMutator((state: State, action: ActionTypes) => {
                 switch (action.type) {
                     case 'increment':
                         state.count += action.value;
@@ -582,7 +582,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -663,7 +663,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            renderWithDeltaTracking(<TestComponent state={state} />, { deltaTrackerContextValue });
+            renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
 
             expect(renderCount).toEqual(1);
 

@@ -1,5 +1,5 @@
 import { elements } from '@akutruff/dimmer';
-import { DeltaTrackerContext, useDeltaTrackerContextValue, useMutator, useSnapshot } from '@akutruff/dimmer-react';
+import { PatchTrackerContext, usePatchTrackerContextValue, useMutator, useSnapshot } from '@akutruff/dimmer-react';
 import React, { ChangeEvent, FC, useState } from 'react';
 import { createRootState, Person, useRootState } from './app';
 
@@ -89,12 +89,12 @@ const App: FC = () => {
 
   const [state] = useState(() => createRootState());
 
-  const deltaTrackerContextValue = useDeltaTrackerContextValue({ state, dispatch: () => { } });
+  const patchTrackerContextValue = usePatchTrackerContextValue({ state, dispatch: () => { } });
 
   return (
-    <DeltaTrackerContext.Provider value={deltaTrackerContextValue}>
+    <PatchTrackerContext.Provider value={patchTrackerContextValue}>
       <AppContent />
-    </DeltaTrackerContext.Provider>
+    </PatchTrackerContext.Provider>
   );
 };
 

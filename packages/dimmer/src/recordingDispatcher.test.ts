@@ -1,5 +1,5 @@
 
-import { createRecordingDispatcher, createContext, resetEnvironment, clearContext, DispatchContext, ObjectDelta } from '.';
+import { createRecordingDispatcher, createContext, resetEnvironment, clearContext, DispatchContext, ObjectPatch } from '.';
 import { isProxy } from './dimmer';
 import { Next } from './middleware';
 
@@ -67,7 +67,7 @@ describe('RecordingDispatcher', () => {
             expect(reentrantCommand.mock.calls.length).toBe(1);
         });
 
-        it('records deltas', async () => {
+        it('records patches', async () => {
             const state: State = { prop0: 'hello', prop1: 2 };
 
             const middleware = jest.fn((context: DispatchContext, next: Next) => {
@@ -86,13 +86,13 @@ describe('RecordingDispatcher', () => {
             expect(middleware.mock.calls.length).toBe(1);
             expect(command.mock.calls.length).toBe(1);
 
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[0][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
     });
 
     describe('mutateAsync', () => {
-        it('yielding results in new delta recording', async () => {
+        it('yielding results in new patch recording', async () => {
             const state: State = { prop0: 'hello', prop1: 2 };
 
             const middleware = jest.fn((context: DispatchContext, next: Next) => {
@@ -108,9 +108,9 @@ describe('RecordingDispatcher', () => {
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
 
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(0);
-            expect(middleware.mock.calls[1][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[1][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(0);
+            expect(middleware.mock.calls[1][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[1][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
 
         it('can await inside', async () => {
@@ -129,9 +129,9 @@ describe('RecordingDispatcher', () => {
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(0);
-            expect(middleware.mock.calls[1][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[1][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(0);
+            expect(middleware.mock.calls[1][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[1][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
 
         it('can await inside then yield', async () => {
@@ -151,12 +151,12 @@ describe('RecordingDispatcher', () => {
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
 
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(0);
-            expect(middleware.mock.calls[1][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[1][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(0);
+            expect(middleware.mock.calls[1][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[1][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
 
-        it('records deltas when there is no yield', async () => {
+        it('records patches when there is no yield', async () => {
             const state: State = { prop0: 'hello', prop1: 2 };
 
             const middleware = jest.fn((context: DispatchContext, next: Next) => {
@@ -170,8 +170,8 @@ describe('RecordingDispatcher', () => {
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(1);
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[0][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
 
         it('supports nested async generators', async () => {
@@ -194,8 +194,8 @@ describe('RecordingDispatcher', () => {
             expect(state.prop0).toBe('nested');
             expect(middleware.mock.calls.length).toBe(1);
 
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[0][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
 
         it('supports nested async generators with awaits', async () => {
@@ -223,10 +223,10 @@ describe('RecordingDispatcher', () => {
             expect(state.prop0).toBe('nested');
             expect(middleware.mock.calls.length).toBe(3);
 
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(0);
-            expect(middleware.mock.calls[1][0].deltas?.length).toEqual(1);
-            expect(middleware.mock.calls[2][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[1][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(0);
+            expect(middleware.mock.calls[1][0].patches?.length).toEqual(1);
+            expect(middleware.mock.calls[2][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[1][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
         });
     });
 
@@ -260,9 +260,9 @@ describe('RecordingDispatcher', () => {
             expect(recordingDispatcher.executingAsyncOperations.size).toBe(0);
 
             expect(middleware.mock.calls.length).toBe(1);
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
-            // expect(middleware.mock.calls[1][0].deltas).toEqual([]);
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[0][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
+            // expect(middleware.mock.calls[1][0].patches).toEqual([]);
         });
 
         it('outstanding operations are not continued when there is no yield', async () => {
@@ -292,8 +292,8 @@ describe('RecordingDispatcher', () => {
             expect(recordingDispatcher.executingAsyncOperations.size).toBe(0);
 
             expect(middleware.mock.calls.length).toBe(1);
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(1);
-            expect((middleware.mock.calls[0][0].deltas![0] as ObjectDelta<State>).get('prop0')).toBe('hello');
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(1);
+            expect((middleware.mock.calls[0][0].patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
 
         });
 
@@ -328,7 +328,7 @@ describe('RecordingDispatcher', () => {
             expect(recordingDispatcher.executingAsyncOperations.size).toBe(0);
 
             expect(middleware.mock.calls.length).toBe(1);
-            expect(middleware.mock.calls[0][0].deltas?.length).toEqual(0);
+            expect(middleware.mock.calls[0][0].patches?.length).toEqual(0);
         });
     });
 });

@@ -1,8 +1,8 @@
-import { asOriginal, tryGetProxy, proxify, deltaToTarget, modified } from './dimmer';
-import { ORIGINAL, PROXY, SetDelta, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
+import { asOriginal, tryGetProxy, proxify, patchToTarget, modified } from './dimmer';
+import { ORIGINAL, PROXY, SetPatch, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
 
 export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
-    currentDelta = new Map<T, boolean>();
+    currentPatch = new Map<T, boolean>();
 
     [DIMMER_ID]: DimmerId = -1;
 
@@ -27,11 +27,11 @@ export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
         const currentKeyUsedByTarget = getKeyUsedBySet(this.target, value, proxyOfValue, originalValue);
 
         if (!currentKeyUsedByTarget) {
-            const hasChangeAlreadyBeenRecorded = (proxyOfValue && this.currentDelta.has(proxyOfValue)) || this.currentDelta.has(originalValue);
+            const hasChangeAlreadyBeenRecorded = (proxyOfValue && this.currentPatch.has(proxyOfValue)) || this.currentPatch.has(originalValue);
             if (!hasChangeAlreadyBeenRecorded) {
                 modified.add(this.target);
 
-                this.currentDelta.set(value, false);
+                this.currentPatch.set(value, false);
             }
         }
 
@@ -52,11 +52,11 @@ export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
         }
 
         if (currentKeyUsedByTarget) {
-            const hasChangeAlreadyBeenRecorded = (proxyOfValue && this.currentDelta.has(proxyOfValue)) || this.currentDelta.has(originalValue);
+            const hasChangeAlreadyBeenRecorded = (proxyOfValue && this.currentPatch.has(proxyOfValue)) || this.currentPatch.has(originalValue);
 
             if (!hasChangeAlreadyBeenRecorded) {
                 modified.add(this.target);
-                this.currentDelta.set(currentKeyUsedByTarget, true);
+                this.currentPatch.set(currentKeyUsedByTarget, true);
             }
             return true;
         } else {
@@ -66,10 +66,10 @@ export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
 
     clear() {
         for (const value of this.target) {
-            if (!this.currentDelta.has(value)) {
+            if (!this.currentPatch.has(value)) {
                 modified.add(this.target as any);
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.currentDelta.set(value, true);
+                this.currentPatch.set(value, true);
             }
         }
 
@@ -95,13 +95,13 @@ export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
         }
     }
 
-    commitDelta(): SetDelta<T> {
+    commitPatch(): SetPatch<T> {
         //TODO: instead of copying, perhaps just send current
-        const commitedDelta = new Map(this.currentDelta) as SetDelta<T>;
-        deltaToTarget.set(commitedDelta, this.target);
+        const commitedPatch = new Map(this.currentPatch) as SetPatch<T>;
+        patchToTarget.set(commitedPatch, this.target);
 
-        this.currentDelta.clear();
-        return commitedDelta;
+        this.currentPatch.clear();
+        return commitedPatch;
     }
 
     get [ORIGINAL]() {
@@ -117,10 +117,10 @@ export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
     }
 }
 
-export function createSetDelta<T>(target: Set<T>) {
-    const delta = (new Map<any, boolean>()) as SetDelta<T>;
-    deltaToTarget.set(delta, target);
-    return delta;
+export function createSetPatch<T>(target: Set<T>) {
+    const patch = (new Map<any, boolean>()) as SetPatch<T>;
+    patchToTarget.set(patch, target);
+    return patch;
 }
 
 export function getKeyUsedBySet<T>(map: Set<T>, value: T, proxyOfKey = tryGetProxy(value), originalKey = asOriginal(value)) {

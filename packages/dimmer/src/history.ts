@@ -1,18 +1,18 @@
-import { assignDimmerId, asOriginal, deltaToTarget } from './dimmer';
-import { createArrayDelta } from './dimmerArray';
-import { createMapDelta, getKeyUsedByMap } from './dimmerMap';
-import { createObjectDelta } from './dimmerObject';
-import { createSetDelta } from './dimmerSet';
+import { assignDimmerId, asOriginal, patchToTarget } from './dimmer';
+import { createArrayPatch } from './dimmerArray';
+import { createMapPatch, getKeyUsedByMap } from './dimmerMap';
+import { createObjectPatch } from './dimmerObject';
+import { createSetPatch } from './dimmerSet';
 
-import { Delta, DIMMER_ID, ORIGINAL, InferDeltaType, NO_ENTRY, SetDelta, ArrayDelta, MapDelta, ObjectDelta, HistoryIndex, DimmeredObject } from './types';
+import { Patch, DIMMER_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DimmeredObject } from './types';
 import { isMap, isPlainObject, isSet } from './utils';
 
-export function undoDelta(delta: Delta) {
-    const target = deltaToTarget.get(delta);
+export function undoPatch(patch: Patch) {
+    const target = patchToTarget.get(patch);
 
     if (target instanceof Map) {
-        const mapDelta = delta as MapDelta;
-        for (const [key, value] of mapDelta) {
+        const mapPatch = patch as MapPatch;
+        for (const [key, value] of mapPatch) {
             const wasPreviouslyInMap = value !== NO_ENTRY;
 
             const targetKey = getKeyUsedByMap(target, key);
@@ -27,9 +27,9 @@ export function undoDelta(delta: Delta) {
             }
         }
     } else if (target instanceof Set) {
-        const setDelta = delta as SetDelta;
+        const setPatch = patch as SetPatch;
 
-        for (const [key, wasPreviouslyInSet] of setDelta) {
+        for (const [key, wasPreviouslyInSet] of setPatch) {
             if (wasPreviouslyInSet) {
                 target.add(key);
             } else {
@@ -37,66 +37,66 @@ export function undoDelta(delta: Delta) {
             }
         }
     } else if (Array.isArray(target)) {
-        const arrayDelta = delta as ArrayDelta;
-        target.length = arrayDelta.length;
+        const arrayPatch = patch as ArrayPatch;
+        target.length = arrayPatch.length;
 
-        for (let i = 0; i < arrayDelta.length; i++) {
-            target[i] = arrayDelta[i];
+        for (let i = 0; i < arrayPatch.length; i++) {
+            target[i] = arrayPatch[i];
         }
     } else {
         //TODO: decide if an object's "own properties" will be modified because we're using undefined.  We could switch to NO_ENTRY
-        //Object.assign(target, delta);
-        for (const [key, value] of (delta as ObjectDelta)) {
+        //Object.assign(target, patch);
+        for (const [key, value] of (patch as ObjectPatch)) {
             target[key] = value;
         }
     }
 }
 
-export function createReverseDelta(delta: Delta) {
-    const target = deltaToTarget.get(delta);
+export function createReversePatch(patch: Patch) {
+    const target = patchToTarget.get(patch);
     if (target instanceof Map) {
-        const patch = createMapDelta(target);
-        const mapDelta = delta as MapDelta;
+        const reversePatch = createMapPatch(target);
+        const mapPatch = patch as MapPatch;
 
-        for (const key of mapDelta.keys()) {
+        for (const key of mapPatch.keys()) {
             if (!target.has(key)) {
-                patch.set(key, NO_ENTRY);
+                reversePatch.set(key, NO_ENTRY);
             } else {
-                patch.set(key, target.get(key));
+                reversePatch.set(key, target.get(key));
             }
         }
-        return patch;
+        return reversePatch;
     } else if (target instanceof Set) {
-        const patch = createSetDelta(target);
-        const setDelta = delta as SetDelta;
+        const reversePatch = createSetPatch(target);
+        const setPatch = patch as SetPatch;
 
-        for (const key of setDelta.keys()) {
+        for (const key of setPatch.keys()) {
             const wasObjectRemovedInTarget = target.has(key);
-            patch.set(key, wasObjectRemovedInTarget);
+            reversePatch.set(key, wasObjectRemovedInTarget);
         }
-        return patch;
+        return reversePatch;
     } else if (Array.isArray(target)) {
         const targetArray = target as unknown[];
 
-        const patch = createArrayDelta(target as unknown[]);
-        patch.length = targetArray.length;
+        const reversePatch = createArrayPatch(target as unknown[]);
+        reversePatch.length = targetArray.length;
 
         for (let i = 0; i < targetArray.length; i++) {
-            patch[i] = targetArray[i];
+            reversePatch[i] = targetArray[i];
         }
 
-        return patch;
+        return reversePatch;
     } else {
-        const patch: ObjectDelta<any> = createObjectDelta(target);
+        const reversePatch: ObjectPatch<any> = createObjectPatch(target);
 
-        // const deltaKeys = Object.keys(delta);
+        // const patchKeys = Object.keys(patch);
 
-        for (const key of delta.keys()) {
-            patch.set(key as any, (target as any)[(key as any)]);
+        for (const key of patch.keys()) {
+            reversePatch.set(key as any, (target as any)[(key as any)]);
             // (patch as any)[key] = (target as any)[key];
         }
 
-        return patch;
+        return reversePatch;
     }
 }
 
@@ -117,29 +117,29 @@ export function convertObjectReferencesToDimmerIdReferences(obj: any) {
     return result || obj;
 }
 
-export function getObjectTimeline<T>(history: Delta[][], objectToFind: T): HistoryIndex<InferDeltaType<T>>[] {
+export function getObjectTimeline<T>(history: Patch[][], objectToFind: T): HistoryIndex<InferPatchType<T>>[] {
     const original = asOriginal(objectToFind);
 
-    const timeline = history.map((deltas, index): HistoryIndex<InferDeltaType<T>> | undefined => {
-        const deltaForOriginal = findDeltaForObject(deltas, original);
-        return deltaForOriginal ? [index, deltaForOriginal] : undefined;
-    }).filter((x): x is HistoryIndex<InferDeltaType<T>> => x !== undefined);
+    const timeline = history.map((patches, index): HistoryIndex<InferPatchType<T>> | undefined => {
+        const patchForOriginal = findPatchForObject(patches, original);
+        return patchForOriginal ? [index, patchForOriginal] : undefined;
+    }).filter((x): x is HistoryIndex<InferPatchType<T>> => x !== undefined);
 
     return timeline;
 }
 
-export function findDeltaForObject<T>(deltas: Delta[], objectToFind: T): InferDeltaType<T> | undefined {
+export function findPatchForObject<T>(patches: Patch[], objectToFind: T): InferPatchType<T> | undefined {
     const objTarget = asOriginal(objectToFind);
 
-    const deltaForTarget = deltas.find(x => deltaToTarget.get(x) === objTarget);
-    return deltaForTarget as InferDeltaType<T> | undefined;
+    const patchForTarget = patches.find(x => patchToTarget.get(x) === objTarget);
+    return patchForTarget as InferPatchType<T> | undefined;
 }
 
-export function findAllDeltasInHistory<T>(history: Delta[][], objectToFind: T): InferDeltaType<T>[] {
+export function findAllPatchesInHistory<T>(history: Patch[][], objectToFind: T): InferPatchType<T>[] {
     const objTarget = asOriginal(objectToFind);
-    const deltasInHistory = history.flat().filter((x): x is InferDeltaType<T> => deltaToTarget.get(x) === objTarget);
+    const patchesInHistory = history.flat().filter((x): x is InferPatchType<T> => patchToTarget.get(x) === objTarget);
 
-    return deltasInHistory;
+    return patchesInHistory;
 }
 
 export function cloneDeep<T>(value: T, clones: WeakMap<any, any> = new WeakMap()): T {

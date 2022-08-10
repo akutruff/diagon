@@ -4,7 +4,7 @@ import { dimmerArrayProxyHandler } from './dimmerArray';
 import { DimmerMap } from './dimmerMap';
 import { objectProxyHandler } from './dimmerObject';
 import { DimmerSet } from './dimmerSet';
-import { Delta, DimmerContext, DimmerEnvironment, DimmerId, DIMMER_ID, ORIGINAL, InferDeltaType, Mutator } from './types';
+import { Patch, DimmerContext, DimmerEnvironment, DimmerId, DIMMER_ID, ORIGINAL, InferPatchType, Mutator } from './types';
 
 export const Dimmer: DimmerEnvironment = { nextId: 0 };
 export const modified = new Set<any>();
@@ -19,8 +19,8 @@ export function resetEnvironment() {
 }
 
 export const objectToProxy = new WeakMap<any, any>();
-export const objectToCurrentDelta = new WeakMap<any, Delta>();
-export const deltaToTarget = new WeakMap<Delta, any>();
+export const objectToCurrentPatch = new WeakMap<any, Patch>();
+export const patchToTarget = new WeakMap<Patch, any>();
 
 export function currentContext(): DimmerContext | undefined {
     return Dimmer.currentContext;
@@ -49,31 +49,31 @@ export function asOriginal<T>(obj: T): T {
     return (obj && (obj as any)[ORIGINAL]) || obj;
 }
 
-export function getCurrentDelta<T>(obj: T): InferDeltaType<T> | undefined {
-    return objectToCurrentDelta.get(obj as any) as InferDeltaType<T> | undefined;
+export function getCurrentPatch<T>(obj: T): InferPatchType<T> | undefined {
+    return objectToCurrentPatch.get(obj as any) as InferPatchType<T> | undefined;
 }
 
-export function getDeltaTarget<T>(delta: InferDeltaType<T>): T | undefined {
-    return deltaToTarget.get(delta) as T | undefined;
+export function getPatchTarget<T>(patch: InferPatchType<T>): T | undefined {
+    return patchToTarget.get(patch) as T | undefined;
 }
 
 export function tryGetProxy<T>(obj: T): T | undefined {
     return objectToProxy.get(obj);
 }
 
-export function makeDeltaRecorder<TState extends object, TArgs extends AnyArray, R = unknown>(mutator: Mutator<TState, TArgs, R>) {
-    return (state: TState, ...args: TArgs) => recordDeltas<TState, TArgs, R>(mutator, state, ...args);
+export function makePatchRecorder<TState extends object, TArgs extends AnyArray, R = unknown>(mutator: Mutator<TState, TArgs, R>) {
+    return (state: TState, ...args: TArgs) => recordPatches<TState, TArgs, R>(mutator, state, ...args);
 }
 
-export function recordDeltas<TState extends object, R>(mutator: (state: TState) => R, state: TState): Delta[];
-export function recordDeltas<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): Delta[];
-export function recordDeltas<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R> | ((state: TState) => R), state: TState, ...args: TArgs): Delta[] {
+export function recordPatches<TState extends object, R>(mutator: (state: TState) => R, state: TState): Patch[];
+export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): Patch[];
+export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R> | ((state: TState) => R), state: TState, ...args: TArgs): Patch[] {
     try {
         createContext();
         const stateProxy = tryGetProxy(state) || createRecordingProxy(state);
         mutator(stateProxy, ...args);
 
-        const changes = commitDeltas();
+        const changes = commitPatches();
         return changes;
     }
     finally {
@@ -106,7 +106,7 @@ export function createRecordingProxy<T extends object>(target: T): T {
     return proxy as T;
 }
 
-export function doNotTrack<T>(obj: T) : typeof obj{
+export function doNotTrack<T>(obj: T): typeof obj {
     if (obj) {
         objectToProxy.set(obj, obj);
     }
@@ -131,22 +131,23 @@ export function assignDimmerId(target: any) {
     return id;
 }
 
-export function commitDeltas(): Delta[] {
-    const changes: Delta[] = [];
+export function commitPatches(): Patch[] {
+    const changes: Patch[] = [];
 
     for (const target of modified) {
         const targetProxy = objectToProxy.get(target);
-        let delta;
+
+        let patch;
         if (targetProxy instanceof DimmerMap || targetProxy instanceof DimmerSet) {
-            delta = targetProxy.commitDelta();
+            patch = targetProxy.commitPatch();
         } else {
             //TODO: objects and arrays do the same thing, but if we wanted to do differencing of arrays we could do it here
-            //      however it may best to convert arrays deltas to be Maps that record only what's changed in the proxy 
+            //      however it may best to convert arrays patches to be Maps that record only what's changed in the proxy 
             //      rather than copying the whole thing.
-            delta = objectToCurrentDelta.get(target)!;
-            objectToCurrentDelta.delete(target);
+            patch = objectToCurrentPatch.get(target)!;
+            objectToCurrentPatch.delete(target);
         }
-        changes.push(delta);
+        changes.push(patch);
     }
 
     return changes;

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitDeltas, createContext, createRecordingProxy, Dimmer, getCurrentDelta, makeDeltaRecorder, modified, recordDeltas, resetEnvironment } from './dimmer';
-import { createReverseDelta } from './history';
-import { Delta, ObjectDelta } from './types';
+import { clearContext, commitPatches, createContext, createRecordingProxy, Dimmer, getCurrentPatch, makePatchRecorder, modified, recordPatches, resetEnvironment } from './dimmer';
+import { createReversePatch } from './history';
+import { Patch, ObjectPatch } from './types';
 
 describe('Dimmer', () => {
 
@@ -35,13 +35,13 @@ describe('Dimmer', () => {
             proxy.prop0 = 'foo';
             expect(proxy.prop0).toEqual('foo');
             //console.log('getPatch(target) :>> ', getPatch(target));
-            expect(getCurrentDelta(target)!.get('prop0')).toEqual('hello');
+            expect(getCurrentPatch(target)!.get('prop0')).toEqual('hello');
 
             expect('prop1' in proxy).toEqual(true);
             expect(Reflect.ownKeys(target)).toContain('prop0');
 
             expect(proxy).toHaveProperty('prop0');
-            expect(getCurrentDelta(target)!.has('prop0')).toBeTruthy();
+            expect(getCurrentPatch(target)!.has('prop0')).toBeTruthy();
         });
     });
 
@@ -55,9 +55,9 @@ describe('Dimmer', () => {
             clearContext();
         });
 
-        describe(`${commitDeltas.name}`, () => {
+        describe(`${commitPatches.name}`, () => {
             it('produces no changes when there are no changes', () => {
-                const previouses = commitDeltas();
+                const previouses = commitPatches();
                 expect(previouses).toEqual([]);
             });
 
@@ -68,12 +68,12 @@ describe('Dimmer', () => {
 
                 const proxy = createRecordingProxy(target);
 
-                const initialChanges = commitDeltas();
+                const initialChanges = commitPatches();
                 expect(initialChanges).toHaveLength(0);
                 expect(modified.size).toEqual(0);
 
                 proxy.name = 'Steve';
-                const changes = commitDeltas();
+                const changes = commitPatches();
                 expect(changes).toHaveLength(1);
                 expect(modified.size).toEqual(1);
 
@@ -97,22 +97,24 @@ describe('Dimmer', () => {
                 } = {};
 
                 const proxy = createRecordingProxy(target);
-                commitDeltas();
+                console.log(proxy);
+                commitPatches();
                 proxy.referencedObject = otherObject;
 
-                const deltas = commitDeltas();
-
-                expect(deltas).toHaveLength(1);
+                const patches = commitPatches();
+                console.log(patches);
+                expect(patches).toHaveLength(1);
 
                 expect(target.referencedObject).toEqual(otherObject);
-                const patchFromChange = createReverseDelta(deltas[0]) as ObjectDelta<typeof target>;
+                const patchFromChange = createReversePatch(patches[0]) as ObjectPatch<typeof target>;
 
+                console.log(patchFromChange);
                 expect(patchFromChange.get('referencedObject')).toEqual(otherObject);
             });
         });
     });
 
-    describe(`${recordDeltas.name}()`, () => {
+    describe(`${recordPatches.name}()`, () => {
         beforeEach(() => {
             resetEnvironment();
         });
@@ -125,24 +127,24 @@ describe('Dimmer', () => {
                 state.name = newName;
             };
 
-            const changes = recordDeltas(changeName, state, 'Walker');
+            const changes = recordPatches(changeName, state, 'Walker');
 
             expect(state).toBe(referenceToOriginalNonProxyState);
             expect(state.name).toEqual('Walker');
 
             expect(Dimmer.currentContext).toBeUndefined();
             expect(changes).toHaveLength(1);
-            expect((changes[0] as ObjectDelta<State>).get('name')).toEqual('Jones');
+            expect((changes[0] as ObjectPatch<State>).get('name')).toEqual('Jones');
         });
 
         it('records changes over multiple calls', () => {
             const state = { name: 'Jones', age: 1231 };
             type State = typeof state;
-            const changeName = makeDeltaRecorder((state: State, newName: string) => {
+            const changeName = makePatchRecorder((state: State, newName: string) => {
                 state.name = newName;
             });
 
-            const changeHistory: Array<Array<Delta>> = [];
+            const changeHistory: Array<Array<Patch>> = [];
 
             changeHistory.push(changeName(state, 'Walker'));
             changeHistory.push(changeName(state, 'Texas'));

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { deltaToTarget, modified, objectToCurrentDelta, proxify, } from './dimmer';
-import { ORIGINAL, PROXY, ObjectDelta } from './types';
+import { patchToTarget, modified, objectToCurrentPatch, proxify, } from './dimmer';
+import { ORIGINAL, PROXY, ObjectPatch } from './types';
 
 export const objectProxyHandler: ProxyHandler<any> = {
     get(target: any, propertyKey: PropertyKey, receiver?: any) {
@@ -21,26 +21,26 @@ export const objectProxyHandler: ProxyHandler<any> = {
     },
 
     set: function (target: any, propertyKey: PropertyKey, value: any/*, _receiver?: any*/) {
-        let delta = objectToCurrentDelta.get(target) as ObjectDelta<any> | undefined;
-        if (!delta) {
-            delta = createObjectDelta(target);
-            objectToCurrentDelta.set(target, delta);
+        let patch = objectToCurrentPatch.get(target) as ObjectPatch<any> | undefined;
+        if (!patch) {
+            patch = createObjectPatch(target);
+            objectToCurrentPatch.set(target, patch);
         }
-        if (!delta.has(propertyKey)) {
+        if (!patch.has(propertyKey)) {
             modified.add(target);
 
             const currentValue = target[propertyKey];
-            delta.set(propertyKey, currentValue || undefined);
+            patch.set(propertyKey, currentValue || undefined);
         }
 
         return Reflect.set(target, propertyKey, value);
     },
 };
 
-export function createObjectDelta<T>(target: T): ObjectDelta<T> {
-    const delta = new Map<keyof T, T[keyof T]>();
+export function createObjectPatch<T>(target: T): ObjectPatch<T> {
+    const patch = new Map<keyof T, T[keyof T]>();
 
-    // const delta = {} as ObjectDelta<T>;
-    deltaToTarget.set(delta, target);
-    return delta;
+    // const patch = {} as ObjectPatch<T>;
+    patchToTarget.set(patch, target);
+    return patch;
 }

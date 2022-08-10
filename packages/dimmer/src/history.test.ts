@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitDeltas, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordDeltas, resetEnvironment } from './dimmer';
+import { clearContext, commitPatches, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './dimmer';
 
-import { findAllDeltasInHistory, removeDimmerMetadata, cloneDeep, undoDelta, createReverseDelta } from './history';
-import { DIMMER_ID, Delta, NO_ENTRY } from './types';
+import { findAllPatchesInHistory, removeDimmerMetadata, cloneDeep, undoPatch, createReversePatch } from './history';
+import { DIMMER_ID, Patch, NO_ENTRY } from './types';
 
 describe('History', () => {
     interface StringNode {
@@ -38,42 +38,42 @@ describe('History', () => {
 
         it('records history with child references', () => {
             const state: { root?: Node } = createRecordingProxy({});
-            const history: Delta[][] = [];
+            const history: Patch[][] = [];
 
-            history.push(recordDeltas((state) => state.root = createNode(0), state));  //state change
-            history.push(recordDeltas((state) => state.root!.child = createNode(2), state)); // root change
-            history.push(recordDeltas((state) => state.root!.child = createNode(3), state)); // root change
+            history.push(recordPatches((state) => state.root = createNode(0), state));  //state change
+            history.push(recordPatches((state) => state.root!.child = createNode(2), state)); // root change
+            history.push(recordPatches((state) => state.root!.child = createNode(3), state)); // root change
 
-            const stateDeltas = findAllDeltasInHistory(history, state);
-            expect(stateDeltas[0].get('root')).toBeUndefined();
-            expect(stateDeltas).toHaveLength(1);
+            const statePatches = findAllPatchesInHistory(history, state);
+            expect(statePatches[0].get('root')).toBeUndefined();
+            expect(statePatches).toHaveLength(1);
 
-            const rootDeltas = findAllDeltasInHistory(history, state.root);
+            const rootPatches = findAllPatchesInHistory(history, state.root);
 
-            expect(rootDeltas).toHaveLength(2);
+            expect(rootPatches).toHaveLength(2);
 
-            expect(rootDeltas[0]).toEqual(new Map([['child', undefined]]));
-            expect(rootDeltas[1]).toEqual(new Map([['child', { data: 2, child: undefined }]]));
-            // expect(rootDeltas[1]).toEqual({ child: { data: 2, child: undefined } });
+            expect(rootPatches[0]).toEqual(new Map([['child', undefined]]));
+            expect(rootPatches[1]).toEqual(new Map([['child', { data: 2, child: undefined }]]));
+            // expect(rootPatches[1]).toEqual({ child: { data: 2, child: undefined } });
         });
 
         it('records history with circular references', () => {
             const state = createRecordingProxy({ root: createNode(0) });
-            const history: Delta[][] = [];
+            const history: Patch[][] = [];
 
-            history.push(recordDeltas((state) => state.root!.child = state.root, state)); // root change
-            history.push(recordDeltas((state) => state.root!.child!.child = state.root, state)); // root change
+            history.push(recordPatches((state) => state.root!.child = state.root, state)); // root change
+            history.push(recordPatches((state) => state.root!.child!.child = state.root, state)); // root change
 
-            const rootDeltas = findAllDeltasInHistory(history, state.root);
-            expect(rootDeltas).toHaveLength(2);
+            const rootPatches = findAllPatchesInHistory(history, state.root);
+            expect(rootPatches).toHaveLength(2);
 
-            expect(rootDeltas[0]).toEqual(new Map([['child', undefined]]));
-            expect(rootDeltas[1].get('child')).toBe(state.root);
+            expect(rootPatches[0]).toEqual(new Map([['child', undefined]]));
+            expect(rootPatches[1].get('child')).toBe(state.root);
         });
 
     });
 
-    describe(`${undoDelta.name}()`, () => {
+    describe(`${undoPatch.name}()`, () => {
         describe('proxy behavior', () => {
             beforeEach(() => {
                 createContext();
@@ -88,7 +88,7 @@ describe('History', () => {
                     name: '0'
                 };
                 const targetProxy = createRecordingProxy(target);
-                const changes: Delta[][] = [];
+                const changes: Patch[][] = [];
 
                 clearContext();
                 const changeCount = 10;
@@ -96,7 +96,7 @@ describe('History', () => {
                 for (let i = 0; i < changeCount; i++) {
                     createContext(); {
                         targetProxy.name = i.toString();
-                        const newPatches = commitDeltas();
+                        const newPatches = commitPatches();
                         changes.push(newPatches);
                     }
                     clearContext();
@@ -104,7 +104,7 @@ describe('History', () => {
 
                 for (let i = changes.length - 1; i >= 0; i--) {
                     expect(target.name).toEqual(i.toString());
-                    changes[i].forEach(undoDelta);
+                    changes[i].forEach(undoPatch);
                 }
 
                 expect(target.name).toEqual('0');
@@ -115,67 +115,67 @@ describe('History', () => {
             it('undoes changes to maps', () => {
                 const target = new Map<string, number>();
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.set('foo', 123), target));
-                history.push(recordDeltas(target => target.set('foo', 821), target));
-                history.push(recordDeltas(target => target.delete('foo'), target));
-                history.push(recordDeltas(target => target.set('foo', 1231), target));
+                history.push(recordPatches(target => target.set('foo', 123), target));
+                history.push(recordPatches(target => target.set('foo', 821), target));
+                history.push(recordPatches(target => target.delete('foo'), target));
+                history.push(recordPatches(target => target.set('foo', 1231), target));
 
-                const deltas = findAllDeltasInHistory(history, target);
+                const patches = findAllPatchesInHistory(history, target);
 
-                expect(deltas).toHaveLength(4);
+                expect(patches).toHaveLength(4);
 
-                expect(deltas[0].get('foo')).toEqual(NO_ENTRY);
-                expect(deltas[1].get('foo')).toEqual(123);
-                expect(deltas[2].get('foo')).toEqual(821);
-                expect(deltas[3].get('foo')).toEqual(NO_ENTRY);
+                expect(patches[0].get('foo')).toEqual(NO_ENTRY);
+                expect(patches[1].get('foo')).toEqual(123);
+                expect(patches[2].get('foo')).toEqual(821);
+                expect(patches[3].get('foo')).toEqual(NO_ENTRY);
 
                 expect(target.get('foo')).toEqual(1231);
-                undoDelta(deltas[3]);
+                undoPatch(patches[3]);
                 expect(target.has('foo')).toBeFalsy();
-                undoDelta(deltas[2]);
+                undoPatch(patches[2]);
                 expect(target.get('foo')).toEqual(821);
-                undoDelta(deltas[1]);
+                undoPatch(patches[1]);
                 expect(target.get('foo')).toEqual(123);
-                undoDelta(deltas[0]);
+                undoPatch(patches[0]);
                 expect(target.has('foo')).toBeFalsy();
             });
 
             it('undoes changes to sets', () => {
                 const target = new Set<string>();
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.add('foo'), target));
-                history.push(recordDeltas(target => target.add('bar'), target));
-                history.push(recordDeltas(target => target.delete('foo'), target));
-                history.push(recordDeltas(target => target.add('foo'), target));
+                history.push(recordPatches(target => target.add('foo'), target));
+                history.push(recordPatches(target => target.add('bar'), target));
+                history.push(recordPatches(target => target.delete('foo'), target));
+                history.push(recordPatches(target => target.add('foo'), target));
 
-                const deltas = findAllDeltasInHistory(history, target);
+                const patches = findAllPatchesInHistory(history, target);
 
-                expect(deltas).toHaveLength(4);
+                expect(patches).toHaveLength(4);
 
-                expect(deltas[0].get('foo')).toEqual(false);
+                expect(patches[0].get('foo')).toEqual(false);
 
-                expect(deltas[1].get('foo')).toEqual(undefined); //No change should exist for 'foo'                
-                expect(deltas[1].get('bar')).toEqual(false);
+                expect(patches[1].get('foo')).toEqual(undefined); //No change should exist for 'foo'                
+                expect(patches[1].get('bar')).toEqual(false);
 
-                expect(deltas[2].get('foo')).toEqual(true);
-                expect(deltas[3].get('foo')).toEqual(false);
+                expect(patches[2].get('foo')).toEqual(true);
+                expect(patches[3].get('foo')).toEqual(false);
 
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(true);
-                undoDelta(deltas[3]);
+                undoPatch(patches[3]);
                 expect(target.has('foo')).toEqual(false);
                 expect(target.has('bar')).toEqual(true);
-                undoDelta(deltas[2]);
+                undoPatch(patches[2]);
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(true);
-                undoDelta(deltas[1]);
+                undoPatch(patches[1]);
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(false);
-                undoDelta(deltas[0]);
+                undoPatch(patches[0]);
                 expect(target.has('foo')).toEqual(false);
                 expect(target.has('bar')).toEqual(false);
             });
@@ -183,39 +183,39 @@ describe('History', () => {
             it('undoes changes to arrays', () => {
                 const target: string[] = [];
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.push('foo'), target));
-                history.push(recordDeltas(target => target.push('bar'), target));
-                history.push(recordDeltas(target => { target.push('baz'); target.push('buzz'); }, target));
-                history.push(recordDeltas(target => target.splice(1, 1), target));
-                history.push(recordDeltas(target => target[1] = 'hello', target));
+                history.push(recordPatches(target => target.push('foo'), target));
+                history.push(recordPatches(target => target.push('bar'), target));
+                history.push(recordPatches(target => { target.push('baz'); target.push('buzz'); }, target));
+                history.push(recordPatches(target => target.splice(1, 1), target));
+                history.push(recordPatches(target => target[1] = 'hello', target));
 
-                const deltas = findAllDeltasInHistory(history, target);
+                const patches = findAllPatchesInHistory(history, target);
 
-                expect(deltas).toHaveLength(5);
+                expect(patches).toHaveLength(5);
 
-                expect(deltas[0]).toEqual([]);
-                expect(deltas[1]).toEqual(['foo']);
-                expect(deltas[2]).toEqual(['foo', 'bar']);
-                expect(deltas[3]).toEqual(['foo', 'bar', 'baz', 'buzz']);
+                expect(patches[0]).toEqual([]);
+                expect(patches[1]).toEqual(['foo']);
+                expect(patches[2]).toEqual(['foo', 'bar']);
+                expect(patches[3]).toEqual(['foo', 'bar', 'baz', 'buzz']);
 
-                expect(deltas[4]).toEqual(['foo', 'baz', 'buzz']);
+                expect(patches[4]).toEqual(['foo', 'baz', 'buzz']);
 
                 expect(target).toEqual(['foo', 'hello', 'buzz']);
-                undoDelta(deltas[4]);
+                undoPatch(patches[4]);
 
                 expect(target).toEqual(['foo', 'baz', 'buzz']);
-                undoDelta(deltas[3]);
+                undoPatch(patches[3]);
 
                 expect(target).toEqual(['foo', 'bar', 'baz', 'buzz']);
-                undoDelta(deltas[2]);
+                undoPatch(patches[2]);
 
                 expect(target).toEqual(['foo', 'bar']);
-                undoDelta(deltas[1]);
+                undoPatch(patches[1]);
 
                 expect(target).toEqual(['foo']);
-                undoDelta(deltas[0]);
+                undoPatch(patches[0]);
 
                 expect(target).toEqual([]);
             });
@@ -230,23 +230,23 @@ describe('History', () => {
                 const keyProxy = createRecordingProxy(key);
                 const valueProxy = createRecordingProxy(value);
 
-                recordDeltas(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
+                recordPatches(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
 
                 expect(isProxy(originalState.map)).toEqual(false);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(state => state.map.set(key, value), originalState));
+                history.push(recordPatches(state => state.map.set(key, value), originalState));
                 expect(originalState.map.size).toEqual(1);
 
                 //Map should still be indexed by the proxy object.
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                undoDelta(history[0][0]);
+                undoPatch(history[0][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
@@ -263,21 +263,21 @@ describe('History', () => {
                 const keyProxy = createRecordingProxy(key);
                 const valueProxy = createRecordingProxy(value);
 
-                recordDeltas(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
+                recordPatches(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
 
                 expect(isProxy(originalState.map)).toEqual(false);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(state => state.map.set(key, value), originalState));
+                history.push(recordPatches(state => state.map.set(key, value), originalState));
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                history.push(recordDeltas(state => {
+                history.push(recordPatches(state => {
                     state.map.set(keyProxy, value);
                     state.map.delete(key);
                 }, originalState));
@@ -287,12 +287,12 @@ describe('History', () => {
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBeUndefined();
 
-                undoDelta(history[1][0]);
+                undoPatch(history[1][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                undoDelta(history[0][0]);
+                undoPatch(history[0][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
@@ -301,179 +301,179 @@ describe('History', () => {
             });
         });
 
-        describe(`${createReverseDelta.name}()`, () => {
+        describe(`${createReversePatch.name}()`, () => {
             it('will reverse changes to objects', () => {
                 const target: { prop0?: string } = {};
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.prop0 = 'hello', target));
-                history.push(recordDeltas(target => target.prop0 = undefined, target));
-                history.push(recordDeltas(target => target.prop0 = 'again', target));
+                history.push(recordPatches(target => target.prop0 = 'hello', target));
+                history.push(recordPatches(target => target.prop0 = undefined, target));
+                history.push(recordPatches(target => target.prop0 = 'again', target));
 
-                const deltas = findAllDeltasInHistory(history, target);
-                expect(deltas).toHaveLength(3);
+                const patches = findAllPatchesInHistory(history, target);
+                expect(patches).toHaveLength(3);
 
-                const reverseDeltas: Delta[] = [];
+                const reversePatches: Patch[] = [];
 
                 expect(target).toEqual({ prop0: 'again' });
-                reverseDeltas.unshift(createReverseDelta(deltas[2]));
-                undoDelta(deltas[2]);
+                reversePatches.unshift(createReversePatch(patches[2]));
+                undoPatch(patches[2]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[1]));
-                undoDelta(deltas[1]);
+                reversePatches.unshift(createReversePatch(patches[1]));
+                undoPatch(patches[1]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[0]));
-                undoDelta(deltas[0]);
+                reversePatches.unshift(createReversePatch(patches[0]));
+                undoPatch(patches[0]);
 
                 expect(target).toEqual({});
 
-                undoDelta(reverseDeltas[0]);
+                undoPatch(reversePatches[0]);
                 expect(target).toEqual({ prop0: 'hello' });
 
-                undoDelta(reverseDeltas[1]);
+                undoPatch(reversePatches[1]);
                 expect(target).toEqual({ prop0: undefined });
 
-                undoDelta(reverseDeltas[2]);
+                undoPatch(reversePatches[2]);
                 expect(target).toEqual({ prop0: 'again' });
             });
 
             it('Will reverse changes to maps', () => {
                 const target = new Map<string, number>();
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.set('foo', 123), target));
-                history.push(recordDeltas(target => target.set('bar', 821), target));
-                history.push(recordDeltas(target => target.delete('foo'), target));
-                history.push(recordDeltas(target => target.set('foo', 567), target));
+                history.push(recordPatches(target => target.set('foo', 123), target));
+                history.push(recordPatches(target => target.set('bar', 821), target));
+                history.push(recordPatches(target => target.delete('foo'), target));
+                history.push(recordPatches(target => target.set('foo', 567), target));
 
-                const deltas = findAllDeltasInHistory(history, target);
-                expect(deltas).toHaveLength(4);
+                const patches = findAllPatchesInHistory(history, target);
+                expect(patches).toHaveLength(4);
 
-                const reverseDeltas: Delta[] = [];
+                const reversePatches: Patch[] = [];
 
                 expect(target).toEqual(new Map([['foo', 567], ['bar', 821]]));
 
-                reverseDeltas.unshift(createReverseDelta(deltas[3]));
-                undoDelta(deltas[3]);
+                reversePatches.unshift(createReversePatch(patches[3]));
+                undoPatch(patches[3]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[2]));
-                undoDelta(deltas[2]);
+                reversePatches.unshift(createReversePatch(patches[2]));
+                undoPatch(patches[2]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[1]));
-                undoDelta(deltas[1]);
+                reversePatches.unshift(createReversePatch(patches[1]));
+                undoPatch(patches[1]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[0]));
-                undoDelta(deltas[0]);
+                reversePatches.unshift(createReversePatch(patches[0]));
+                undoPatch(patches[0]);
 
                 expect(target).toEqual(new Map());
 
-                undoDelta(reverseDeltas[0]);
+                undoPatch(reversePatches[0]);
                 expect(target).toEqual(new Map([['foo', 123]]));
 
-                undoDelta(reverseDeltas[1]);
+                undoPatch(reversePatches[1]);
                 expect(target).toEqual(new Map([['foo', 123], ['bar', 821]]));
 
-                undoDelta(reverseDeltas[2]);
+                undoPatch(reversePatches[2]);
                 expect(target).toEqual(new Map([['bar', 821]]));
 
-                undoDelta(reverseDeltas[3]);
+                undoPatch(reversePatches[3]);
                 expect(target).toEqual(new Map([['foo', 567], ['bar', 821]]));
             });
 
             it('Will reverse changes to sets', () => {
                 const target = new Set<string>();
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.add('foo'), target));
-                history.push(recordDeltas(target => target.add('bar'), target));
-                history.push(recordDeltas(target => target.delete('foo'), target));
-                history.push(recordDeltas(target => target.add('foo'), target));
+                history.push(recordPatches(target => target.add('foo'), target));
+                history.push(recordPatches(target => target.add('bar'), target));
+                history.push(recordPatches(target => target.delete('foo'), target));
+                history.push(recordPatches(target => target.add('foo'), target));
 
-                const deltas = findAllDeltasInHistory(history, target);
+                const patches = findAllPatchesInHistory(history, target);
 
-                expect(deltas).toHaveLength(4);
+                expect(patches).toHaveLength(4);
 
-                const reverseDeltas: Delta[] = [];
+                const reversePatches: Patch[] = [];
 
                 expect(target).toEqual(new Set(['foo', 'bar']));
 
-                reverseDeltas.unshift(createReverseDelta(deltas[3]));
-                undoDelta(deltas[3]);
+                reversePatches.unshift(createReversePatch(patches[3]));
+                undoPatch(patches[3]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[2]));
-                undoDelta(deltas[2]);
+                reversePatches.unshift(createReversePatch(patches[2]));
+                undoPatch(patches[2]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[1]));
-                undoDelta(deltas[1]);
+                reversePatches.unshift(createReversePatch(patches[1]));
+                undoPatch(patches[1]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[0]));
-                undoDelta(deltas[0]);
+                reversePatches.unshift(createReversePatch(patches[0]));
+                undoPatch(patches[0]);
 
                 expect(target).toEqual(new Set());
 
-                undoDelta(reverseDeltas[0]);
+                undoPatch(reversePatches[0]);
                 expect(target).toEqual(new Set(['foo']));
 
-                undoDelta(reverseDeltas[1]);
+                undoPatch(reversePatches[1]);
                 expect(target).toEqual(new Set(['foo', 'bar']));
 
-                undoDelta(reverseDeltas[2]);
+                undoPatch(reversePatches[2]);
                 expect(target).toEqual(new Set(['bar']));
 
-                undoDelta(reverseDeltas[3]);
+                undoPatch(reversePatches[3]);
                 expect(target).toEqual(new Set(['foo', 'bar']));
             });
 
             it('Will reverse changes to arrays', () => {
                 const target: string[] = [];
 
-                const history: Delta[][] = [];
+                const history: Patch[][] = [];
 
-                history.push(recordDeltas(target => target.push('foo'), target));
-                history.push(recordDeltas(target => target.push('bar'), target));
-                history.push(recordDeltas(target => { target.push('baz'); target.push('buzz'); }, target));
-                history.push(recordDeltas(target => target.splice(1, 1), target));
-                history.push(recordDeltas(target => target[1] = 'hello', target));
+                history.push(recordPatches(target => target.push('foo'), target));
+                history.push(recordPatches(target => target.push('bar'), target));
+                history.push(recordPatches(target => { target.push('baz'); target.push('buzz'); }, target));
+                history.push(recordPatches(target => target.splice(1, 1), target));
+                history.push(recordPatches(target => target[1] = 'hello', target));
 
-                const deltas = findAllDeltasInHistory(history, target);
+                const patches = findAllPatchesInHistory(history, target);
 
-                expect(deltas).toHaveLength(5);
+                expect(patches).toHaveLength(5);
 
-                const reverseDeltas: Delta[] = [];
+                const reversePatches: Patch[] = [];
 
-                reverseDeltas.unshift(createReverseDelta(deltas[4]));
-                undoDelta(deltas[4]);
+                reversePatches.unshift(createReversePatch(patches[4]));
+                undoPatch(patches[4]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[3]));
-                undoDelta(deltas[3]);
+                reversePatches.unshift(createReversePatch(patches[3]));
+                undoPatch(patches[3]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[2]));
-                undoDelta(deltas[2]);
+                reversePatches.unshift(createReversePatch(patches[2]));
+                undoPatch(patches[2]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[1]));
-                undoDelta(deltas[1]);
+                reversePatches.unshift(createReversePatch(patches[1]));
+                undoPatch(patches[1]);
 
-                reverseDeltas.unshift(createReverseDelta(deltas[0]));
-                undoDelta(deltas[0]);
+                reversePatches.unshift(createReversePatch(patches[0]));
+                undoPatch(patches[0]);
 
                 expect(target).toEqual([]);
 
-                undoDelta(reverseDeltas[0]);
+                undoPatch(reversePatches[0]);
                 expect(target).toEqual(['foo']);
 
-                undoDelta(reverseDeltas[1]);
+                undoPatch(reversePatches[1]);
                 expect(target).toEqual(['foo', 'bar']);
 
-                undoDelta(reverseDeltas[2]);
+                undoPatch(reversePatches[2]);
                 expect(target).toEqual(['foo', 'bar', 'baz', 'buzz']);
 
-                undoDelta(reverseDeltas[3]);
+                undoPatch(reversePatches[3]);
                 expect(target).toEqual(['foo', 'baz', 'buzz']);
 
-                undoDelta(reverseDeltas[4]);
+                undoPatch(reversePatches[4]);
                 expect(target).toEqual(['foo', 'hello', 'buzz']);
             });
         });

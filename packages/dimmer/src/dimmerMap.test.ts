@@ -1,6 +1,6 @@
 
 import { DimmerMap } from './dimmerMap';
-import { clearContext, createRecordingProxy, asOriginal, isProxy, recordDeltas, resetEnvironment, deltaToTarget } from './dimmer';
+import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './dimmer';
 import { NO_ENTRY, ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
@@ -127,7 +127,7 @@ describe('DimmerMap', () => {
                 target.set(keyProxy, 1231);
 
                 const dimmerMap = new DimmerMap<typeof key, number>(target);
-                //dimmerMap.commitDelta();                
+                //dimmerMap.commitPatch();                
 
                 dimmerMap.delete(key);
 
@@ -146,7 +146,7 @@ describe('DimmerMap', () => {
                 target.set(key, 1231);
 
                 const dimmerMap = new DimmerMap<typeof key, number>(target);
-                //dimmerMap.commitDelta();                
+                //dimmerMap.commitPatch();                
 
                 dimmerMap.delete(keyProxy);
 
@@ -330,9 +330,9 @@ describe('DimmerMap', () => {
 
             expect(Reflect.get(Map.prototype, 'size', dimmerMap)).toEqual(1);
 
-            const previous = dimmerMap.commitDelta();
+            const previous = dimmerMap.commitPatch();
 
-            expect(deltaToTarget.get(previous)).toBe(target);
+            expect(patchToTarget.get(previous)).toBe(target);
             expect(dimmerMap.size).toEqual(1);
             expect(Reflect.get(Map.prototype, 'size', dimmerMap)).toEqual(0);
         });
@@ -354,14 +354,14 @@ describe('DimmerMap', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordDeltas((state: State) => state.mapProp.set('fdfd', 100), state));
+            history.push(recordPatches((state: State) => state.mapProp.set('fdfd', 100), state));
             expect((underlyingMap as any)[PROXY]).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingMap);
 
             expect(timeline[0][1]).toEqual(new Map([['fdfd', NO_ENTRY]]));
 
-            history.push(recordDeltas((state: State) => state.mapProp.set('fdfd', 311), state));
+            history.push(recordPatches((state: State) => state.mapProp.set('fdfd', 311), state));
 
             timeline = getObjectTimeline(history, underlyingMap);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', NO_ENTRY]]));
@@ -373,12 +373,12 @@ describe('DimmerMap', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordDeltas((state: State) => state.set('bob', 100), state));
+            history.push(recordPatches((state: State) => state.set('bob', 100), state));
 
             let timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['bob', NO_ENTRY]]));
 
-            history.push(recordDeltas((state: State) => state.set('bob', 100), state));
+            history.push(recordPatches((state: State) => state.set('bob', 100), state));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['bob', NO_ENTRY]]));

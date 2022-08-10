@@ -4,7 +4,7 @@ import Benchmark from 'benchmark';
 
 import { createRecordingProxy, resetEnvironment } from '../dimmer';
 import { suiteOptions } from './benchmarkOptions';
-import { createChangeRecorderFactory, createDeltaTracker, recordAndPublishMutations, subscribe } from '../subscriptions';
+import { createChangeRecorderFactory, createPatchTracker, recordAndPublishMutations, subscribe } from '../subscriptions';
 
 const caseOptions: Benchmark.Options = {
     // minTime: -Infinity,
@@ -40,7 +40,7 @@ const emptyCallback = () => { };
 type StateWithCount = ReturnType<typeof createStateWithCount>;
 {
     resetEnvironment();
-    const deltaTracker = createDeltaTracker();
+    const patchTracker = createPatchTracker();
 
     const state = createStateWithCount();
     const proxy = createRecordingProxy(state);
@@ -48,23 +48,23 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     const personState = createDeepPeopleGraph();
     const personStateProxy = createRecordingProxy(state);
 
-    const deltaTrackerForDeepSubscribe = createDeltaTracker();
+    const patchTrackerForDeepSubscribe = createPatchTracker();
 
     const suite = new Benchmark.Suite('Subscribe', { ...suiteOptions, ...{} });
     suite
         .add('Dimmer', function () {
-            subscribe(deltaTracker, state, dimmerCountSubscriber, () => { });
+            subscribe(patchTracker, state, dimmerCountSubscriber, () => { });
         }, caseOptions)
         .add('Deep subscribe', function () {
-            subscribe(deltaTrackerForDeepSubscribe, personState, state => state.bestFriend!.bestFriend!.bestFriend!.bestFriend!.name, () => { });
+            subscribe(patchTrackerForDeepSubscribe, personState, state => state.bestFriend!.bestFriend!.bestFriend!.bestFriend!.name, () => { });
         }, caseOptions)
         .run();
 }
 
 {
     resetEnvironment();
-    const deltaTracker = createDeltaTracker();
-    const createMutator = createChangeRecorderFactory(deltaTracker, recordAndPublishMutations);
+    const patchTracker = createPatchTracker();
+    const createMutator = createChangeRecorderFactory(patchTracker, recordAndPublishMutations);
     const increment = createMutator((state: StateWithCount, value: number) => {
         state.count += value;
     });
@@ -72,7 +72,7 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     const state = createStateWithCount();
     const proxy = createRecordingProxy(state);
 
-    subscribe(deltaTracker, state, dimmerCountSubscriber, () => { });
+    subscribe(patchTracker, state, dimmerCountSubscriber, () => { });
 
     const suite = new Benchmark.Suite('Trigger', { ...suiteOptions, ...{} });
     suite
@@ -87,16 +87,16 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     const state = createDeepPeopleGraph();
 
     resetEnvironment();
-    const deltaTracker = createDeltaTracker();
-    const createMutator = createChangeRecorderFactory(deltaTracker, recordAndPublishMutations);
+    const patchTracker = createPatchTracker();
+    const createMutator = createChangeRecorderFactory(patchTracker, recordAndPublishMutations);
     const changeName = createMutator((state: Person, value: string) => {
         state.name = value;
     });
 
     const stateProxy = createRecordingProxy(state);
 
-    subscribe(deltaTracker, state, state => state.name, () => { });
-    subscribe(deltaTracker, state, state => state.bestFriend!.bestFriend!.bestFriend!.bestFriend!.name, () => { });
+    subscribe(patchTracker, state, state => state.name, () => { });
+    subscribe(patchTracker, state, state => state.bestFriend!.bestFriend!.bestFriend!.bestFriend!.name, () => { });
     const deepPerson = stateProxy.bestFriend!.bestFriend!.bestFriend!.bestFriend!;
 
     const suite = new Benchmark.Suite('Complicated state trigger', { ...suiteOptions, ...{} });
