@@ -63,7 +63,7 @@ Runs the increment function and records any object mutation into a list of `Map<
 
 ### Reverse a patch to go the opposite direction in history
 ```typescript
-const reversePatch = createReversePatch(changes[0]);
+const reversePatch = createReversePatch(patches[0]);
 // reverse patch: {"counter" => 1}
 ```
 
@@ -82,7 +82,7 @@ applyPatch(backwardsPatch);
 
 //redo
 applyPatch(forwardPatch);
-//state equals {counter: 0}
+//state equals {counter: 1}
 
 ```
 
