@@ -25,6 +25,7 @@ describe('History', () => {
         data: number;
         child?: Node;
     }
+    
     function createNode(data: number, child?: Node): Node {
         return { data, child };
     }

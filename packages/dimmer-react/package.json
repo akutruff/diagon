@@ -8,6 +8,14 @@
     "url": "git+https://github.com/akutruff/dimmer"
   },
   "license": "MIT",
+  "keywords": [
+    "react",
+    "state",
+    "manager",
+    "management",
+    "store",
+    "mutable"
+  ],
   "main": "dist/index",
   "types": "dist/index",
   "files": [
