@@ -1,4 +1,4 @@
-export { asOriginal, clearContext, createContext, createRecordingProxy, currentContext, Dimmer, doNotTrack, getCurrentDelta, isProxy, makeDeltaRecorder, recordDeltas, resetEnvironment, tryGetProxy } from './dimmer';
+export { asOriginal, clearContext, createContext, createRecordingProxy, ensureProxy, currentContext, Dimmer, doNotTrack, getCurrentDelta, isProxy, makeDeltaRecorder, recordDeltas, resetEnvironment, tryGetProxy } from './dimmer';
 export { DimmerMap } from './dimmerMap';
 export { DimmerSet } from './dimmerSet';
 export * from './generics';

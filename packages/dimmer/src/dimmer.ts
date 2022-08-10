@@ -81,6 +81,10 @@ export function recordDeltas<TState extends object, TArgs extends AnyArray, R>(m
     }
 }
 
+export function ensureProxy<TState extends object>(state: TState) {
+    return tryGetProxy(state) || createRecordingProxy(state);
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function createRecordingProxy<T extends object>(target: T): T {
     if (isProxy(target)) {
