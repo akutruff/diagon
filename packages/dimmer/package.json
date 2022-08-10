@@ -1,6 +1,6 @@
 {
   "name": "@akutruff/dimmer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Mutable state management for object graphs and React",
   "homepage": "https://github.com/akutruff/dimmer",
   "repository": {
@@ -21,8 +21,7 @@
     "test": "jest",
     "test:ci": "CI=true jest"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@jest/types": "~28.1.3",
     "@types/jest": "~28.1.6",
