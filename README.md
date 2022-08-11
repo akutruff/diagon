@@ -11,7 +11,8 @@ State-management designed to minimize renders while staying out of your way and 
 npm install @akutruff/dimmer @akutruff/dimmer-react # core and react bindings
 ```
 
-Full React [example](apps/cra) with a [store](apps/cra/src/app/store.ts) and [components](apps/cra/src/App.tsx)
+
+Full React demo [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/master/apps/cra).
 
 #### Features
 
@@ -39,7 +40,9 @@ const patches = recordPatches(state => state.counter += 1, state);
 // patches equals: [{"counter" => 0}]
 ```
 
-The above runs the increment function and records any object mutation into a list of `Map<>` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
+Runs the increment function and records any object mutation into a list of `Map<>` objects containing the **original value** of each property.  
+
+These patches allows you to rewind and undo changes by calling `applyPatch()`.
 
 ## Deep Object Hierarchies
 ```typescript
@@ -61,7 +64,7 @@ getPatchTarget(patches[1]) // will equal fred
 
 ```
 
-Runs the increment function and records any object mutation into a list of `Map<>` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
+Runs the increment function and records any object mutation into a list of `Patch` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
 
 ### Reverse a patch to go the opposite direction in history
 ```typescript
@@ -72,11 +75,10 @@ const reversePatch = createReversePatch(patches[0]);
 ## Undo / Redo:
 ```typescript
 const state = { counter: 0 };
-const patches = recordPatches(state => state.counter += 1, state);
+const [ backwardsPatch ] = recordPatches(state => state.counter += 1, state);
 //state equals {counter: 1}
 
-const backwardsPatch = patches[0];
-const forwardPatch = createReversePatch(patches[0]);
+const forwardPatch = createReversePatch(backwardsPatch);
 
 //undo
 applyPatch(backwardsPatch);
@@ -86,14 +88,6 @@ applyPatch(backwardsPatch);
 applyPatch(forwardPatch);
 //state equals {counter: 1}
 
-```
-
-```typescript
-import recordPatches from '@akutruff/dimmer'
-
-const state = { counter: 0, otherCounter: 0 };
-const patches = recordPatches(state => state.counter += 1, state);
-// patches equals: [{"counter" => 0}]
 ```
 
 ## The Recording Proxy
@@ -198,15 +192,15 @@ const App: FC = () => {
   );
 };
 ```
-The above app is a simple counter that demonstrates the typical pattern for all data.  
+Shows the typical pattern for subscribing to and mutating data while isolating the rendering behavior to just the affected data.  Uses `React.memo` to ensure complete isolation.
 
-## useRootState()
+## `useRootState()`
 
 Accesses the topmost state that you gave to the `PatchTrackerContext.Provider` via `usePatchTrackerContextValue`. 
 
 It returns an untyped value, so it is a good idea to have a simple wrapper function around the hook that casts to your root type.
 
-## useSnaphot()
+## `useSnaphot()` and Selectors
 
 ```typescript
 const [name, age] = useSnapshot(person, person => [person.name, person.age]);
@@ -220,7 +214,7 @@ The selector function is special.  When your component is mounted, this function
 
 Also, there is an optional third parameter that allows you to pass a dependency list that will trigger a re-render and resubscribe to the object tree.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 
 
-### Deep values
+#### Deep values
 
 ```typescript
 const [name] = useSnapshot(state, state => [state.person.friend.name]);
@@ -236,22 +230,7 @@ Subscribes to all property changes on the person object only.  Will re-render if
 ```typescript
 const [value] = useSnapshot(state, state => [all(state.person).friend.name]);
 ```
-Note that you can also make complicated chains.  In the above, any property change on `state.person` will trigger a re-render as well as the subproperty `friend.name`.
-
-## Arrays index access
-```typescript
-const [name] = useSnapshot(state, state => [state.people[0].name]);
-```
-In the above example, the array indesx is respected.
-
-```typescript
-const NameComponent : FC<{index: number}> = ({index}) => {
-    const state = useAppState();
-    const [name] = useSnapshot(state, state => [state.people[index].name], [index]);
-}
-```
-
-In the above example, the selector depends on an external parameter that is not on the state object.  To make sure it resubscribes, pass in the parameters as a dependency.
+Note that you can also make complicated chains.  Here, any property change on `state.person` will trigger a re-render as well as the subproperty `friend.name`.
 
 ### `elements()`
 ```typescript
@@ -260,9 +239,24 @@ const CollectionComponent : FC = () => {
     const [people] = useSnapshot(state, state => [elements(state.people)]);
 }
 ```
-The above subscribes to the collection as a whole and will re-render if an item is added or removed from the collection.  This should work for arrays, maps, and sets. **Maps and sets may currently have an issue that's being investigated.**
+Subscribes to the collection as a whole and will re-render if an item is added or removed from the collection.  This should work for arrays, maps, and sets. **Maps and sets may currently have an issue that's being investigated.**
 
 Note: if a property inside the `people` array changes, it will **NOT** trigger a re-render of the component.  This is by design.
+
+#### Subscribe to an array index
+```typescript
+const [name] = useSnapshot(state, state => [state.people[0].name]);
+```
+In the above example, the array index is respected.
+
+```typescript
+const NameComponent : FC<{index: number}> = ({index}) => {
+    const state = useAppState();
+    const [name] = useSnapshot(state, state => [state.people[index].name], [index]);
+}
+```
+
+The selector depends on an external parameter that is not on the state object.  To make sure it resubscribes, pass in the parameters as a dependency like in typical react hooks
 
 ### `map_get()`
 
@@ -274,7 +268,7 @@ const CollectionComponent : FC = () => {
 ```
 To subscribe to changes in `Map<>` objects, you need to use the special `map_get` function to observe a particular key.
 
-### useMutator()
+### `useMutator()`
 
 ```tsx
 const state = useAppState();
@@ -292,7 +286,7 @@ return (
 ```
 Allows you to do mutations on your state and record any changes that happen.  No mutations should be done outside the passed in mutator function and if you need to use additional values from your component props, you should add the prop to the optional dependency list as the third argument to `useMutator`.
 
-### useMutatorAsync()
+### `useMutatorAsync()`
 ```tsx
 const state = useAppState();
 
@@ -317,7 +311,7 @@ return (
 );
 
 ```
-To support asynchronous loading and to control when change-recording and prevent re-rendering, you use an async generator function with a passed in state.  At the begining of your mutator, you may modify your state and the rendering will not occur until you either `await` something or your function exits.
+To support asynchronous loading and to control change-recording and as well as re-rendering, you use an async generator function with a passed in state.  At the begining of your mutator, you may modify your state and the rendering will not occur until you either `await` something or your function exits.
 
 When you `await` inside your function, change recording stops at that moment.  When the await returns you may do additional `await` calls, but you must call `yield` prior to modifying your state.  Calling yield will begin change recording, and will again allow for re-rendering.
 
@@ -356,10 +350,31 @@ useEffect(() => loadWords(), []);
 
 ```
 
+# Object proxy control and helpers
 
-## Caveats
+## `isProxy(obj: any): boolean`
 
-#### Object Reference Comparison
+Returns whether `obj` is a reference to a recording proxy or not.
+
+## `tryGetProxy<T>(obj: T): T | undefined`
+
+Returns the current recording proxy for `obj` if one exists.  If `obj` is a reference to a proxy, then `obj` is returned.
+
+## `ensureProxy<T extends object>(obj: T) : T`
+
+If no recording proxy for `obj` exists, then one is created and returned.  If `obj` is a reference to a proxy, then `obj` is returned.
+
+## `asOriginal<T>(obj: T): T`
+
+If the `obj` parameter is a recording proxy, the underlying object being recorded is returned.  If `obj` is not a proxy, then `obj` is returned.
+
+## `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
+
+Returns the object from which the `patch` was calculated.
+
+# Caveats
+
+## Object Reference Comparison
 Be weary of object reference comparisons as you may be trying to compare an original object with its proxy or vice versa.
 
 :x: `myObject === otherObject //either object could be a proxy!` 

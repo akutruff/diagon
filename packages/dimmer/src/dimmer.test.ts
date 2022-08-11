@@ -97,7 +97,6 @@ describe('Dimmer', () => {
                 } = {};
 
                 const proxy = createRecordingProxy(target);
-                console.log(proxy);
                 commitPatches();
                 proxy.referencedObject = otherObject;
 

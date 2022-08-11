@@ -81,8 +81,8 @@ export function recordPatches<TState extends object, TArgs extends AnyArray, R>(
     }
 }
 
-export function ensureProxy<TState extends object>(state: TState) {
-    return tryGetProxy(state) || createRecordingProxy(state);
+export function ensureProxy<T extends object>(obj: T): T {
+    return tryGetProxy(obj) || createRecordingProxy(obj);
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
