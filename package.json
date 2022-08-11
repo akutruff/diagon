@@ -1,6 +1,5 @@
 {
   "name": "ts-monorepo",
-  "version": "0.4.0",
   "description": "Template for setting up a TypeScript monorepo",
   "private": true,
   "workspaces": [
@@ -12,8 +11,7 @@
     "clean": "pnpm run -r clean",
     "build": "pnpm run -r build",
     "test": "pnpm run -r test",
-    "lint": "eslint --ext js,ts,tsx .",
-    "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
+    "lint": "eslint --ext js,ts,tsx ."
   },
   "devDependencies": {
     "doctoc": "~2.2.0",

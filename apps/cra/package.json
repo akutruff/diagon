@@ -4,8 +4,8 @@
   "private": true,
   "version": "1.0.0",
   "dependencies": {
-    "@akutruff/dimmer": "*",
-    "@akutruff/dimmer-react": "*",
+    "@akutruff/dimmer": "^0.4.0",
+    "@akutruff/dimmer-react": "^0.4.0",
     "react": "~18.2.0",
     "react-dom": "~18.2.0"
   },
@@ -31,8 +31,7 @@
     "clean": "rimraf dist",
     "start": "cross-env SKIP_PREFLIGHT_CHECK=true craco start",
     "build": "cross-env SKIP_PREFLIGHT_CHECK=true craco build",
-    "disabled---test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --watchAll=false",
-    "post-update": "echo \"codesandbox preview only, need an update\" && yarn upgrade --latest"
+    "disabled---test": "cross-env SKIP_PREFLIGHT_CHECK=true craco test --watchAll=false"
   },
   "browserslist": {
     "production": [

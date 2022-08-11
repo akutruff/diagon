@@ -16,8 +16,8 @@ importers:
 
   apps/cra:
     specifiers:
-      '@akutruff/dimmer': '*'
-      '@akutruff/dimmer-react': '*'
+      '@akutruff/dimmer': ^0.4.0
+      '@akutruff/dimmer-react': ^0.4.0
       '@babel/core': ~7.18.0
       '@babel/plugin-syntax-flow': ~7.17.0
       '@babel/plugin-transform-react-jsx': ~7.17.0
