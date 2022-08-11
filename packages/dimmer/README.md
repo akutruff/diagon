@@ -29,7 +29,7 @@ Full React demo [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/mast
 - [ ] React Concurrent Mode (may work but needs testing)
 
 
-Dimmer is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use dimmers hooks to determine when to trigger re-renders.
+Dimmer is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use Dimmer's hooks to determine when to trigger re-renders.
 
 ## Create a store
 
@@ -399,7 +399,7 @@ Untracked objects in your state tree will not return proxies from their child pr
 
 Untracked objects will behave differently with some utility functions which will treat the object as its own "proxy."
 - `tryGetProxy` - will return the untracked object.
-- `ensureProxy` - will return the untracked object. No proxy will be generatoed will continue to work with objects that are untracked.  They will simply 
+- `ensureProxy` - will return the untracked object, and no proxy will be generated.
 
 `isProxy` will return false for untracked objects.
 
