@@ -38,7 +38,7 @@ jobs:
       - name: Upload Demo
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./apps/cra/build
+          path: ./apps/cra/build/
 
   deploy:
     # Add a dependency to the build job
