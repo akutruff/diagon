@@ -21,7 +21,11 @@ export function useAppState() {
 export function createRootState() {
     const people = [
         { id: 0, name: 'Bob', age: 42 },
-        { id: 1, name: 'Alice', age: 40 }
+        { id: 1, name: 'Alice', age: 40 },
+        { id: 2, name: 'James', age: 19 },
+        { id: 3, name: 'Jill', age: 60 },
+        { id: 4, name: 'Raekwon', age: 52 },
+        { id: 5, name: 'Alana', age: 28 },
     ];
 
     return createRecordingProxy({

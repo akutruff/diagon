@@ -61,6 +61,10 @@ export function tryGetProxy<T>(obj: T): T | undefined {
     return objectToProxy.get(obj);
 }
 
+export function areSame(one: any, two: any): boolean {
+    return asOriginal(one) === asOriginal(two);
+}
+
 export function makePatchRecorder<TState extends object, TArgs extends AnyArray, R = unknown>(mutator: Mutator<TState, TArgs, R>) {
     return (state: TState, ...args: TArgs) => recordPatches<TState, TArgs, R>(mutator, state, ...args);
 }

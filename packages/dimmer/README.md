@@ -368,6 +368,12 @@ If no recording proxy for `obj` exists, then one is created and returned.  If `o
 
 If the `obj` parameter is a recording proxy, the underlying object being recorded is returned.  If `obj` is not a proxy, then `obj` is returned.
 
+## `areSame(one: any, two: any): boolean`
+
+Returns if one and two are the same object. If either object is a proxy, the underlying object is used for the comparison.  
+
+Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
+
 ## `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
 
 Returns the object from which the `patch` was calculated.
@@ -375,9 +381,11 @@ Returns the object from which the `patch` was calculated.
 # Caveats
 
 ## Object Reference Comparison
-Be weary of object reference comparisons as you may be trying to compare an original object with its proxy or vice versa.
+Be weary of object reference comparisons as you may be trying to compare an original object with its proxy or vice versa. 
 
 :x: `myObject === otherObject //either object could be a proxy!` 
+
+:white_check_mark: `areSame(myObject, otherObject)` 
 
 :white_check_mark: `asOriginal(myObject) === asOriginal(otherObject)` 
 
