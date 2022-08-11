@@ -28,99 +28,6 @@ Full React demo [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/mast
 - [x] React render batching
 - [ ] React Concurrent Mode (may work but needs testing)
 
-# Change recording with patches
-
-Dimmer tracks which properties change as your code executes. These changes are stored in patches just like a git commit.
-
-```typescript
-import recordPatches from '@akutruff/dimmer'
-
-const state = { counter: 0, otherCounter: 0 };
-const patches = recordPatches(state => state.counter += 1, state);
-// patches equals: [{"counter" => 0}]
-```
-
-Runs the increment function and records any object mutation into a list of `Map<>` objects containing the **original value** of each property.  
-
-These patches allows you to rewind and undo changes by calling `applyPatch()`.
-
-## Deep Object Hierarchies
-```typescript
-
-const bob = { favoriteFood: 'tacos' };
-const alice = { favoriteFood: 'cake',  homie: bob };
-const fred = { favoriteFood: 'pizza', homie: bob };
-
-const state = { bob, alice, fred };
-
-const patches = recordPatches({alice, fred} => {
-    alice.homie = fred;
-    alice.homie.favoriteFood = 'nachos'; // Will now modify fred as you would expect.
-    }, state);
-
-// patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
-getPatchTarget(patches[0]) // will equal alice
-getPatchTarget(patches[1]) // will equal fred
-
-```
-
-Runs the increment function and records any object mutation into a list of `Patch` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
-
-### Reverse a patch to go the opposite direction in history
-```typescript
-const reversePatch = createReversePatch(patches[0]);
-// reverse patch: {"counter" => 1}
-```
-
-## Undo / Redo:
-```typescript
-const state = { counter: 0 };
-const [ backwardsPatch ] = recordPatches(state => state.counter += 1, state);
-//state equals {counter: 1}
-
-const forwardPatch = createReversePatch(backwardsPatch);
-
-//undo
-applyPatch(backwardsPatch);
-//state equals {counter: 0}
-
-//redo
-applyPatch(forwardPatch);
-//state equals {counter: 1}
-
-```
-
-## The Recording Proxy
-```typescript
-import createRecordingProxy from '@akutruff/dimmer'
-
-//Make a proxy for state
-const state = createRecordingProxy({
-        bob: {
-            name: "Bob",
-            age: 42
-        },
-        alice: {
-            name: "Alice",
-            age: 40
-        }
-    });
-
-// The object returned is another recording proxy.
-const bob = state.bob;
-```
-
-`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how dimmer works.
-
-Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically.  There's no more need for keeping a table of ids when you normally don't need it. 
-
-As a rule, **you should always be using proxies** when dealing with your objects.  It's best to create a root state object and store all state there as is typical in state stores.  That way, as you access objects in the hierarchy they are automatically setup as proxies for change recording.  Note that you do not need a single state store.  Change tracking will totally work fine with independent trees of objects.
-
-Note that some functions like `recordPatches()` will automatically ensure that a recording proxy exists or is created before calling your code. 
-
-see [caveats](#caveats)
-
-# React 
 
 Dimmer is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use dimmers hooks to determine when to trigger re-renders.
 
@@ -364,38 +271,130 @@ const loadWords = useMutatorAsync(state, async function* asyncFunction(state) {
 useEffect(() => loadWords(), []);
 
 ```
+# Change recording with patches
 
-# Object proxy control and helpers
+Dimmer tracks which properties change as your code executes. These changes are stored in patches just like a git commit.
 
-## `isProxy(obj: any): boolean`
+```typescript
+import recordPatches from '@akutruff/dimmer'
+
+const state = { counter: 0, otherCounter: 0 };
+const patches = recordPatches(state => state.counter += 1, state);
+// patches equals: [{"counter" => 0}]
+```
+
+Runs the increment function and records any object mutation into a list of `Map<>` objects containing the **original value** of each property.  
+
+These patches allows you to rewind and undo changes by calling `applyPatch()`.
+
+## Deep Object Hierarchies
+```typescript
+
+const bob = { favoriteFood: 'tacos' };
+const alice = { favoriteFood: 'cake',  homie: bob };
+const fred = { favoriteFood: 'pizza', homie: bob };
+
+const state = { bob, alice, fred };
+
+const patches = recordPatches({alice, fred} => {
+    alice.homie = fred;
+    alice.homie.favoriteFood = 'nachos'; // Will now modify fred as you would expect.
+    }, state);
+
+// patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
+getPatchTarget(patches[0]) // will equal alice
+getPatchTarget(patches[1]) // will equal fred
+
+```
+
+Runs the increment function and records any object mutation into a list of `Patch` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
+
+### Reverse a patch to go the opposite direction in history
+```typescript
+const reversePatch = createReversePatch(patches[0]);
+// reverse patch: {"counter" => 1}
+```
+
+## Undo / Redo:
+```typescript
+const state = { counter: 0 };
+const [ backwardsPatch ] = recordPatches(state => state.counter += 1, state);
+//state equals {counter: 1}
+
+const forwardPatch = createReversePatch(backwardsPatch);
+
+//undo
+applyPatch(backwardsPatch);
+//state equals {counter: 0}
+
+//redo
+applyPatch(forwardPatch);
+//state equals {counter: 1}
+
+```
+
+## The Recording Proxy
+```typescript
+import createRecordingProxy from '@akutruff/dimmer'
+
+//Make a proxy for state
+const state = createRecordingProxy({
+        bob: {
+            name: "Bob",
+            age: 42
+        },
+        alice: {
+            name: "Alice",
+            age: 40
+        }
+    });
+
+// The object returned is another recording proxy.
+const bob = state.bob;
+```
+
+`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how dimmer works.
+
+Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically.  There's no more need for keeping a table of ids when you normally don't need it. 
+
+As a rule, **you should always be using proxies** when dealing with your objects.  It's best to create a root state object and store all state there as is typical in state stores.  That way, as you access objects in the hierarchy they are automatically setup as proxies for change recording.  Note that you do not need a single state store.  Change tracking will totally work fine with independent trees of objects.
+
+Note that some functions like `recordPatches()` will automatically ensure that a recording proxy exists or is created before calling your code. 
+
+see [caveats](#caveats)
+
+
+# Object proxy Utilities
+
+### `isProxy(obj: any): boolean`
 
 Returns whether `obj` is a reference to a recording proxy or not.
 
-## `tryGetProxy<T>(obj: T): T | undefined`
+### `tryGetProxy<T>(obj: T): T | undefined`
 
 Returns the current recording proxy for `obj` if one exists.  If `obj` is a reference to a proxy, then `obj` is returned.
 
-## `ensureProxy<T extends object>(obj: T) : T`
+### `ensureProxy<T extends object>(obj: T) : T`
 
 If no recording proxy for `obj` exists, then one is created and returned.  If `obj` is a reference to a proxy, then `obj` is returned.
 
-## `asOriginal<T>(obj: T): T`
+### `asOriginal<T>(obj: T): T`
 
 If the `obj` parameter is a recording proxy, the underlying object being recorded is returned.  If `obj` is not a proxy, then `obj` is returned.
 
-## `areSame(one: any, two: any): boolean`
+### `areSame(one: any, two: any): boolean`
 
 Returns if one and two are the same object. If either object is a proxy, the underlying object is used for the comparison.  
 
 Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
 
-## `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
+### `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
 
 Returns the object from which the `patch` was calculated.
 
 # Caveats
 
-## Object Reference Comparison
+### Object Reference Comparison
 Be weary of object reference comparisons as you may be trying to compare an original object with its proxy or vice versa. 
 
 :x: `myObject === otherObject //either object could be a proxy!` 
