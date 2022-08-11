@@ -101,6 +101,36 @@ const App: FC = () => {
 ```
 Shows the typical pattern for subscribing to and mutating data while isolating the rendering behavior to just the affected data.  Uses `React.memo` to ensure complete isolation.
 
+## The Recording Proxy
+```typescript
+import createRecordingProxy from '@akutruff/dimmer'
+
+//Make a proxy for state
+const state = createRecordingProxy({
+        bob: {
+            name: "Bob",
+            age: 42
+        },
+        alice: {
+            name: "Alice",
+            age: 40
+        }
+    });
+
+// The object returned is another recording proxy.
+const bob = state.bob;
+```
+
+`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how dimmer works.
+
+Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically.  There's no more need for keeping a table of ids when you normally don't need it. 
+
+As a rule, **you should always be using proxies** when dealing with your objects.  It's best to create a root state object and store all state there as is typical in state stores.  That way, as you access objects in the hierarchy they are automatically setup as proxies for change recording.  Note that you do not need a single state store.  Change tracking will totally work fine with independent trees of objects.
+
+Note that some functions like `recordPatches()` will automatically ensure that a recording proxy exists or is created before calling your code. 
+
+see [caveats](#caveats)
+
 ## `useRootState()`
 
 Accesses the topmost state that you gave to the `PatchTrackerContext.Provider` via `usePatchTrackerContextValue`. 
@@ -333,37 +363,6 @@ applyPatch(forwardPatch);
 
 ```
 
-## The Recording Proxy
-```typescript
-import createRecordingProxy from '@akutruff/dimmer'
-
-//Make a proxy for state
-const state = createRecordingProxy({
-        bob: {
-            name: "Bob",
-            age: 42
-        },
-        alice: {
-            name: "Alice",
-            age: 40
-        }
-    });
-
-// The object returned is another recording proxy.
-const bob = state.bob;
-```
-
-`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how dimmer works.
-
-Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically.  There's no more need for keeping a table of ids when you normally don't need it. 
-
-As a rule, **you should always be using proxies** when dealing with your objects.  It's best to create a root state object and store all state there as is typical in state stores.  That way, as you access objects in the hierarchy they are automatically setup as proxies for change recording.  Note that you do not need a single state store.  Change tracking will totally work fine with independent trees of objects.
-
-Note that some functions like `recordPatches()` will automatically ensure that a recording proxy exists or is created before calling your code. 
-
-see [caveats](#caveats)
-
-
 # Object proxy Utilities
 
 ### `isProxy(obj: any): boolean`
@@ -391,6 +390,18 @@ Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
 ### `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
 
 Returns the object from which the `patch` was calculated.
+
+### `doNotTrack<T>(obj: T): T`
+
+Disables proxy generation and change tracking for an object.  This is useful for when you store references to 3rd party instances in your state tree that  don't behave well when proxied.  
+
+Untracked objects in your state tree will not return proxies from their child properties.
+
+Untracked objects will behave differently with some utility functions which will treat the object as its own "proxy."
+- `tryGetProxy` - will return the untracked object.
+- `ensureProxy` - will return the untracked object. No proxy will be generatoed will continue to work with objects that are untracked.  They will simply 
+
+`isProxy` will return false for untracked objects.
 
 # Caveats
 
