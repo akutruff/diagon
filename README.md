@@ -12,7 +12,7 @@ npm install @akutruff/dimmer @akutruff/dimmer-react # core and react bindings
 ```
 
 
-Full React demo [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/master/apps/cra).
+Full React sandbox [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/dimmer)
 
 #### Features
 
