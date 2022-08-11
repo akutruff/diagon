@@ -1,7 +1,7 @@
 [![Build Status](https://img.shields.io/github/workflow/status/akutruff/dimmer/tests?style=flat&colorA=000000&colorB=000000)](https://github.com/akutruff/dimmer/actions?query=workflow%3Atest)
-[![Build Size](https://img.shields.io/bundlephobia/minzip/@akutruff/dimmer?label=bundle%20size&style=flat&colorA=000000&colorB=000000)](https://bundlephobia.com/result?p=akutruff/dimmer)
-[![Version](https://img.shields.io/npm/v/@akutruff/dimmer?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/akutruff/dimmer)
-[![Downloads](https://img.shields.io/npm/dt/@akutruff/dimmer.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/akutruff/dimmer)
+[![Build Size](https://img.shields.io/bundlephobia/minzip/@akutruff/dimmer?label=bundle%20size&style=flat&colorA=000000&colorB=000000)](https://bundlephobia.com/result?p=@akutruff/dimmer)
+[![Version](https://img.shields.io/npm/v/@akutruff/dimmer?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@akutruff/dimmer)
+[![Downloads](https://img.shields.io/npm/dt/@akutruff/dimmer.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@akutruff/dimmer)
 
 # *Dimmer*
 
