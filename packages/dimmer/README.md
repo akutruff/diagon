@@ -268,7 +268,22 @@ const CollectionComponent : FC = () => {
 ```
 To subscribe to changes in `Map<>` objects, you need to use the special `map_get` function to observe a particular key.
 
-### `useMutator()`
+## `useProjectedSnapshot()`
+
+```typescript
+const PersonDetails : FC<{person: Person}> = React.memo(({person}) => {
+    const state = useAppState();
+    const isSelected = useProjectedSnapshot(state, state => state.selectedPerson, state => areSame(state.selectedPerson, person), [person]);
+    return (
+      {isSelected ? 'selected' : 'nope'}  
+    );
+});
+```
+Same usage as `useSnapshot` but allows you to add an additional projection function.  This function can arbitrary or complex values from your state, which is only executed when the object properties in your selector function change.  The result of the projection is memoized, so even if the properties in your selector function change, if the result of your projection equals the previous result, your component won't re-render!
+
+In the example code, you could have 100 `PersonDetails` components on-screen, but only the previously selected component, and the newly selected component will re-render.  This is a great way to optimize the display of collections.
+
+## `useMutator()`
 
 ```tsx
 const state = useAppState();
@@ -286,7 +301,7 @@ return (
 ```
 Allows you to do mutations on your state and record any changes that happen.  No mutations should be done outside the passed in mutator function and if you need to use additional values from your component props, you should add the prop to the optional dependency list as the third argument to `useMutator`.
 
-### `useMutatorAsync()`
+## `useMutatorAsync()`
 ```tsx
 const state = useAppState();
 
@@ -322,7 +337,7 @@ Again, there is an optional dependency list parameter as well in order to use pr
 *Warning:* The following applies to any asynchronous code, not just Dimmer. Be careful when using async functions with mutation! You could have multiple async functions executing, or simply some synchronous function modify state while your async process under way!  It is much better to make an object that represents your async call with local state on it that is unique per async operation.  That way if it gets replaced or invalidated you can ignore everything but the latest operation.  
 
 
-#### Nested Async Generators
+### Nested Async Generators
 
 ```tsx
 const state = useAppState();
