@@ -1,6 +1,6 @@
-export { areSame, asOriginal, clearContext, createContext, createRecordingProxy, currentContext, Dimmer, doNotTrack, ensureProxy, getCurrentPatch, isProxy, makePatchRecorder, recordPatches, resetEnvironment, tryGetProxy } from './dimmer';
-export { DimmerMap } from './dimmerMap';
-export { DimmerSet } from './dimmerSet';
+export { areSame, asOriginal, clearContext, createContext, createRecordingProxy, currentContext, Diagon, doNotTrack, ensureProxy, getCurrentPatch, isProxy, makePatchRecorder, recordPatches, resetEnvironment, tryGetProxy } from './diagon';
+export { DiagonMap } from './diagonMap';
+export { DiagonSet } from './diagonSet';
 export * from './generics';
 export { createReversePatch, findAllPatchesInHistory, getObjectTimeline, undoPatch } from './history';
 export * from './middleware';

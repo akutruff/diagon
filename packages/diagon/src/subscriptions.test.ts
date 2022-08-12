@@ -1,4 +1,4 @@
-import { createRecordingProxy, resetEnvironment } from './dimmer';
+import { createRecordingProxy, resetEnvironment } from './diagon';
 import { all, elements } from './pathRecorder';
 import { createChangeRecorderFactory, createPatchTracker, PatchTracker, MutatorChangeRecorderFactory, recordAndPublishMutations, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
 

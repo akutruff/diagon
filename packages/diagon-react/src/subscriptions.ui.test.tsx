@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Action, createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from '@akutruff/dimmer';
+import { Action, createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
 import { createPatchTrackerContextValue, PatchTrackerContext, PatchTrackerContextValue } from './PatchTrackerContext';

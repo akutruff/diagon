@@ -1,5 +1,5 @@
-import { areSame } from '@akutruff/dimmer';
-import { useProjectedSnapshot, useSnapshot } from '@akutruff/dimmer-react';
+import { areSame } from 'diagon';
+import { useProjectedSnapshot, useSnapshot } from 'diagon-react';
 import React, { FC, useRef } from 'react';
 import { Person, useAppState } from './app';
 import { RenderCounter } from './RenderCounter';

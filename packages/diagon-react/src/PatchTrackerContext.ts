@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { PatchTracker, RecordingDispatcher, createPatchTracker, createRecordingDispatcher, DispatchContext, Next, getCallbacksAndUpdateSubscriptionsFromPatches } from '@akutruff/dimmer';
+import { PatchTracker, RecordingDispatcher, createPatchTracker, createRecordingDispatcher, DispatchContext, Next, getCallbacksAndUpdateSubscriptionsFromPatches } from 'diagon';
 import { createContext, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 

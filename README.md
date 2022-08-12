@@ -1,18 +1,18 @@
-[![Build Status](https://img.shields.io/github/workflow/status/akutruff/dimmer/tests?style=flat&colorA=000000&colorB=000000)](https://github.com/akutruff/dimmer/actions?query=workflow%3Atest)
-[![Build Size](https://img.shields.io/bundlephobia/minzip/@akutruff/dimmer?label=bundle%20size&style=flat&colorA=000000&colorB=000000)](https://bundlephobia.com/result?p=@akutruff/dimmer)
-[![Version](https://img.shields.io/npm/v/@akutruff/dimmer?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@akutruff/dimmer)
-[![Downloads](https://img.shields.io/npm/dt/@akutruff/dimmer.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/@akutruff/dimmer)
+[![Build Status](https://img.shields.io/github/workflow/status/akutruff/diagon/tests?style=flat&colorA=000000&colorB=000000)](https://github.com/akutruff/diagon/actions?query=workflow%3Atest)
+[![Build Size](https://img.shields.io/bundlephobia/minzip/diagon?label=bundle%20size&style=flat&colorA=000000&colorB=000000)](https://bundlephobia.com/result?p=diagon)
+[![Version](https://img.shields.io/npm/v/diagon?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/diagon)
+[![Downloads](https://img.shields.io/npm/dt/diagon.svg?style=flat&colorA=000000&colorB=000000)](https://www.npmjs.com/package/diagon)
 
-# *Dimmer*
+# *Diagon*
 
 State-management designed to minimize renders while staying out of your way and letting you write natural mutable code without sacrificing object references. 
 
 ```bash
-npm install @akutruff/dimmer @akutruff/dimmer-react # core and react bindings
+npm install diagon diagon-react # core and react bindings
 ```
 
 
-Full React sandbox [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/dimmer)
+Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
 
 #### Features
 
@@ -29,13 +29,13 @@ Full React sandbox [here](https://codesandbox.io/s/github/akutruff/dimmer/tree/m
 - [ ] React Concurrent Mode (may work but needs testing)
 
 
-Dimmer is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use Dimmer's hooks to determine when to trigger re-renders.
+Diagon is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use Diagon's hooks to determine when to trigger re-renders.
 
 ## Create a store
 
 ```typescript
-import { createRecordingProxy } from '@akutruff/dimmer';
-import { useRootState } from '@akutruff/dimmer-react';
+import { createRecordingProxy } from 'diagon';
+import { useRootState } from 'diagon-react';
 
 export interface Person {
     id: number,
@@ -103,7 +103,7 @@ Shows the typical pattern for subscribing to and mutating data while isolating t
 
 ## The Recording Proxy
 ```typescript
-import createRecordingProxy from '@akutruff/dimmer'
+import createRecordingProxy from 'diagon'
 
 //Make a proxy for state
 const state = createRecordingProxy({
@@ -121,7 +121,7 @@ const state = createRecordingProxy({
 const bob = state.bob;
 ```
 
-`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how dimmer works.
+`createRecordingProxy()` wraps an object in a proxy that does two things: keep track of property assignments and wrap child objects in proxies when they are accessed.  This proxy is at the core of how diagon works.
 
 Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically.  There's no more need for keeping a table of ids when you normally don't need it. 
 
@@ -271,7 +271,7 @@ This may seem a bit cumbersome, but it allows you to completely control how a se
 
 Again, there is an optional dependency list parameter as well in order to use props inside your mutator function.
 
-*Warning:* The following applies to any asynchronous code, not just Dimmer. Be careful when using async functions with mutation! You could have multiple async functions executing, or simply some synchronous function modify state while your async process under way!  It is much better to make an object that represents your async call with local state on it that is unique per async operation.  That way if it gets replaced or invalidated you can ignore everything but the latest operation.  
+*Warning:* The following applies to any asynchronous code, not just Diagon. Be careful when using async functions with mutation! You could have multiple async functions executing, or simply some synchronous function modify state while your async process under way!  It is much better to make an object that represents your async call with local state on it that is unique per async operation.  That way if it gets replaced or invalidated you can ignore everything but the latest operation.  
 
 
 ### Nested Async Generators
@@ -303,10 +303,10 @@ useEffect(() => loadWords(), []);
 ```
 # Change recording with patches
 
-Dimmer tracks which properties change as your code executes. These changes are stored in patches just like a git commit.
+Diagon tracks which properties change as your code executes. These changes are stored in patches just like a git commit.
 
 ```typescript
-import recordPatches from '@akutruff/dimmer'
+import recordPatches from 'diagon'
 
 const state = { counter: 0, otherCounter: 0 };
 const patches = recordPatches(state => state.counter += 1, state);

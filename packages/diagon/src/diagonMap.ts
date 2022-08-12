@@ -1,7 +1,7 @@
-import { tryGetProxy, asOriginal, proxify, patchToTarget, modified } from './dimmer';
-import { ORIGINAL, PROXY, NO_ENTRY, MapPatch, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
+import { tryGetProxy, asOriginal, proxify, patchToTarget, modified } from './diagon';
+import { ORIGINAL, PROXY, NO_ENTRY, MapPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
-export class DimmerMap<K, V> extends Map<K, V> implements DimmerProxyMetadata {
+export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
 
     constructor(private target: Map<K, V>) {
         super();
@@ -117,8 +117,8 @@ export class DimmerMap<K, V> extends Map<K, V> implements DimmerProxyMetadata {
         return commitedPatch;
     }
 
-    get [DIMMER_ID](): DimmerId {
-        return (this.target as any)[DIMMER_ID];
+    get [DIAGON_ID](): DiagonId {
+        return (this.target as any)[DIAGON_ID];
     }
 
     get [ORIGINAL]() {

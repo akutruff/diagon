@@ -1,36 +1,36 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export const PROXY: unique symbol = Symbol('PROXY');
-export const DIMMER_ID: unique symbol = Symbol('DIMMER_ID');
+export const DIAGON_ID: unique symbol = Symbol('DIAGON_ID');
 export const NO_ENTRY: unique symbol = Symbol('NO_ENTRY');
 export const ORIGINAL: unique symbol = Symbol('ORIGINAL');
 
-export interface DimmerEnvironment {
+export interface DiagonEnvironment {
     nextId: number,
-    currentContext?: DimmerContext
+    currentContext?: DiagonContext
 }
 
-export interface DimmerProxyMetadata {
-    [DIMMER_ID]: DimmerId;
+export interface DiagonProxyMetadata {
+    [DIAGON_ID]: DiagonId;
     [PROXY]: any;
 }
 
-export interface DimmeredArray<T = unknown> extends Array<T>, DimmerProxyMetadata {
-    [PROXY]: DimmeredArray<T>;
+export interface DiagonedArray<T = unknown> extends Array<T>, DiagonProxyMetadata {
+    [PROXY]: DiagonedArray<T>;
 }
 
-export interface DimmeredObject<T = any> extends DimmerProxyMetadata {
+export interface DiagonedObject<T = any> extends DiagonProxyMetadata {
     [key: string]: any;
-    [PROXY]: DimmeredObject<T>;
+    [PROXY]: DiagonedObject<T>;
 }
 
-export interface DimmerContext {
+export interface DiagonContext {
     modified: Set<any>;
 }
 
-export type DimmerId = number;
+export type DiagonId = number;
 
-export interface DimmerContext {
+export interface DiagonContext {
     modified: Set<any>;
 }
 

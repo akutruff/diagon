@@ -1,4 +1,4 @@
-import { useMutator, useSnapshot } from '@akutruff/dimmer-react';
+import { useMutator, useSnapshot } from 'diagon-react';
 import React, { ChangeEvent, FC } from 'react';
 import { useAppState } from './app';
 import { RenderCounter } from './RenderCounter';

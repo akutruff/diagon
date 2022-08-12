@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { asOriginal, patchToTarget, recordPatches } from './dimmer';
+import { asOriginal, patchToTarget, recordPatches } from './diagon';
 import { recordPath, PathRecord, MapKeys, AnyProperty } from './pathRecorder';
 import { ArrayPatch, Patch, MapPatch } from './types';
 import { Mutator } from '.';

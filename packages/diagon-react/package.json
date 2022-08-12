@@ -1,11 +1,11 @@
 {
-  "name": "@akutruff/dimmer-react",
+  "name": "diagon-react",
   "version": "0.4.3",
   "description": "Mutable state management for object graphs and React",
-  "homepage": "https://github.com/akutruff/dimmer",
+  "homepage": "https://github.com/akutruff/diagon",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/akutruff/dimmer"
+    "url": "git+https://github.com/akutruff/diagon"
   },
   "license": "MIT",
   "keywords": [
@@ -31,7 +31,7 @@
     "test:ci": "CI=true jest"
   },
   "dependencies": {
-    "@akutruff/dimmer": "*",
+    "diagon": "*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

@@ -1,8 +1,8 @@
 
-import { createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, tryGetProxy, getCurrentPatch } from './dimmer';
+import { createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, tryGetProxy, getCurrentPatch } from './diagon';
 import { getObjectTimeline } from './history';
 
-describe('DimmerArray', () => {
+describe('DiagonArray', () => {
     beforeEach(() => {
         resetEnvironment();
     });

@@ -1,10 +1,10 @@
-import { asOriginal, tryGetProxy, proxify, patchToTarget, modified } from './dimmer';
-import { ORIGINAL, PROXY, SetPatch, DimmerProxyMetadata, DIMMER_ID, DimmerId } from './types';
+import { asOriginal, tryGetProxy, proxify, patchToTarget, modified } from './diagon';
+import { ORIGINAL, PROXY, SetPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
-export class DimmerSet<T> extends Set<T> implements DimmerProxyMetadata {
+export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
     currentPatch = new Map<T, boolean>();
 
-    [DIMMER_ID]: DimmerId = -1;
+    [DIAGON_ID]: DiagonId = -1;
 
     constructor(private target: Set<T>) {
         super();

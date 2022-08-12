@@ -1,10 +1,10 @@
-import { assignDimmerId, asOriginal, patchToTarget } from './dimmer';
-import { createArrayPatch } from './dimmerArray';
-import { createMapPatch, getKeyUsedByMap } from './dimmerMap';
-import { createObjectPatch } from './dimmerObject';
-import { createSetPatch } from './dimmerSet';
+import { assignDiagonId, asOriginal, patchToTarget } from './diagon';
+import { createArrayPatch } from './diagonArray';
+import { createMapPatch, getKeyUsedByMap } from './diagonMap';
+import { createObjectPatch } from './diagonObject';
+import { createSetPatch } from './diagonSet';
 
-import { Patch, DIMMER_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DimmeredObject } from './types';
+import { Patch, DIAGON_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DiagonedObject } from './types';
 import { isMap, isPlainObject, isSet } from './utils';
 
 export function undoPatch(patch: Patch) {
@@ -100,17 +100,17 @@ export function createReversePatch(patch: Patch) {
     }
 }
 
-export function convertObjectReferencesToDimmerIdReferences(obj: any) {
+export function convertObjectReferencesToDiagonIdReferences(obj: any) {
     let result: typeof obj;
     for (const propertyKey of Object.keys(obj)) {
         const propertyValue = obj[propertyKey];
 
-        const dimmerId = propertyValue[DIMMER_ID];
-        if (dimmerId) {
+        const diagonId = propertyValue[DIAGON_ID];
+        if (diagonId) {
             if (!result) {
                 result = { ...obj };
             }
-            result[propertyKey] = dimmerId;
+            result[propertyKey] = diagonId;
         }
     }
 
@@ -158,9 +158,9 @@ export function cloneDeep<T>(value: T, clones: WeakMap<any, any> = new WeakMap()
         return cloneDeep(proxyOriginal, clones);
     }
 
-    const dimmeredValue = value as any as DimmeredObject;
-    if (dimmeredValue[DIMMER_ID] === undefined) {
-        assignDimmerId(value);
+    const diagonedValue = value as any as DiagonedObject;
+    if (diagonedValue[DIAGON_ID] === undefined) {
+        assignDiagonId(value);
     }
 
     if (Array.isArray(value)) {
@@ -196,13 +196,13 @@ export function cloneDeep<T>(value: T, clones: WeakMap<any, any> = new WeakMap()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const dimmerIdPropertyDescriptor = Object.getOwnPropertyDescriptor(value, DIMMER_ID)!;
-    Object.defineProperty(clone, DIMMER_ID, dimmerIdPropertyDescriptor);
+    const diagonIdPropertyDescriptor = Object.getOwnPropertyDescriptor(value, DIAGON_ID)!;
+    Object.defineProperty(clone, DIAGON_ID, diagonIdPropertyDescriptor);
 
     return clone;
 }
 
-export function removeDimmerMetadata<T>(value: T, visited: WeakMap<any, any> = new WeakMap()): T {
+export function removeDiagonMetadata<T>(value: T, visited: WeakMap<any, any> = new WeakMap()): T {
     if (typeof value !== 'object') {
         return value;
     }
@@ -217,35 +217,35 @@ export function removeDimmerMetadata<T>(value: T, visited: WeakMap<any, any> = n
     const proxyOriginal = valueAsAny[ORIGINAL];
     if (proxyOriginal) {
         visited.set(value, proxyOriginal);
-        return removeDimmerMetadata(proxyOriginal, visited);
+        return removeDiagonMetadata(proxyOriginal, visited);
     }
 
     visited.set(value, target);
 
     if (Array.isArray(value)) {
         for (let i = 0; i < value.length; i++) {
-            target[i] = removeDimmerMetadata(value[i], visited);
+            target[i] = removeDiagonMetadata(value[i], visited);
         }
     } else if (isMap(value)) {
         for (const [entryKey, entryValue] of value) {
-            const dedimmeredKey = removeDimmerMetadata(entryKey, visited);
-            const dedimmeredValue = removeDimmerMetadata(entryValue, visited);
-            if (dedimmeredKey !== entryKey || dedimmeredValue !== entryValue) {
+            const dediagonedKey = removeDiagonMetadata(entryKey, visited);
+            const dediagonedValue = removeDiagonMetadata(entryValue, visited);
+            if (dediagonedKey !== entryKey || dediagonedValue !== entryValue) {
                 target.delete(entryKey);
-                target.set(dedimmeredKey, dedimmeredValue);
+                target.set(dediagonedKey, dediagonedValue);
             }
         }
     } else if (isSet(value)) {
         for (const entryValue of value) {
-            const dedimmeredValue = removeDimmerMetadata(entryValue, visited);
-            if (dedimmeredValue !== entryValue) {
+            const dediagonedValue = removeDiagonMetadata(entryValue, visited);
+            if (dediagonedValue !== entryValue) {
                 target.delete(entryValue);
-                target.add(dedimmeredValue);
+                target.add(dediagonedValue);
             }
         }
     } else if (isPlainObject(value)) {
         for (const propertyKey of Object.keys(value)) {
-            valueAsAny[propertyKey] = removeDimmerMetadata(valueAsAny[propertyKey], visited);
+            valueAsAny[propertyKey] = removeDiagonMetadata(valueAsAny[propertyKey], visited);
         }
     }
     else {

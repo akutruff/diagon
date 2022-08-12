@@ -1,5 +1,5 @@
-import { createRecordingProxy } from '@akutruff/dimmer';
-import { useRootState } from '@akutruff/dimmer-react';
+import { createRecordingProxy } from 'diagon';
+import { useRootState } from 'diagon-react';
 
 export interface Person {
     id: number,

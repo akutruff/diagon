@@ -1,5 +1,5 @@
 import { clearContext, createContext, createRecordingProxy, Patch, Mutator, tryGetProxy } from '.';
-import { commitPatches } from './dimmer';
+import { commitPatches } from './diagon';
 import { createPipeline, Middleware, Next, Pipeline } from './middleware';
 
 export interface DispatchContext<T extends object = object> {

@@ -1,6 +1,6 @@
 
 import { createRecordingDispatcher, createContext, resetEnvironment, clearContext, DispatchContext, ObjectPatch } from '.';
-import { isProxy } from './dimmer';
+import { isProxy } from './diagon';
 import { Next } from './middleware';
 
 describe('RecordingDispatcher', () => {

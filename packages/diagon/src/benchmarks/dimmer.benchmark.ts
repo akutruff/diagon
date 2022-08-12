@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Benchmark from 'benchmark';
 import { createDraft, setUseProxies, produce, setAutoFreeze, enableMapSet } from 'immer';
-import { createRecordingProxy, makePatchRecorder } from '../dimmer';
+import { createRecordingProxy, makePatchRecorder } from '../diagon';
 import _ from 'lodash';
 import { suiteOptions } from './benchmarkOptions';
 
@@ -33,7 +33,7 @@ type TargetMap = ReturnType<typeof createTestMap>;
 
 const nativeMapReducer = (state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); };
 const immerMapReducer = produce((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
-const dimmerMapReducer = makePatchRecorder((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
+const diagonMapReducer = makePatchRecorder((state: TargetMap, key: number, value: number) => { state.set(key, state.get(key)! + value); });
 
 const mapIterations = 100;
 
@@ -55,11 +55,11 @@ suite
             }
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = createTestMap();
         for (let i = 0; i < mapIterations; i++) {
             for (let j = 0; j < state.size; j++) {
-                dimmerMapReducer(state, j, i);
+                diagonMapReducer(state, j, i);
             }
         }
     }, caseOptions)
@@ -83,7 +83,7 @@ type TargetMapWithChildren = ReturnType<typeof createTestMapWithChildren>;
 
 const nativeMapWithChildren = (state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); };
 const immerMapWithChildren = produce((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
-const dimmerMapWithChildren = makePatchRecorder((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
+const diagonMapWithChildren = makePatchRecorder((state: TargetMapWithChildren, key: number, value: number) => { const obj = state.get(key)!; obj.prop0 += value; state.set(key, obj); });
 
 const mapWithChildrenIterations = 100;
 
@@ -105,11 +105,11 @@ suite
             }
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = createTestMapWithChildren();
         for (let i = 0; i < mapWithChildrenIterations; i++) {
             for (let j = 0; j < state.size; j++) {
-                dimmerMapWithChildren(state, j, i);
+                diagonMapWithChildren(state, j, i);
             }
         }
     }, caseOptions)
@@ -183,7 +183,7 @@ const complicatedIterations = 100;
 
 const nativeCopyGraphReducer = (state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); };
 const immerCopyGraphReducer = produce((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
-const dimmerCopyGraphReducer = makePatchRecorder((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
+const diagonCopyGraphReducer = makePatchRecorder((state: any) => { copyComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
 
 suite = new Benchmark.Suite('Big Copies', { ...suiteOptions, ...{} });
 suite
@@ -201,18 +201,18 @@ suite
             const produced = immerCopyGraphReducer(state);
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = generateComplicatedGraph(numberOfProperties, complicatedMaxDepth);
 
         for (let i = 0; i < complicatedIterations; i++) {
-            const produced = dimmerCopyGraphReducer(state);
+            const produced = diagonCopyGraphReducer(state);
         }
     }, caseOptions)
     .run();
 
 const nativeComplicatedGraphReducer = (state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); };
 const immerComplicatedGraphReducer = produce((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
-const dimmerComplicatedGraphReducer = makePatchRecorder((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
+const diagonComplicatedGraphReducer = makePatchRecorder((state: any) => { mutateComplicatedGraph(state, numberOfProperties, complicatedMaxDepth); });
 
 suite = new Benchmark.Suite('Walk Complicated graph', { ...suiteOptions, ...{} });
 suite
@@ -230,11 +230,11 @@ suite
             const produced = immerComplicatedGraphReducer(state);
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = generateComplicatedGraph(numberOfProperties, complicatedMaxDepth);
 
         for (let i = 0; i < complicatedIterations; i++) {
-            const produced = dimmerComplicatedGraphReducer(state);
+            const produced = diagonComplicatedGraphReducer(state);
         }
     }, caseOptions)
     // .on('cycle', (event: any) => onCycle(suite, event))
@@ -264,7 +264,7 @@ type TargetObjectGraph = ReturnType<typeof createSmallObjectGraph>;
 
 const nativeObjectGraphReducer = (state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; };
 const immerObjectGraphReducer = produce((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
-const dimmerObjectGraphReducer = makePatchRecorder((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
+const diagonObjectGraphReducer = makePatchRecorder((state: TargetObjectGraph, aValue: string, bValue: number) => { state.a.aa.aaa.aaaa = aValue; state.b.bb.bbb.bbbb += bValue; });
 
 const propertySettingIterations = 10000;
 
@@ -282,10 +282,10 @@ suite
             const produced = immerObjectGraphReducer(state, 'a', i);
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = createSmallObjectGraph();
         for (let i = 0; i < propertySettingIterations; i++) {
-            const produced = dimmerObjectGraphReducer(state, 'a', i);
+            const produced = diagonObjectGraphReducer(state, 'a', i);
         }
     }, caseOptions)
     .run();
@@ -308,7 +308,7 @@ type Target = typeof target;
 
 const nativePropertySettingReducer = (state: Target, property: keyof Target, value: number) => { state[property] += value; };
 const immerPropertySettingReducer = produce((state: Target, property: keyof Target, value: number) => { state[property] += value; });
-const dimmerPropertySettingReducer = makePatchRecorder((state: Target, property: keyof Target, value: number) => { state[property] += value; });
+const diagonPropertySettingReducer = makePatchRecorder((state: Target, property: keyof Target, value: number) => { state[property] += value; });
 
 suite = new Benchmark.Suite('Single object property setting', { ...suiteOptions, ...{} });
 suite
@@ -324,10 +324,10 @@ suite
             const produced = immerPropertySettingReducer(state, 'a', i);
         }
     }, caseOptions)
-    .add('Dimmer', function () {
+    .add('Diagon', function () {
         const state = { ...target };
         for (let i = 0; i < propertySettingIterations; i++) {
-            const produced = dimmerPropertySettingReducer(state, 'a', i);
+            const produced = diagonPropertySettingReducer(state, 'a', i);
         }
     }, caseOptions)
     .run();
@@ -346,12 +346,12 @@ function setSomeProperties(obj: any) {
 }
 
 //const contextForBasic = createContext();
-const dimmerProxy = createRecordingProxy({ ...target });
+const diagonProxy = createRecordingProxy({ ...target });
 const simpleProxy = new Proxy({ ...target }, {});
 
 //const contextForOverrides = createContext();
-const dimmerProxyWithOverrides = createRecordingProxy({ ...target });
-setSomeProperties(dimmerProxyWithOverrides);
+const diagonProxyWithOverrides = createRecordingProxy({ ...target });
+setSomeProperties(diagonProxyWithOverrides);
 
 const immerDraft = createDraft({ ...target });
 
@@ -372,10 +372,10 @@ suite
     .add('Immer draft with overrides', function () {
         const copy = { ...immerDraftWithOverrides };
     }, caseOptions)
-    .add('Dimmer proxy', function () {
-        const copy = { ...dimmerProxy };
+    .add('Diagon proxy', function () {
+        const copy = { ...diagonProxy };
     }, caseOptions)
-    .add('Dimmer proxy with overrides', function () {
-        const copy = { ...dimmerProxyWithOverrides };
+    .add('Diagon proxy with overrides', function () {
+        const copy = { ...diagonProxyWithOverrides };
     }, caseOptions)
     .run();

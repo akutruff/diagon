@@ -3,10 +3,10 @@
   "description": "Example of using create-react-app in a TS monorepo",
   "private": true,
   "version": "1.0.0",
-  "homepage": "https://akutruff.github.io/dimmer/",
+  "homepage": "https://akutruff.github.io/diagon/",
   "dependencies": {
-    "@akutruff/dimmer": "^0.4.3",
-    "@akutruff/dimmer-react": "^0.4.3",
+    "diagon": "^0.4.3",
+    "diagon-react": "^0.4.3",
     "react": "~18.2.0",
     "react-dom": "~18.2.0"
   },

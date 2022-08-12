@@ -1,10 +1,10 @@
 
-import { DimmerMap } from './dimmerMap';
-import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './dimmer';
+import { DiagonMap } from './diagonMap';
+import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
 import { NO_ENTRY, ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
-describe('DimmerMap', () => {
+describe('DiagonMap', () => {
 
     type Node = { prop0: string };
 
@@ -21,9 +21,9 @@ describe('DimmerMap', () => {
     });
 
     it('can be constructed', () => {
-        const dimmerMap = new DimmerMap<number, string>(new Map());
-        expect(dimmerMap).toBeDefined();
-        expect(dimmerMap).toBeInstanceOf(Map);
+        const diagonMap = new DiagonMap<number, string>(new Map());
+        expect(diagonMap).toBeDefined();
+        expect(diagonMap).toBeInstanceOf(Map);
     });
 
     describe('get()', () => {
@@ -35,11 +35,11 @@ describe('DimmerMap', () => {
 
                 target.set(key, 1231);
 
-                const dimmerMap = new DimmerMap<typeof key, number>(target);
-                expect(dimmerMap.get(keyProxy)).toEqual(1231);
-                expect(dimmerMap.size).toEqual(1);
+                const diagonMap = new DiagonMap<typeof key, number>(target);
+                expect(diagonMap.get(keyProxy)).toEqual(1231);
+                expect(diagonMap.size).toEqual(1);
 
-                expect(Map.prototype.get.call(dimmerMap, key)).toEqual(undefined);
+                expect(Map.prototype.get.call(diagonMap, key)).toEqual(undefined);
             });
 
             it('retrieves value when initialized with proxy as key and then fetched with original.', () => {
@@ -49,11 +49,11 @@ describe('DimmerMap', () => {
 
                 target.set(keyProxy, 1231);
 
-                const dimmerMap = new DimmerMap<typeof key, number>(target);
-                expect(dimmerMap.get(key)).toEqual(1231);
-                expect(dimmerMap.size).toEqual(1);
+                const diagonMap = new DiagonMap<typeof key, number>(target);
+                expect(diagonMap.get(key)).toEqual(1231);
+                expect(diagonMap.size).toEqual(1);
 
-                expect(Map.prototype.get.call(dimmerMap, key)).toEqual(undefined);
+                expect(Map.prototype.get.call(diagonMap, key)).toEqual(undefined);
             });
         });
     });
@@ -62,37 +62,37 @@ describe('DimmerMap', () => {
         it(`records ${NO_ENTRY.description} for newly added entries.`, () => {
             const target = new Map();
 
-            const dimmerMap = new DimmerMap<string, number>(target);
-            dimmerMap.set('foo', 1000);
+            const diagonMap = new DiagonMap<string, number>(target);
+            diagonMap.set('foo', 1000);
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toEqual(NO_ENTRY);
-            expect(dimmerMap.get('foo')).toEqual(1000);
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toEqual(NO_ENTRY);
+            expect(diagonMap.get('foo')).toEqual(1000);
         });
 
         it('records previous value for newly added entries.', () => {
             const target = new Map();
             target.set('foo', 1231);
-            const dimmerMap = new DimmerMap<string, number>(target);
-            expect(dimmerMap.size).toEqual(1);
+            const diagonMap = new DiagonMap<string, number>(target);
+            expect(diagonMap.size).toEqual(1);
 
-            dimmerMap.set('foo', 42);
+            diagonMap.set('foo', 42);
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toEqual(1231);
-            expect(dimmerMap.get('foo')).toEqual(42);
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toEqual(1231);
+            expect(diagonMap.get('foo')).toEqual(42);
         });
 
         it('records initial value when setting property multiple times.', () => {
             const target = new Map();
             target.set('foo', 1231);
-            const dimmerMap = new DimmerMap<string, number>(target);
+            const diagonMap = new DiagonMap<string, number>(target);
 
-            dimmerMap.set('foo', 42);
-            dimmerMap.set('foo', 88);
+            diagonMap.set('foo', 42);
+            diagonMap.set('foo', 88);
 
-            expect(dimmerMap.size).toEqual(1);
+            expect(diagonMap.size).toEqual(1);
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toEqual(1231);
-            expect(dimmerMap.get('foo')).toEqual(88);
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toEqual(1231);
+            expect(diagonMap.get('foo')).toEqual(88);
         });
     });
 
@@ -100,22 +100,22 @@ describe('DimmerMap', () => {
         it(`records nothing if did not previously have value.`, () => {
             const target = new Map();
 
-            const dimmerMap = new DimmerMap<string, number>(target);
-            dimmerMap.delete('foo');
+            const diagonMap = new DiagonMap<string, number>(target);
+            diagonMap.delete('foo');
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toBeUndefined();
-            expect(dimmerMap.get('foo')).toBeUndefined();
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toBeUndefined();
+            expect(diagonMap.get('foo')).toBeUndefined();
         });
 
         it('records previous value when present.', () => {
             const target = new Map();
             target.set('foo', 1231);
-            const dimmerMap = new DimmerMap<string, number>(target);
+            const diagonMap = new DiagonMap<string, number>(target);
 
-            dimmerMap.delete('foo');
+            diagonMap.delete('foo');
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toEqual(1231);
-            expect(dimmerMap.get('foo')).toBeUndefined();
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toEqual(1231);
+            expect(diagonMap.get('foo')).toBeUndefined();
         });
 
         describe('mixed use of object-typed keys', () => {
@@ -126,16 +126,16 @@ describe('DimmerMap', () => {
 
                 target.set(keyProxy, 1231);
 
-                const dimmerMap = new DimmerMap<typeof key, number>(target);
-                //dimmerMap.commitPatch();                
+                const diagonMap = new DiagonMap<typeof key, number>(target);
+                //diagonMap.commitPatch();                
 
-                dimmerMap.delete(key);
+                diagonMap.delete(key);
 
-                expect(dimmerMap.has(key)).toEqual(false);
-                expect(dimmerMap.size).toEqual(0);
+                expect(diagonMap.has(key)).toEqual(false);
+                expect(diagonMap.size).toEqual(0);
 
-                expect(Map.prototype.get.call(dimmerMap, keyProxy)).toEqual(1231);
-                expect(Map.prototype.get.call(dimmerMap, key)).toBeUndefined();
+                expect(Map.prototype.get.call(diagonMap, keyProxy)).toEqual(1231);
+                expect(Map.prototype.get.call(diagonMap, key)).toBeUndefined();
             });
 
             it('records previous value with original as key when original is current type of key.', () => {
@@ -145,16 +145,16 @@ describe('DimmerMap', () => {
 
                 target.set(key, 1231);
 
-                const dimmerMap = new DimmerMap<typeof key, number>(target);
-                //dimmerMap.commitPatch();                
+                const diagonMap = new DiagonMap<typeof key, number>(target);
+                //diagonMap.commitPatch();                
 
-                dimmerMap.delete(keyProxy);
+                diagonMap.delete(keyProxy);
 
-                expect(dimmerMap.has(key)).toEqual(false);
-                expect(dimmerMap.size).toEqual(0);
+                expect(diagonMap.has(key)).toEqual(false);
+                expect(diagonMap.size).toEqual(0);
 
-                expect(Map.prototype.get.call(dimmerMap, keyProxy)).toBeUndefined();
-                expect(Map.prototype.get.call(dimmerMap, key)).toEqual(1231);
+                expect(Map.prototype.get.call(diagonMap, keyProxy)).toBeUndefined();
+                expect(Map.prototype.get.call(diagonMap, key)).toEqual(1231);
             });
         });
     });
@@ -163,18 +163,18 @@ describe('DimmerMap', () => {
         it(`returns target.`, () => {
             const target = new Map();
 
-            const dimmerMap = new DimmerMap<string, number>(target);
-            expect(dimmerMap[ORIGINAL]).toBe(target);
+            const diagonMap = new DiagonMap<string, number>(target);
+            expect(diagonMap[ORIGINAL]).toBe(target);
         });
     });
 
     describe(`[${PROXY.description}]`, () => {
-        it(`returns dimmer map for both target and dimmer map target.`, () => {
+        it(`returns diagon map for both target and diagon map target.`, () => {
             const target = new Map();
 
-            const dimmerMap = new DimmerMap<string, number>(target);
-            expect((target as any)[PROXY]).toBe(dimmerMap);
-            expect(dimmerMap[PROXY]).toBe(dimmerMap);
+            const diagonMap = new DiagonMap<string, number>(target);
+            expect((target as any)[PROXY]).toBe(diagonMap);
+            expect(diagonMap[PROXY]).toBe(diagonMap);
         });
         it('is typeof object', () => {
             expect(typeof null).toEqual('object');
@@ -188,17 +188,17 @@ describe('DimmerMap', () => {
             target.set('bar', 848);
             target.set('bob', 7777);
 
-            const dimmerMap = new DimmerMap<string, number>(target);
+            const diagonMap = new DiagonMap<string, number>(target);
 
-            dimmerMap.clear();
+            diagonMap.clear();
 
-            expect(Map.prototype.get.call(dimmerMap, 'foo')).toEqual(1231);
-            expect(Map.prototype.get.call(dimmerMap, 'bar')).toEqual(848);
-            expect(Map.prototype.get.call(dimmerMap, 'bob')).toEqual(7777);
+            expect(Map.prototype.get.call(diagonMap, 'foo')).toEqual(1231);
+            expect(Map.prototype.get.call(diagonMap, 'bar')).toEqual(848);
+            expect(Map.prototype.get.call(diagonMap, 'bob')).toEqual(7777);
 
-            expect(dimmerMap.get('foo')).toBeUndefined();
-            expect(dimmerMap.get('bar')).toBeUndefined();
-            expect(dimmerMap.get('bob')).toBeUndefined();
+            expect(diagonMap.get('foo')).toBeUndefined();
+            expect(diagonMap.get('bar')).toBeUndefined();
+            expect(diagonMap.get('bob')).toBeUndefined();
         });
     });
 
@@ -208,12 +208,12 @@ describe('DimmerMap', () => {
             const valueObject0 = { prop0: 'foo' };
             const valueObject1 = { prop0: 'bar' };
 
-            const dimmerMap = new DimmerMap<string, Record<string, unknown>>(target);
-            dimmerMap.set('obj0', valueObject0);
-            dimmerMap.set('obj1', valueObject1);
+            const diagonMap = new DiagonMap<string, Record<string, unknown>>(target);
+            diagonMap.set('obj0', valueObject0);
+            diagonMap.set('obj1', valueObject1);
 
             let iterationCount = 0;
-            dimmerMap.forEach((value, key) => {
+            diagonMap.forEach((value, key) => {
                 iterationCount++;
 
                 expect(isProxy(value)).toBeTruthy();
@@ -241,14 +241,14 @@ describe('DimmerMap', () => {
             const entries = createTestEntries();
 
             const target = new Map(entries);
-            const dimmerMap = new DimmerMap(target);
+            const diagonMap = new DiagonMap(target);
 
-            const value0Proxy = dimmerMap.get(entries[0][0])!;
+            const value0Proxy = diagonMap.get(entries[0][0])!;
             expect(isProxy(value0Proxy)).toEqual(true);
 
             const key0Proxy = createRecordingProxy(entries[0][0]);
             expect(isProxy(key0Proxy)).toEqual(true);
-            expect(dimmerMap.get(key0Proxy)).toBe(value0Proxy);
+            expect(diagonMap.get(key0Proxy)).toBe(value0Proxy);
         });
     });
 
@@ -262,10 +262,10 @@ describe('DimmerMap', () => {
                 const entries = createTestEntries();
 
                 const target = new Map(entries);
-                const dimmerMap = new DimmerMap(target);
+                const diagonMap = new DiagonMap(target);
 
                 let i = 0;
-                for (const key of dimmerMap.keys()) {
+                for (const key of diagonMap.keys()) {
                     expect(isProxy(key)).toEqual(true);
                     expect(asOriginal(key)).toBe(entries[i][0]);
                     i++;
@@ -279,10 +279,10 @@ describe('DimmerMap', () => {
                 const entries = createTestEntries();
 
                 const target = new Map(entries);
-                const dimmerMap = new DimmerMap(target);
+                const diagonMap = new DiagonMap(target);
 
                 let i = 0;
-                for (const value of dimmerMap.values()) {
+                for (const value of diagonMap.values()) {
                     expect(isProxy(value)).toEqual(true);
                     expect(asOriginal(value)).toBe(entries[i][1]);
                     i++;
@@ -296,10 +296,10 @@ describe('DimmerMap', () => {
                 const entries = createTestEntries();
 
                 const target = new Map(entries);
-                const dimmerMap = new DimmerMap(target);
+                const diagonMap = new DiagonMap(target);
 
                 let i = 0;
-                for (const [key, value] of dimmerMap.entries()) {
+                for (const [key, value] of diagonMap.entries()) {
                     expect(isProxy(key)).toEqual(true);
                     expect(asOriginal(key)).toBe(entries[i][0]);
 
@@ -322,19 +322,19 @@ describe('DimmerMap', () => {
             clearContext();
         });
 
-        it('returns map of differences and clears dimmer map', () => {
+        it('returns map of differences and clears diagon map', () => {
             const target = new Map<string, number>();
 
-            const dimmerMap = new DimmerMap<string, number>(target);
-            dimmerMap.set('fooo', 2234);
+            const diagonMap = new DiagonMap<string, number>(target);
+            diagonMap.set('fooo', 2234);
 
-            expect(Reflect.get(Map.prototype, 'size', dimmerMap)).toEqual(1);
+            expect(Reflect.get(Map.prototype, 'size', diagonMap)).toEqual(1);
 
-            const previous = dimmerMap.commitPatch();
+            const previous = diagonMap.commitPatch();
 
             expect(patchToTarget.get(previous)).toBe(target);
-            expect(dimmerMap.size).toEqual(1);
-            expect(Reflect.get(Map.prototype, 'size', dimmerMap)).toEqual(0);
+            expect(diagonMap.size).toEqual(1);
+            expect(Reflect.get(Map.prototype, 'size', diagonMap)).toEqual(0);
         });
 
     });

@@ -1,5 +1,5 @@
-import { elements } from '@akutruff/dimmer';
-import { useMutator, useSnapshot } from '@akutruff/dimmer-react';
+import { elements } from 'diagon';
+import { useMutator, useSnapshot } from 'diagon-react';
 import React, { FC } from 'react';
 import { Person, useAppState } from './app';
 import { PersonDetails } from './PersonDetails';

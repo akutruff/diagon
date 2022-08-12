@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Benchmark from 'benchmark';
 
-import { createRecordingProxy, resetEnvironment } from '../dimmer';
+import { createRecordingProxy, resetEnvironment } from '../diagon';
 import { suiteOptions } from './benchmarkOptions';
 import { createChangeRecorderFactory, createPatchTracker, recordAndPublishMutations, subscribe } from '../subscriptions';
 
@@ -34,7 +34,7 @@ function createPerson(name: string, bestFriend: Person | undefined, address: Add
     return { name, bestFriend, address, relations };
 }
 
-const dimmerCountSubscriber = (state: StateWithCount) => state.count;
+const diagonCountSubscriber = (state: StateWithCount) => state.count;
 const emptyCallback = () => { };
 
 type StateWithCount = ReturnType<typeof createStateWithCount>;
@@ -52,8 +52,8 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
 
     const suite = new Benchmark.Suite('Subscribe', { ...suiteOptions, ...{} });
     suite
-        .add('Dimmer', function () {
-            subscribe(patchTracker, state, dimmerCountSubscriber, () => { });
+        .add('Diagon', function () {
+            subscribe(patchTracker, state, diagonCountSubscriber, () => { });
         }, caseOptions)
         .add('Deep subscribe', function () {
             subscribe(patchTrackerForDeepSubscribe, personState, state => state.bestFriend!.bestFriend!.bestFriend!.bestFriend!.name, () => { });
@@ -72,11 +72,11 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     const state = createStateWithCount();
     const proxy = createRecordingProxy(state);
 
-    subscribe(patchTracker, state, dimmerCountSubscriber, () => { });
+    subscribe(patchTracker, state, diagonCountSubscriber, () => { });
 
     const suite = new Benchmark.Suite('Trigger', { ...suiteOptions, ...{} });
     suite
-        .add('Dimmer', function () {
+        .add('Diagon', function () {
             increment(state, 1);
         }, caseOptions)
         .run();

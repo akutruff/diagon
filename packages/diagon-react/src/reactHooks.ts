@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Mutator, AsyncMutator, asOriginal, subscribe, unsubscribe, PatchTracker, Subscription, subscribeDeep, ChildSubscriberRecursive, subscribeRecursive } from '@akutruff/dimmer';
+import { Mutator, AsyncMutator, asOriginal, subscribe, unsubscribe, PatchTracker, Subscription, subscribeDeep, ChildSubscriberRecursive, subscribeRecursive } from 'diagon';
 import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
 import { PatchTrackerContext } from '.';
 

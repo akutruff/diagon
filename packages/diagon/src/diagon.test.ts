@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitPatches, createContext, createRecordingProxy, Dimmer, getCurrentPatch, makePatchRecorder, modified, recordPatches, resetEnvironment } from './dimmer';
+import { clearContext, commitPatches, createContext, createRecordingProxy, Diagon, getCurrentPatch, makePatchRecorder, modified, recordPatches, resetEnvironment } from './diagon';
 import { createReversePatch } from './history';
 import { Patch, ObjectPatch } from './types';
 
-describe('Dimmer', () => {
+describe('Diagon', () => {
 
     describe(`${createRecordingProxy.name}()`, () => {
         let target: {
@@ -131,7 +131,7 @@ describe('Dimmer', () => {
             expect(state).toBe(referenceToOriginalNonProxyState);
             expect(state.name).toEqual('Walker');
 
-            expect(Dimmer.currentContext).toBeUndefined();
+            expect(Diagon.currentContext).toBeUndefined();
             expect(changes).toHaveLength(1);
             expect((changes[0] as ObjectPatch<State>).get('name')).toEqual('Jones');
         });

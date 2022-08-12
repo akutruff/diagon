@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { AnyArray } from './generics';
-import { dimmerArrayProxyHandler } from './dimmerArray';
-import { DimmerMap } from './dimmerMap';
-import { objectProxyHandler } from './dimmerObject';
-import { DimmerSet } from './dimmerSet';
-import { Patch, DimmerContext, DimmerEnvironment, DimmerId, DIMMER_ID, ORIGINAL, InferPatchType, Mutator } from './types';
+import { diagonArrayProxyHandler } from './diagonArray';
+import { DiagonMap } from './diagonMap';
+import { objectProxyHandler } from './diagonObject';
+import { DiagonSet } from './diagonSet';
+import { Patch, DiagonContext, DiagonEnvironment, DiagonId, DIAGON_ID, ORIGINAL, InferPatchType, Mutator } from './types';
 
-export const Dimmer: DimmerEnvironment = { nextId: 0 };
+export const Diagon: DiagonEnvironment = { nextId: 0 };
 export const modified = new Set<any>();
 
 // let modified = () => {};
 // let proxier = () => {};
 
 export function resetEnvironment() {
-    Dimmer.nextId = 0;
-    Dimmer.currentContext = undefined;
+    Diagon.nextId = 0;
+    Diagon.currentContext = undefined;
     modified.clear();
 }
 
@@ -22,22 +22,22 @@ export const objectToProxy = new WeakMap<any, any>();
 export const objectToCurrentPatch = new WeakMap<any, Patch>();
 export const patchToTarget = new WeakMap<Patch, any>();
 
-export function currentContext(): DimmerContext | undefined {
-    return Dimmer.currentContext;
+export function currentContext(): DiagonContext | undefined {
+    return Diagon.currentContext;
 }
 
 export function createContext() {
-    // if (Dimmer.currentContext !== undefined) {
-    //     throw new Error('Dimmer context already created');
+    // if (Diagon.currentContext !== undefined) {
+    //     throw new Error('Diagon context already created');
     // }
     modified.clear();
-    // Dimmer.currentContext = {
+    // Diagon.currentContext = {
     //     modified: new Set()
     // };
 }
 
 export function clearContext() {
-    //Dimmer.currentContext = undefined;
+    //Diagon.currentContext = undefined;
     modified.clear();
 }
 
@@ -96,11 +96,11 @@ export function createRecordingProxy<T extends object>(target: T): T {
     }
     let proxy;
     if (target instanceof Map) {
-        proxy = new DimmerMap<any, any>(target) as T;
+        proxy = new DiagonMap<any, any>(target) as T;
     } else if (target instanceof Set) {
-        proxy = new DimmerSet<any>(target) as T;
+        proxy = new DiagonSet<any>(target) as T;
     } else if (Array.isArray(target)) {
-        proxy = new Proxy<T>(target, dimmerArrayProxyHandler);
+        proxy = new Proxy<T>(target, diagonArrayProxyHandler);
     } else {
         proxy = new Proxy<T>(target, objectProxyHandler);
     }
@@ -124,14 +124,14 @@ export function proxify(value: any) {
             : createRecordingProxy(value));
 }
 
-function allocateDimmerId(): DimmerId {
-    return Dimmer.nextId++;
+function allocateDiagonId(): DiagonId {
+    return Diagon.nextId++;
 }
 
 //TODO: deprectated
-export function assignDimmerId(target: any) {
-    const id = allocateDimmerId();
-    Object.defineProperty(target, DIMMER_ID, { value: id, configurable: true, writable: true, enumerable: false });
+export function assignDiagonId(target: any) {
+    const id = allocateDiagonId();
+    Object.defineProperty(target, DIAGON_ID, { value: id, configurable: true, writable: true, enumerable: false });
     return id;
 }
 
@@ -142,7 +142,7 @@ export function commitPatches(): Patch[] {
         const targetProxy = objectToProxy.get(target);
 
         let patch;
-        if (targetProxy instanceof DimmerMap || targetProxy instanceof DimmerSet) {
+        if (targetProxy instanceof DiagonMap || targetProxy instanceof DiagonSet) {
             patch = targetProxy.commitPatch();
         } else {
             //TODO: objects and arrays do the same thing, but if we wanted to do differencing of arrays we could do it here

@@ -1,7 +1,7 @@
-import { patchToTarget, modified, objectToCurrentPatch, proxify } from './dimmer';
+import { patchToTarget, modified, objectToCurrentPatch, proxify } from './diagon';
 import { ArrayPatch, ORIGINAL, PROXY } from './types';
 
-export const dimmerArrayProxyHandler: ProxyHandler<any> = {
+export const diagonArrayProxyHandler: ProxyHandler<any> = {
 
     get(target: any, propertyKey: PropertyKey, receiver?: any) {
         switch (propertyKey) {

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitPatches, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './dimmer';
+import { clearContext, commitPatches, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
 
-import { findAllPatchesInHistory, removeDimmerMetadata, cloneDeep, undoPatch, createReversePatch } from './history';
-import { DIMMER_ID, Patch, NO_ENTRY } from './types';
+import { findAllPatchesInHistory, removeDiagonMetadata, cloneDeep, undoPatch, createReversePatch } from './history';
+import { DIAGON_ID, Patch, NO_ENTRY } from './types';
 
 describe('History', () => {
     interface StringNode {
@@ -25,7 +25,7 @@ describe('History', () => {
         data: number;
         child?: Node;
     }
-    
+
     function createNode(data: number, child?: Node): Node {
         return { data, child };
     }
@@ -482,18 +482,18 @@ describe('History', () => {
 
 
     describe('cloneDeep', () => {
-        it('assigns dimmer id to source objects', () => {
+        it('assigns diagon id to source objects', () => {
             const state = { root: { data: 1 } };
 
             const result = cloneDeep(state);
-            expect((state as any)[DIMMER_ID]).toBeDefined();
-            expect((state as any)[DIMMER_ID]).toEqual(0);
+            expect((state as any)[DIAGON_ID]).toBeDefined();
+            expect((state as any)[DIAGON_ID]).toEqual(0);
 
-            expect((result as any)[DIMMER_ID]).toBeDefined();
-            expect((result as any)[DIMMER_ID]).toEqual(0);
+            expect((result as any)[DIAGON_ID]).toBeDefined();
+            expect((result as any)[DIAGON_ID]).toEqual(0);
 
-            expect((state.root as any)[DIMMER_ID]).toBeDefined();
-            expect((state.root as any)[DIMMER_ID]).toEqual(1);
+            expect((state.root as any)[DIAGON_ID]).toBeDefined();
+            expect((state.root as any)[DIAGON_ID]).toEqual(1);
         });
 
         it('works with jest with circular references', () => {
@@ -545,8 +545,8 @@ describe('History', () => {
             expect(clone).toEqual(cloneDeep(originalState));
         });
 
-        describe(`${removeDimmerMetadata.name}()`, () => {
-            it('removes dimmer properties on original objects', () => {
+        describe(`${removeDiagonMetadata.name}()`, () => {
+            it('removes diagon properties on original objects', () => {
                 const originalState = createTestObjectGraph();
                 const state = createRecordingProxy(originalState);
                 //make hierarichy proxied

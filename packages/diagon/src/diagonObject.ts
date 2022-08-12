@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { patchToTarget, modified, objectToCurrentPatch, proxify, } from './dimmer';
+import { patchToTarget, modified, objectToCurrentPatch, proxify, } from './diagon';
 import { ORIGINAL, PROXY, ObjectPatch } from './types';
 
 export const objectProxyHandler: ProxyHandler<any> = {

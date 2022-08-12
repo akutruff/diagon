@@ -1,9 +1,9 @@
-import { DimmerSet } from './dimmerSet';
-import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './dimmer';
+import { DiagonSet } from './diagonSet';
+import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
 import { ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
-describe('DimmerSet', () => {
+describe('DiagonSet', () => {
     type Node = { prop0: string };
 
     function createTestEntries() {
@@ -17,9 +17,9 @@ describe('DimmerSet', () => {
     });
 
     it('can be constructed', () => {
-        const dimmerSet = new DimmerSet<string>(new Set());
-        expect(dimmerSet).toBeDefined();
-        expect(dimmerSet).toBeInstanceOf(Set);
+        const diagonSet = new DiagonSet<string>(new Set());
+        expect(diagonSet).toBeDefined();
+        expect(diagonSet).toBeInstanceOf(Set);
     });
 
     describe('has()', () => {
@@ -31,11 +31,11 @@ describe('DimmerSet', () => {
 
                 target.add(value);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                expect(dimmerSet.has(valueProxy)).toEqual(true);
-                expect(dimmerSet.size).toEqual(1);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                expect(diagonSet.has(valueProxy)).toEqual(true);
+                expect(diagonSet.size).toEqual(1);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
             });
 
             it('retrieves value when initialized with proxy as key and then fetched with original.', () => {
@@ -45,11 +45,11 @@ describe('DimmerSet', () => {
 
                 target.add(valueProxy);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                expect(dimmerSet.has(value)).toEqual(true);
-                expect(dimmerSet.size).toEqual(1);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                expect(diagonSet.has(value)).toEqual(true);
+                expect(diagonSet.size).toEqual(1);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
             });
         });
     });
@@ -58,24 +58,24 @@ describe('DimmerSet', () => {
         it(`records false for newly added entries.`, () => {
             const target = new Set<string>();
 
-            const dimmerSet = new DimmerSet<string>(target);
-            dimmerSet.add('foo');
+            const diagonSet = new DiagonSet<string>(target);
+            diagonSet.add('foo');
 
-            expect(dimmerSet.currentPatch.get('foo')).toEqual(false);
-            expect(dimmerSet.has('foo')).toEqual(true);
+            expect(diagonSet.currentPatch.get('foo')).toEqual(false);
+            expect(diagonSet.has('foo')).toEqual(true);
             expect(target.has('foo')).toEqual(true);
         });
 
         it('does not record change if value already in set.', () => {
             const target = new Set<string>();
             target.add('foo');
-            const dimmerSet = new DimmerSet<string>(target);
-            dimmerSet.add('foo');
+            const diagonSet = new DiagonSet<string>(target);
+            diagonSet.add('foo');
 
-            expect(dimmerSet.size).toEqual(1);
+            expect(diagonSet.size).toEqual(1);
 
-            expect(dimmerSet.currentPatch.has('foo')).toEqual(false);
-            expect(dimmerSet.has('foo')).toEqual(true);
+            expect(diagonSet.currentPatch.has('foo')).toEqual(false);
+            expect(diagonSet.has('foo')).toEqual(true);
             expect(target.has('foo')).toEqual(true);
         });
 
@@ -87,15 +87,15 @@ describe('DimmerSet', () => {
 
                 target.add(valueProxy);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                dimmerSet.add(value);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                diagonSet.add(value);
 
-                expect(dimmerSet.has(value)).toEqual(true);
-                expect(dimmerSet.has(valueProxy)).toEqual(true);
-                expect(dimmerSet.size).toEqual(1);
+                expect(diagonSet.has(value)).toEqual(true);
+                expect(diagonSet.has(valueProxy)).toEqual(true);
+                expect(diagonSet.size).toEqual(1);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(valueProxy)).toEqual(undefined);
 
 
                 expect(target.has(valueProxy)).toEqual(true);
@@ -108,15 +108,15 @@ describe('DimmerSet', () => {
 
                 target.add(value);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                dimmerSet.add(valueProxy);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                diagonSet.add(valueProxy);
 
-                expect(dimmerSet.has(value)).toEqual(true);
-                expect(dimmerSet.has(valueProxy)).toEqual(true);
-                expect(dimmerSet.size).toEqual(1);
+                expect(diagonSet.has(value)).toEqual(true);
+                expect(diagonSet.has(valueProxy)).toEqual(true);
+                expect(diagonSet.size).toEqual(1);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
 
                 expect(target.has(value)).toEqual(true);
             });
@@ -127,22 +127,22 @@ describe('DimmerSet', () => {
         it(`records nothing if did not previously have value.`, () => {
             const target = new Set<string>();
 
-            const dimmerSet = new DimmerSet<string>(target);
-            dimmerSet.delete('foo');
+            const diagonSet = new DiagonSet<string>(target);
+            diagonSet.delete('foo');
 
-            expect(dimmerSet.currentPatch.has('foo')).toEqual(false);
-            expect(dimmerSet.has('foo')).toEqual(false);
+            expect(diagonSet.currentPatch.has('foo')).toEqual(false);
+            expect(diagonSet.has('foo')).toEqual(false);
         });
 
         it('records previous value when present.', () => {
             const target = new Set<string>();
             target.add('foo');
-            const dimmerSet = new DimmerSet<string>(target);
+            const diagonSet = new DiagonSet<string>(target);
 
-            dimmerSet.delete('foo');
+            diagonSet.delete('foo');
 
-            expect(dimmerSet.currentPatch.get('foo')).toEqual(true);
-            expect(dimmerSet.has('foo')).toEqual(false);
+            expect(diagonSet.currentPatch.get('foo')).toEqual(true);
+            expect(diagonSet.has('foo')).toEqual(false);
         });
 
         describe('mixing proxies and originals as values', () => {
@@ -153,15 +153,15 @@ describe('DimmerSet', () => {
 
                 target.add(value);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                dimmerSet.delete(valueProxy);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                diagonSet.delete(valueProxy);
 
-                expect(dimmerSet.has(value)).toEqual(false);
-                expect(dimmerSet.has(valueProxy)).toEqual(false);
-                expect(dimmerSet.size).toEqual(0);
+                expect(diagonSet.has(value)).toEqual(false);
+                expect(diagonSet.has(valueProxy)).toEqual(false);
+                expect(diagonSet.size).toEqual(0);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(true);
-                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(value)).toEqual(true);
+                expect(diagonSet.currentPatch.get(valueProxy)).toEqual(undefined);
 
                 expect(target.has(value)).toEqual(false);
                 expect(target.has(valueProxy)).toEqual(false);
@@ -174,15 +174,15 @@ describe('DimmerSet', () => {
 
                 target.add(valueProxy);
 
-                const dimmerSet = new DimmerSet<typeof value>(target);
-                dimmerSet.delete(value);
+                const diagonSet = new DiagonSet<typeof value>(target);
+                diagonSet.delete(value);
 
-                expect(dimmerSet.has(value)).toEqual(false);
-                expect(dimmerSet.has(valueProxy)).toEqual(false);
-                expect(dimmerSet.size).toEqual(0);
+                expect(diagonSet.has(value)).toEqual(false);
+                expect(diagonSet.has(valueProxy)).toEqual(false);
+                expect(diagonSet.size).toEqual(0);
 
-                expect(dimmerSet.currentPatch.get(value)).toEqual(undefined);
-                expect(dimmerSet.currentPatch.get(valueProxy)).toEqual(true);
+                expect(diagonSet.currentPatch.get(value)).toEqual(undefined);
+                expect(diagonSet.currentPatch.get(valueProxy)).toEqual(true);
 
                 expect(target.has(value)).toEqual(false);
                 expect(target.has(valueProxy)).toEqual(false);
@@ -194,18 +194,18 @@ describe('DimmerSet', () => {
         it(`returns target.`, () => {
             const target = new Set<string>();
 
-            const dimmerSet = new DimmerSet<string>(target);
-            expect(dimmerSet[ORIGINAL]).toBe(target);
+            const diagonSet = new DiagonSet<string>(target);
+            expect(diagonSet[ORIGINAL]).toBe(target);
         });
     });
 
     describe(`[${PROXY.description}]`, () => {
-        it(`returns dimmer map for both target and dimmer map target.`, () => {
+        it(`returns diagon map for both target and diagon map target.`, () => {
             const target = new Set<string>();
 
-            const dimmerSet = new DimmerSet<string>(target);
-            expect((target as any)[PROXY]).toBe(dimmerSet);
-            expect(dimmerSet[PROXY]).toBe(dimmerSet);
+            const diagonSet = new DiagonSet<string>(target);
+            expect((target as any)[PROXY]).toBe(diagonSet);
+            expect(diagonSet[PROXY]).toBe(diagonSet);
         });
     });
 
@@ -216,17 +216,17 @@ describe('DimmerSet', () => {
             target.add('bar');
             target.add('bob');
 
-            const dimmerSet = new DimmerSet<string>(target);
+            const diagonSet = new DiagonSet<string>(target);
 
-            dimmerSet.clear();
+            diagonSet.clear();
 
-            expect(dimmerSet.currentPatch.get('foo')).toEqual(true);
-            expect(dimmerSet.currentPatch.get('bar')).toEqual(true);
-            expect(dimmerSet.currentPatch.get('bob')).toEqual(true);
+            expect(diagonSet.currentPatch.get('foo')).toEqual(true);
+            expect(diagonSet.currentPatch.get('bar')).toEqual(true);
+            expect(diagonSet.currentPatch.get('bob')).toEqual(true);
 
-            expect(dimmerSet.has('foo')).toEqual(false);
-            expect(dimmerSet.has('bar')).toEqual(false);
-            expect(dimmerSet.has('bob')).toEqual(false);
+            expect(diagonSet.has('foo')).toEqual(false);
+            expect(diagonSet.has('bar')).toEqual(false);
+            expect(diagonSet.has('bob')).toEqual(false);
         });
     });
 
@@ -236,12 +236,12 @@ describe('DimmerSet', () => {
             const valueObject0 = { prop0: 'foo' };
             const valueObject1 = { prop0: 'bar' };
 
-            const dimmerSet = new DimmerSet<Record<string, unknown>>(target);
-            dimmerSet.add(valueObject0);
-            dimmerSet.add(valueObject1);
+            const diagonSet = new DiagonSet<Record<string, unknown>>(target);
+            diagonSet.add(valueObject0);
+            diagonSet.add(valueObject1);
 
             let iterationCount = 0;
-            dimmerSet.forEach((value, key) => {
+            diagonSet.forEach((value, key) => {
                 iterationCount++;
 
                 expect(isProxy(value)).toBeTruthy();
@@ -265,10 +265,10 @@ describe('DimmerSet', () => {
             const entry0Proxy = createRecordingProxy(entries[0]);
 
             const target = new Set(entries);
-            const dimmerSet = new DimmerSet(target);
+            const diagonSet = new DiagonSet(target);
 
-            expect(dimmerSet.has(entries[0])).toEqual(true);
-            expect(dimmerSet.has(entry0Proxy)).toEqual(true);
+            expect(diagonSet.has(entries[0])).toEqual(true);
+            expect(diagonSet.has(entry0Proxy)).toEqual(true);
         });
 
     });
@@ -283,10 +283,10 @@ describe('DimmerSet', () => {
                 const entries = createTestEntries();
 
                 const target = new Set(entries);
-                const dimmerSet = new DimmerSet(target);
+                const diagonSet = new DiagonSet(target);
 
                 let i = 0;
-                for (const value of dimmerSet.values()) {
+                for (const value of diagonSet.values()) {
                     expect(isProxy(value)).toEqual(true);
                     expect(asOriginal(value)).toBe(entries[i]);
                     i++;
@@ -300,10 +300,10 @@ describe('DimmerSet', () => {
                 const entries = createTestEntries();
 
                 const target = new Set(entries);
-                const dimmerMap = new DimmerSet(target);
+                const diagonMap = new DiagonSet(target);
 
                 let i = 0;
-                for (const [value0, value1] of dimmerMap.entries()) {
+                for (const [value0, value1] of diagonMap.entries()) {
                     expect(isProxy(value0)).toEqual(true);
                     expect(asOriginal(value0)).toBe(entries[i]);
 
@@ -328,19 +328,19 @@ describe('DimmerSet', () => {
             clearContext();
         });
 
-        it('returns map of differences and clears dimmer map', () => {
+        it('returns map of differences and clears diagon map', () => {
             const target = new Set<string>();
 
-            const dimmerSet = new DimmerSet<string>(target);
-            dimmerSet.add('fooo');
+            const diagonSet = new DiagonSet<string>(target);
+            diagonSet.add('fooo');
 
-            expect(dimmerSet.currentPatch.size).toEqual(1);
+            expect(diagonSet.currentPatch.size).toEqual(1);
 
-            const previous = dimmerSet.commitPatch();
+            const previous = diagonSet.commitPatch();
 
             expect(patchToTarget.get(previous)).toBe(target);
-            expect(dimmerSet.size).toEqual(1);
-            expect(dimmerSet.currentPatch.size).toEqual(0);
+            expect(diagonSet.size).toEqual(1);
+            expect(diagonSet.currentPatch.size).toEqual(0);
         });
 
     });

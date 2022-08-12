@@ -1,4 +1,4 @@
-import { PatchTrackerContext, usePatchTrackerContextValue } from '@akutruff/dimmer-react';
+import { PatchTrackerContext, usePatchTrackerContextValue } from 'diagon-react';
 import React, { FC, useState } from 'react';
 import { createRootState } from './app';
 import { Incrementor } from './Incrementor';
