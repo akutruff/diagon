@@ -23,8 +23,8 @@ importers:
       '@types/react': ~18.0.17
       '@types/react-dom': ~18.0.6
       cross-env: ~7.0.3
-      diagon: ^0.4.3
-      diagon-react: ^0.4.3
+      diagon: ^0.5.0
+      diagon-react: ^0.5.0
       react: ~18.2.0
       react-dom: ~18.2.0
       react-scripts: ~5.0.1
@@ -32,8 +32,8 @@ importers:
       tsconfig-paths-webpack-plugin: ~4.0.0
       typescript: ~4.7.4
     dependencies:
-      diagon: 0.4.4
-      diagon-react: 0.4.4
+      diagon: link:../../packages/diagon
+      diagon-react: link:../../packages/diagon-react
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -4449,18 +4449,6 @@ packages:
       defined: 1.0.0
       minimist: 1.2.6
     dev: true
-
-  /diagon-react/0.4.4:
-    resolution: {integrity: sha512-EAeJvf+QKvncy5NQk8eixFGUzbW68ezjqPDIDO7GQJ4BEh3zeQNlgUdxfB2F7Ktb0TAzPETFhMrPN/FINfCxjA==}
-    dependencies:
-      diagon: 0.4.4
-      react: 18.2.0
-      react-dom: 18.2.0_react@18.2.0
-    dev: false
-
-  /diagon/0.4.4:
-    resolution: {integrity: sha512-6XjRnfrSRUAPoNtiqV3i71HfLPbFOjk7gZKEzrlokSlbdTybDbS2fb3i72M/2JSKErxXQ0Hq5AvuFg2IFX0ysw==}
-    dev: false
 
   /didyoumean/1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
