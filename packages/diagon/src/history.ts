@@ -1,4 +1,4 @@
-import { assignDiagonId, asOriginal, patchToTarget } from './diagon';
+import { assignDiagonId, asOriginal, patchToTarget, ensureProxy } from './diagon';
 import { createArrayPatch } from './diagonArray';
 import { createMapPatch, getKeyUsedByMap } from './diagonMap';
 import { createObjectPatch } from './diagonObject';
@@ -7,10 +7,20 @@ import { createSetPatch } from './diagonSet';
 import { Patch, DIAGON_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DiagonedObject } from './types';
 import { isMap, isPlainObject, isSet } from './utils';
 
-export function undoPatch(patch: Patch) {
+export function applyPatch(patch: Patch) {
     const target = patchToTarget.get(patch);
+    applyPatchTo(target, patch);
+}
 
-    if (target instanceof Map) {
+export function applyPatchToProxy(patch: Patch) {
+    const target = ensureProxy(patchToTarget.get(patch));
+
+    applyPatchTo(target, patch);
+}
+
+export function applyPatchTo(target: any, patch: Patch) {
+    const original = asOriginal(target);
+    if (original instanceof Map) {
         const mapPatch = patch as MapPatch;
         for (const [key, value] of mapPatch) {
             const wasPreviouslyInMap = value !== NO_ENTRY;
@@ -26,7 +36,7 @@ export function undoPatch(patch: Patch) {
                 target.delete(key);
             }
         }
-    } else if (target instanceof Set) {
+    } else if (original instanceof Set) {
         const setPatch = patch as SetPatch;
 
         for (const [key, wasPreviouslyInSet] of setPatch) {
@@ -36,7 +46,7 @@ export function undoPatch(patch: Patch) {
                 target.delete(key);
             }
         }
-    } else if (Array.isArray(target)) {
+    } else if (Array.isArray(original)) {
         const arrayPatch = patch as ArrayPatch;
         target.length = arrayPatch.length;
 
@@ -53,7 +63,7 @@ export function undoPatch(patch: Patch) {
 }
 
 export function createReversePatch(patch: Patch) {
-    const target = patchToTarget.get(patch);
+    const target = asOriginal(patchToTarget.get(asOriginal(patch)));
     if (target instanceof Map) {
         const reversePatch = createMapPatch(target);
         const mapPatch = patch as MapPatch;

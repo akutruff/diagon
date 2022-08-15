@@ -6,7 +6,6 @@ import { createReversePatch } from './history';
 import { Patch, ObjectPatch } from './types';
 
 describe('Diagon', () => {
-
     describe(`${createRecordingProxy.name}()`, () => {
         let target: {
             prop0: string
@@ -101,13 +100,12 @@ describe('Diagon', () => {
                 proxy.referencedObject = otherObject;
 
                 const patches = commitPatches();
-                console.log(patches);
+                
                 expect(patches).toHaveLength(1);
 
                 expect(target.referencedObject).toEqual(otherObject);
                 const patchFromChange = createReversePatch(patches[0]) as ObjectPatch<typeof target>;
 
-                console.log(patchFromChange);
                 expect(patchFromChange.get('referencedObject')).toEqual(otherObject);
             });
         });

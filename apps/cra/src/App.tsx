@@ -1,6 +1,7 @@
 import { PatchTrackerContext, usePatchTrackerContextValue } from 'diagon-react';
 import React, { FC, useState } from 'react';
 import { createRootState } from './app';
+import { History } from './History';
 import { Incrementor } from './Incrementor';
 import { PeopleList } from './PeopleList';
 import { PersonEditor } from './PersonEditor';
@@ -18,6 +19,8 @@ const MainLayout: FC = React.memo(() => {
           <PersonEditor />
         </div>
       </div>
+      <h2>Patch History</h2>
+      <History />
     </div>
   );
 });
@@ -33,6 +36,7 @@ const App: FC = () => {
       <div className='docked-bottom-right'>
         App <RenderCounter label={`<App/>`} />
       </div>
+
     </PatchTrackerContext.Provider>
   );
 };

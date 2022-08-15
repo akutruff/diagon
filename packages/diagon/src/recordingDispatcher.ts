@@ -26,7 +26,6 @@ export interface RecordingDispatcher {
 }
 
 export function createRecordingDispatcher(...middlewares: Middleware<DispatchContext>[]): RecordingDispatcher {
-
     // This is the depth of the mutate() / mutateAsync() callstack so that a pipeline executed while another pipeline is running can
     // detect if it can skip a new set of change recording.
     let callstackDepth = 0;

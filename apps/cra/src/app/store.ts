@@ -1,4 +1,4 @@
-import { createRecordingProxy } from 'diagon';
+import { createRecordingProxy, doNotTrack, Patch } from 'diagon';
 import { useRootState } from 'diagon-react';
 
 export interface Person {
@@ -8,10 +8,12 @@ export interface Person {
 
 }
 
+
 export interface RootState {
     selectedPerson: Person,
     people: Person[],
     counter: number,
+    history: HistoryTrackingState,
 }
 
 export function useAppState() {
@@ -31,6 +33,26 @@ export function createRootState() {
     return createRecordingProxy({
         selectedPerson: people[0],
         people,
-        counter: 0
+        counter: 0,
+        history: createHistoryTrackingState(),
     });
+}
+
+export interface HistoryEntry {
+    forward?: Patch[],
+    back: Patch[],
+}
+
+export interface HistoryTrackingState {
+    entries: HistoryEntry[],
+    isTimeTraveling: boolean,
+    timeTravelOffset: number
+}
+
+export function createHistoryTrackingState(): HistoryTrackingState {
+    return {
+        entries: doNotTrack([]),
+        isTimeTraveling: false,
+        timeTravelOffset: 0
+    };
 }

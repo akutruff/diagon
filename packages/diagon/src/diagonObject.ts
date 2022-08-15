@@ -30,7 +30,7 @@ export const objectProxyHandler: ProxyHandler<any> = {
             modified.add(target);
 
             const currentValue = target[propertyKey];
-            patch.set(propertyKey, currentValue || undefined);
+            patch.set(propertyKey, currentValue);
         }
 
         return Reflect.set(target, propertyKey, value);
@@ -38,7 +38,7 @@ export const objectProxyHandler: ProxyHandler<any> = {
 };
 
 export function createObjectPatch<T>(target: T): ObjectPatch<T> {
-    const patch = new Map<keyof T, T[keyof T]>();
+    const patch = new Map<keyof T, T[keyof T]>(); 
 
     // const patch = {} as ObjectPatch<T>;
     patchToTarget.set(patch, target);

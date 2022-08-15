@@ -2,8 +2,7 @@
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { clearContext, commitPatches, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
-
-import { findAllPatchesInHistory, removeDiagonMetadata, cloneDeep, undoPatch, createReversePatch } from './history';
+import { findAllPatchesInHistory, removeDiagonMetadata, cloneDeep, applyPatch, createReversePatch } from './history';
 import { DIAGON_ID, Patch, NO_ENTRY } from './types';
 
 describe('History', () => {
@@ -74,7 +73,7 @@ describe('History', () => {
 
     });
 
-    describe(`${undoPatch.name}()`, () => {
+    describe(`${applyPatch.name}()`, () => {
         describe('proxy behavior', () => {
             beforeEach(() => {
                 createContext();
@@ -105,7 +104,7 @@ describe('History', () => {
 
                 for (let i = changes.length - 1; i >= 0; i--) {
                     expect(target.name).toEqual(i.toString());
-                    changes[i].forEach(undoPatch);
+                    changes[i].forEach(applyPatch);
                 }
 
                 expect(target.name).toEqual('0');
@@ -133,13 +132,13 @@ describe('History', () => {
                 expect(patches[3].get('foo')).toEqual(NO_ENTRY);
 
                 expect(target.get('foo')).toEqual(1231);
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
                 expect(target.has('foo')).toBeFalsy();
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
                 expect(target.get('foo')).toEqual(821);
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
                 expect(target.get('foo')).toEqual(123);
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
                 expect(target.has('foo')).toBeFalsy();
             });
 
@@ -167,16 +166,16 @@ describe('History', () => {
 
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(true);
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
                 expect(target.has('foo')).toEqual(false);
                 expect(target.has('bar')).toEqual(true);
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(true);
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
                 expect(target.has('foo')).toEqual(true);
                 expect(target.has('bar')).toEqual(false);
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
                 expect(target.has('foo')).toEqual(false);
                 expect(target.has('bar')).toEqual(false);
             });
@@ -204,19 +203,19 @@ describe('History', () => {
                 expect(patches[4]).toEqual(['foo', 'baz', 'buzz']);
 
                 expect(target).toEqual(['foo', 'hello', 'buzz']);
-                undoPatch(patches[4]);
+                applyPatch(patches[4]);
 
                 expect(target).toEqual(['foo', 'baz', 'buzz']);
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
 
                 expect(target).toEqual(['foo', 'bar', 'baz', 'buzz']);
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
 
                 expect(target).toEqual(['foo', 'bar']);
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
 
                 expect(target).toEqual(['foo']);
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
 
                 expect(target).toEqual([]);
             });
@@ -247,7 +246,7 @@ describe('History', () => {
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                undoPatch(history[0][0]);
+                applyPatch(history[0][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
@@ -288,12 +287,12 @@ describe('History', () => {
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBeUndefined();
 
-                undoPatch(history[1][0]);
+                applyPatch(history[1][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                undoPatch(history[0][0]);
+                applyPatch(history[0][0]);
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(valueProxy);
@@ -319,23 +318,23 @@ describe('History', () => {
 
                 expect(target).toEqual({ prop0: 'again' });
                 reversePatches.unshift(createReversePatch(patches[2]));
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
 
                 reversePatches.unshift(createReversePatch(patches[1]));
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
 
                 reversePatches.unshift(createReversePatch(patches[0]));
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
 
                 expect(target).toEqual({});
 
-                undoPatch(reversePatches[0]);
+                applyPatch(reversePatches[0]);
                 expect(target).toEqual({ prop0: 'hello' });
 
-                undoPatch(reversePatches[1]);
+                applyPatch(reversePatches[1]);
                 expect(target).toEqual({ prop0: undefined });
 
-                undoPatch(reversePatches[2]);
+                applyPatch(reversePatches[2]);
                 expect(target).toEqual({ prop0: 'again' });
             });
 
@@ -357,29 +356,29 @@ describe('History', () => {
                 expect(target).toEqual(new Map([['foo', 567], ['bar', 821]]));
 
                 reversePatches.unshift(createReversePatch(patches[3]));
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
 
                 reversePatches.unshift(createReversePatch(patches[2]));
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
 
                 reversePatches.unshift(createReversePatch(patches[1]));
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
 
                 reversePatches.unshift(createReversePatch(patches[0]));
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
 
                 expect(target).toEqual(new Map());
 
-                undoPatch(reversePatches[0]);
+                applyPatch(reversePatches[0]);
                 expect(target).toEqual(new Map([['foo', 123]]));
 
-                undoPatch(reversePatches[1]);
+                applyPatch(reversePatches[1]);
                 expect(target).toEqual(new Map([['foo', 123], ['bar', 821]]));
 
-                undoPatch(reversePatches[2]);
+                applyPatch(reversePatches[2]);
                 expect(target).toEqual(new Map([['bar', 821]]));
 
-                undoPatch(reversePatches[3]);
+                applyPatch(reversePatches[3]);
                 expect(target).toEqual(new Map([['foo', 567], ['bar', 821]]));
             });
 
@@ -402,29 +401,29 @@ describe('History', () => {
                 expect(target).toEqual(new Set(['foo', 'bar']));
 
                 reversePatches.unshift(createReversePatch(patches[3]));
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
 
                 reversePatches.unshift(createReversePatch(patches[2]));
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
 
                 reversePatches.unshift(createReversePatch(patches[1]));
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
 
                 reversePatches.unshift(createReversePatch(patches[0]));
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
 
                 expect(target).toEqual(new Set());
 
-                undoPatch(reversePatches[0]);
+                applyPatch(reversePatches[0]);
                 expect(target).toEqual(new Set(['foo']));
 
-                undoPatch(reversePatches[1]);
+                applyPatch(reversePatches[1]);
                 expect(target).toEqual(new Set(['foo', 'bar']));
 
-                undoPatch(reversePatches[2]);
+                applyPatch(reversePatches[2]);
                 expect(target).toEqual(new Set(['bar']));
 
-                undoPatch(reversePatches[3]);
+                applyPatch(reversePatches[3]);
                 expect(target).toEqual(new Set(['foo', 'bar']));
             });
 
@@ -446,35 +445,35 @@ describe('History', () => {
                 const reversePatches: Patch[] = [];
 
                 reversePatches.unshift(createReversePatch(patches[4]));
-                undoPatch(patches[4]);
+                applyPatch(patches[4]);
 
                 reversePatches.unshift(createReversePatch(patches[3]));
-                undoPatch(patches[3]);
+                applyPatch(patches[3]);
 
                 reversePatches.unshift(createReversePatch(patches[2]));
-                undoPatch(patches[2]);
+                applyPatch(patches[2]);
 
                 reversePatches.unshift(createReversePatch(patches[1]));
-                undoPatch(patches[1]);
+                applyPatch(patches[1]);
 
                 reversePatches.unshift(createReversePatch(patches[0]));
-                undoPatch(patches[0]);
+                applyPatch(patches[0]);
 
                 expect(target).toEqual([]);
 
-                undoPatch(reversePatches[0]);
+                applyPatch(reversePatches[0]);
                 expect(target).toEqual(['foo']);
 
-                undoPatch(reversePatches[1]);
+                applyPatch(reversePatches[1]);
                 expect(target).toEqual(['foo', 'bar']);
 
-                undoPatch(reversePatches[2]);
+                applyPatch(reversePatches[2]);
                 expect(target).toEqual(['foo', 'bar', 'baz', 'buzz']);
 
-                undoPatch(reversePatches[3]);
+                applyPatch(reversePatches[3]);
                 expect(target).toEqual(['foo', 'baz', 'buzz']);
 
-                undoPatch(reversePatches[4]);
+                applyPatch(reversePatches[4]);
                 expect(target).toEqual(['foo', 'hello', 'buzz']);
             });
         });

@@ -55,7 +55,8 @@ export interface PatchTracker {
     version: number;
     rootNodes: Map<any, SubscriptionNodeData>;
     objectSubscriptions: Map<any, Set<SubscriptionNodeData>>;
-    history: Patch[][];
+    lastPatches: Patch[];
+    onNewPatches: Map<() => void, (patches: Patch[]) => void>
 }
 
 export function createPatchTracker(): PatchTracker {
@@ -63,10 +64,10 @@ export function createPatchTracker(): PatchTracker {
         version: 0,
         rootNodes: new Map<any, SubscriptionNodeData>(),
         objectSubscriptions: new Map<any, Set<SubscriptionNodeData>>(),
-        history: []
+        lastPatches: [],
+        onNewPatches: new Map(),
     };
 }
-
 
 //These method types are first defined on an interface so that they stay completely generic with no bound types.
 //  Unfortunately, this is all basically partial function application, but variadic types aren't as general as we would like
@@ -249,7 +250,6 @@ function getHighestCommonAncestors(nodes: Set<SubscriptionNodeData>) {
     const highestCommonAncestors = new Set<SubscriptionNodeData>();
     const visited = new WeakSet<any>();
 
-    //TODO: already visited may be an optimization for deeper hierachies?
     for (const node of nodes) {
         if (!visited.has(node)) {
             visited.add(node);
@@ -312,6 +312,8 @@ function getValueFromParent(node: SubscriptionNodeData) {
 
 export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: PatchTracker, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
+    tracker.lastPatches = patches;
+
     // console.log('publishing');
     for (const patch of patches) {
         // console.log('patch :>> ', patch);

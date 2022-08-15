@@ -42,7 +42,6 @@ export const createPatchTrackerContextValue = (
     };
 };
 
-//TODO: test what setContextProps.  Is it for simply changing any prop and causing a full re-render?
 export const usePatchTrackerContextValue = (initialValue: Partial<PatchTrackerContextProps>): PatchTrackerContextValue => {
     const [contextProps, setContextProps] = useState(initialValue);
     const value = useMemo(() => createPatchTrackerContextValue(contextProps, setContextProps), [contextProps]);
@@ -54,19 +53,29 @@ export const configureReactMiddleware = (patchTracker: PatchTracker) => (context
     next();
 
     if (context.callstackDepth === 0) {
-        const callbacksToFire = context.patches ? getCallbacksAndUpdateSubscriptionsFromPatches(patchTracker, context.patches) : undefined;
-        //TODO: add history support externally
-        //for consumers to do their own change tracking
-
         //TODO: use Number.MAX_SAFE_INTEGER or BigInt
         patchTracker.version++;
 
-        if (callbacksToFire && callbacksToFire.size > 0) {
-            ReactDOM.unstable_batchedUpdates(() => {
-                for (const callback of callbacksToFire) {
-                    callback();
-                }
-            });
+        if (context.patches && context.patches.length > 0) {
+            const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(patchTracker, context.patches);
+
+            //TODO: add history support externally
+            //for consumers to do their own change tracking
+
+            if (callbacksToFire.size > 0 || patchTracker.onNewPatches.size > 0) {
+
+                const onNewPatches = Array.from(patchTracker.onNewPatches);
+                const patches = context.patches;
+                ReactDOM.unstable_batchedUpdates(() => {
+                    for (const callback of callbacksToFire) {
+                        callback();
+                    }
+
+                    for (const [_key, onNewPatchesCallback] of onNewPatches) {
+                        onNewPatchesCallback(patches);
+                    }
+                });
+            }
         }
     }
 };

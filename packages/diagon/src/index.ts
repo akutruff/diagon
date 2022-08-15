@@ -1,8 +1,8 @@
-export { areSame, asOriginal, clearContext, createContext, createRecordingProxy, currentContext, Diagon, doNotTrack, ensureProxy, getCurrentPatch, isProxy, makePatchRecorder, recordPatches, resetEnvironment, tryGetProxy } from './diagon';
+export { areSame, getPatchTarget, asOriginal, clearContext, createContext, createRecordingProxy, currentContext, Diagon, doNotTrack, ensureProxy, getCurrentPatch, isProxy, makePatchRecorder, recordPatches, resetEnvironment, tryGetProxy } from './diagon';
 export { DiagonMap } from './diagonMap';
 export { DiagonSet } from './diagonSet';
 export * from './generics';
-export { createReversePatch, findAllPatchesInHistory, getObjectTimeline, undoPatch } from './history';
+export { createReversePatch, findAllPatchesInHistory, getObjectTimeline, applyPatch, applyPatchToProxy } from './history';
 export * from './middleware';
 export { all, elements, map_get } from './pathRecorder';
 export * from './recordingDispatcher';
