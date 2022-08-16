@@ -1,5 +1,5 @@
 import { useMutator, useSnapshot } from 'diagon-react';
-import React, { ChangeEvent, FC } from 'react';
+import React, { ChangeEvent, FC, CSSProperties } from 'react';
 import { useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
 
@@ -10,12 +10,13 @@ export const PersonEditor: FC = React.memo(() => {
     const onChangeName = useMutator(state, (state, ev: ChangeEvent<HTMLInputElement>) => state.selectedPerson.name = ev.target.value);
 
     return (
-        <div className='person-editor'>
+        <div style={style}>
             <h5>Edit Person</h5>
             <div>
                 <div>Name: {name}</div>
                 <div>Age: {age}</div>
-                <p>                Change name
+                <p>
+                    Change name:
                     <input type="text" value={name} style={{ marginLeft: 5 }} onChange={onChangeName} />
                 </p>
             </div>
@@ -23,3 +24,12 @@ export const PersonEditor: FC = React.memo(() => {
         </div>
     );
 });
+
+const style: CSSProperties = {
+    padding: 10,
+    minWidth: 200,
+    display: 'inline-block',
+    borderRadius: 5,
+    color: 'black',
+    backgroundColor: 'lightgray'
+};

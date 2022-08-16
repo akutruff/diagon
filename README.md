@@ -149,7 +149,9 @@ In the above example, by accessing `person.name` and `person.age` in the selecto
 
 The selector function is special.  When your component is mounted, this function is first used to record the properties you will be accessing from the subscribed state.  This is done by passing an empty proxy object as the parameter to selector you provide.  This means that you should not put any code that does any type of complex logic in the selector.  After the initial selector is run with a proxy, the selector is used with your real state to extract the values from the state.
 
-Also, there is an optional third parameter that allows you to pass a dependency list that will trigger a re-render and resubscribe to the object tree.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 
+After a change is detected in your subscriptions, the output of the selection is cached and re-rendering only happens if the value has changed.  The value change check is an object reference comparison, so you should generally wrap your selector in an array of outputs if you plan on return object references from your selector.  Without adding a wrapping 
+
+There is an optional third parameter that allows you to pass a dependency list that will trigger a re-render and resubscribe to the object tree.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 
 
 #### Deep values
 
@@ -171,14 +173,16 @@ Note that you can also make complicated chains.  Here, any property change on `s
 
 ### `elements()`
 ```typescript
-const CollectionComponent : FC = () => {
+const CollectionComponent : FC = React.memo(() => {
     const state = useAppState();
     const [people] = useSnapshot(state, state => [elements(state.people)]);
-}
+});
 ```
 Subscribes to the collection as a whole and will re-render if an item is added or removed from the collection.  This should work for arrays, maps, and sets. **Maps and sets may currently have an issue that's being investigated.**
 
-Note: if a property inside the `people` array changes, it will **NOT** trigger a re-render of the component.  This is by design.
+Not the selector is wrapped in an array. This is intentional since this selector returns a reference to the people object and selectors memoize output.  Without the wrapping array, the `CollectionComponent` would not re-render.
+
+Note: if a property on a `Person` object inside the `people` array changes, it will **not** trigger a re-render of the component.  This is by design.
 
 #### Subscribe to an array index
 ```typescript

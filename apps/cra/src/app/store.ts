@@ -14,20 +14,26 @@ export interface RootState {
     people: Person[],
     counter: number,
     history: HistoryTrackingState,
+    nextPersonId: number
 }
 
 export function useAppState() {
     return useRootState() as RootState;
 }
 
+export function createPerson(state: RootState, person: Omit<Person, 'id'>) {
+    return { ...person, id: state.nextPersonId++ };
+}
+
 export function createRootState() {
+    let id = 0;
     const people = [
-        { id: 0, name: 'Bob', age: 42 },
-        { id: 1, name: 'Alice', age: 40 },
-        { id: 2, name: 'James', age: 19 },
-        { id: 3, name: 'Jill', age: 60 },
-        { id: 4, name: 'Raekwon', age: 52 },
-        { id: 5, name: 'Alana', age: 28 },
+        { id: id++, name: 'Bob', age: 42 },
+        { id: id++, name: 'Alice', age: 40 },
+        { id: id++, name: 'James', age: 19 },
+        { id: id++, name: 'Jill', age: 60 },
+        { id: id++, name: 'Raekwon', age: 52 },
+        { id: id++, name: 'Alana', age: 28 },
     ];
 
     return createRecordingProxy({
@@ -35,6 +41,7 @@ export function createRootState() {
         people,
         counter: 0,
         history: createHistoryTrackingState(),
+        nextPersonId: id,
     });
 }
 

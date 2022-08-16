@@ -17,10 +17,11 @@ const MainLayout: FC = React.memo(() => {
         <PeopleList />
         <div style={{ alignSelf: 'flex-start' }}>
           <PersonEditor />
+          <h2>Patch History</h2>
+          <History />
         </div>
       </div>
-      <h2>Patch History</h2>
-      <History />
+
     </div>
   );
 });
@@ -36,7 +37,6 @@ const App: FC = () => {
       <div className='docked-bottom-right'>
         App <RenderCounter label={`<App/>`} />
       </div>
-
     </PatchTrackerContext.Provider>
   );
 };

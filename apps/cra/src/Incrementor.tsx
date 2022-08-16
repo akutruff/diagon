@@ -1,5 +1,5 @@
 import { useMutator, useSnapshot } from 'diagon-react';
-import React, { FC } from 'react';
+import React, { CSSProperties, FC } from 'react';
 import { useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
 
@@ -11,7 +11,7 @@ export const Incrementor: FC = React.memo(() => {
 
     return (
         <div>
-            <div className='incremtor-container'>
+            <div style={style}>
                 <div>value: {counter}</div>
                 <button type="button" onClick={increment}>Click me</button>
             </div >
@@ -20,3 +20,8 @@ export const Incrementor: FC = React.memo(() => {
         </div>
     );
 });
+
+const style: CSSProperties = {
+    display: 'flex',
+    gap: 5
+};

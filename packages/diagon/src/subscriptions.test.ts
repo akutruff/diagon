@@ -188,7 +188,7 @@ describe('subscriptions', () => {
             expect(state.people[1].name).toEqual('Joan');
         });
 
-        it('reacts to any change shallow to items in collection when subscribed to Sybmol.Iterator', async () => {
+        it('reacts to any change shallow to items in collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleState();
 
             const changeName = createMutator((state: PeopleState, index: number, value: string) => state.people[index].name = value);
@@ -207,6 +207,27 @@ describe('subscriptions', () => {
             expect(callback).toBeCalledTimes(1);
             expect(callback.mock.calls.length).toEqual(1);
             expect(state.people[1].name).toEqual('Joan');
+        });
+
+        it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
+            const state = createPeopleState();
+
+            const addPerson = createMutator((state: PeopleState, value: string) => state.people.push({ name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => elements(state.people), callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            addPerson(state, 'Joan');
+            expect(callback).toBeCalledTimes(1);
+            expect(callback.mock.calls.length).toEqual(1);
+            expect(state.people[2].name).toEqual('Joan');
+
+            addPerson(state, 'Karl');
+            expect(callback).toBeCalledTimes(2);
+            expect(callback.mock.calls.length).toEqual(2);
+            expect(state.people[3].name).toEqual('Karl');
         });
     });
 

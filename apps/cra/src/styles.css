@@ -45,25 +45,13 @@ body {
 
 .person-details {
     padding: 10px;
-    min-width: 200px;
+    width: 200px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     display: inline-block;
     border-radius: 5px;
     color: black;
     background-color: white;
-}
-
-.person-editor {
-    padding: 10px;
-    min-width: 200px;
-    display: inline-block;
-    border-radius: 5px;
-    color: black;
-    background-color: lightgray;
-}
-
-.incrementor-container {
-    display: flex;
-    gap: 5px;
 }
 
 .docked-bottom-right {

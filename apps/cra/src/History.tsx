@@ -1,6 +1,6 @@
 import { applyPatchToProxy, asOriginal, createReversePatch, Patch } from 'diagon';
 import { useMutator, usePatches, useSnapshot } from 'diagon-react';
-import React, { FC } from 'react';
+import React, { FC, CSSProperties } from 'react';
 import { useAppState } from './app';
 
 function mapToString<TKey, TValue>(map: Map<TKey, TValue>) {
@@ -116,13 +116,12 @@ export const History: FC = React.memo(() => {
             );
         });
 
+        // const selectionIndicatorStyle: CSSProperties = { width: '1em', backgroundColor: 'lightblue', visibility: entryIndex === currentHistoryIndex ? 'visible' : 'hidden' };
         return (
-            <div key={entryIndex} style={{ display: 'flex', gap: 5, color: entryIndex === currentHistoryIndex ? 'lightblue' : 'white' }}>
-                <div style={{ width: '1em', backgroundColor: 'lightblue', visibility: entryIndex === currentHistoryIndex ? 'visible' : 'hidden' }} />
-                <div>
-                    [
-                    {items}
-                    ]
+            <div key={entryIndex} style={{ ...historyElementContainerStyle, color: entryIndex === currentHistoryIndex ? 'lightblue' : 'white' }}>
+                <div style={{ ...selectionIndicatorStyle, visibility: entryIndex === currentHistoryIndex ? 'visible' : 'hidden' }} />
+                <div style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    [{items}]
                 </div>
             </div>
         );
@@ -135,8 +134,8 @@ export const History: FC = React.memo(() => {
             <button type="button" onClick={goForward} disabled={currentHistoryIndex >= entries.length}>Redo</button>
             <div>{currentHistoryIndex} / {entries.length}</div>
             {historyElements}
-            <div style={{ display: 'flex', gap: 5, color: entries.length === currentHistoryIndex ? 'lightblue' : 'white' }}>
-                <div style={{ width: '1em', backgroundColor: 'lightblue', visibility: entries.length === currentHistoryIndex ? 'visible' : 'hidden' }} />
+            <div style={{ ...historyElementContainerStyle, color: entries.length === currentHistoryIndex ? 'lightblue' : 'white' }}>
+                <div style={{ ...selectionIndicatorStyle, visibility: entries.length === currentHistoryIndex ? 'visible' : 'hidden' }} />
                 <div>
                     *present state*
                 </div>
@@ -144,3 +143,6 @@ export const History: FC = React.memo(() => {
         </div>
     );
 });
+
+const historyElementContainerStyle: CSSProperties = { display: 'flex', gap: 5, };
+const selectionIndicatorStyle: CSSProperties = { width: '1em', backgroundColor: 'lightblue' };
