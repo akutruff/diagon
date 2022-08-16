@@ -6,7 +6,8 @@
     "types": [
       "jest",
       "node"
-    ]
+    ],
+    "strict": true
   },
   "include": [
     "src/**/*"

@@ -1,5 +1,5 @@
 import { createRecordingProxy, resetEnvironment } from './diagon';
-import { all, elements } from './pathRecorder';
+import { all, elements, map_get } from './pathRecorder';
 import { createChangeRecorderFactory, createPatchTracker, PatchTracker, MutatorChangeRecorderFactory, recordAndPublishMutations, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
 
 describe('subscriptions', () => {
@@ -145,6 +145,7 @@ describe('subscriptions', () => {
         createRecordingProxy(state);
         return state;
     }
+
     type PeopleState = ReturnType<typeof createPeopleState>;
 
     describe('Arrays', () => {
@@ -231,12 +232,143 @@ describe('subscriptions', () => {
         });
     });
 
+    function createPeopleMapState() {
+        const state = createRecordingProxy({
+            people: new Map<string, Person>([['owner', { name: 'Bob' }], ['renter', { name: 'Sally' }]]),
+        });
+
+        return state;
+    }
+
+    type PeopleMapState = ReturnType<typeof createPeopleMapState>;
+
     describe('Map<>', () => {
-        it.todo('works with maps');
+        it('subscribes to individual element changes', async () => {
+            const state = createPeopleMapState();
+
+            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+                const person = state.people.get(key);
+                if (person) {
+                    person.name = value;
+                }
+            });
+            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => map_get(state.people, 'owner')?.name, callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            changeName(state, 'owner', 'Robert');
+            expect(callback).toBeCalledTimes(1);
+            expect(state.people.get('owner')?.name).toEqual('Robert');
+
+            changePerson(state, 'owner', 'Walter');
+            expect(callback).toBeCalledTimes(2);
+            expect(state.people.get('owner')?.name).toEqual('Walter');
+        });
+
+        it('ignores changes to unsubscribed elements', async () => {
+            const state = createPeopleMapState();
+
+            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+                const person = state.people.get(key);
+                if (person) {
+                    person.name = value;
+                }
+            });
+            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => map_get(state.people, 'owner')?.name, callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            changeName(state, 'renter', 'Jessica');
+            expect(callback).not.toHaveBeenCalled();
+            expect(state.people.get('renter')?.name).toEqual('Jessica');
+
+            changePerson(state, 'renter', 'Joan');
+            expect(callback).not.toHaveBeenCalled();
+            expect(state.people.get('renter')?.name).toEqual('Joan');
+        });
+
+        it('reacts to any change shallow to items in collection when subscribed to Symbol.Iterator', async () => {
+            const state = createPeopleMapState();
+
+            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+                const person = state.people.get(key);
+                if (person) {
+                    person.name = value;
+                }
+            });
+            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => elements(state.people), callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            changeName(state, 'owner', 'Robert');
+            expect(callback).not.toHaveBeenCalled();
+            expect(state.people.get('owner')?.name).toEqual('Robert');
+
+            changePerson(state, 'owner', 'Walter');
+            expect(callback).toBeCalledTimes(1);
+            expect(state.people.get('owner')?.name).toEqual('Walter');
+        });
+
+        it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
+            const state = createPeopleMapState();
+
+            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+                const person = state.people.get(key);
+                if (person) {
+                    person.name = value;
+                }
+            });
+            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => elements(state.people), callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            changeName(state, 'owner', 'Robert');
+            expect(callback).not.toHaveBeenCalled();
+            expect(state.people.get('owner')?.name).toEqual('Robert');
+
+            changePerson(state, 'observer', 'Walter');
+            expect(callback).toBeCalledTimes(1);
+            expect(state.people.get('observer')?.name).toEqual('Walter');
+        });
     });
 
+    function createPeopleSetState() {
+        const state = createRecordingProxy({
+            people: new Set<Person>([{ name: 'Bob' }, { name: 'Sally' }]),
+        });
+
+        return state;
+    }
+
+    type PeopleSetState = ReturnType<typeof createPeopleSetState>;
+
     describe('Set<>', () => {
-        it.todo('works with sets');
+        it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
+            const state = createPeopleSetState();
+
+            const addPerson = createMutator((state: PeopleSetState, value: string) => state.people.add({ name: value }));
+
+            const callback = jest.fn(() => { });
+
+            subscribe(patchTracker, state, state => elements(state.people), callback);
+            expect(callback).not.toHaveBeenCalled();
+
+            addPerson(state, 'Walter');
+            expect(callback).toBeCalledTimes(1);
+            expect(Array.from(state.people.values())[2].name).toEqual('Walter');
+        });
     });
 
     function createGridState(): Grid {
