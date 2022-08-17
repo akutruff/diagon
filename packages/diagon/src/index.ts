@@ -6,7 +6,7 @@ export { applyPatch, applyPatchToProxy, createReversePatch, findAllPatchesInHist
 export * from './middleware';
 export { all, elements, map_get } from './pathRecorder';
 export * from './recordingDispatcher';
-export { createChangeRecorderFactory, createPatchTracker, getCallbacksAndUpdateSubscriptionsFromPatches, subscribe, subscribeDeep, subscribeRecursive, unsubscribe } from './subscriptions';
-export type { ChildSubscriberRecursive, MutatorChangeRecorder, MutatorChangeRecorderFactory, PatchTracker, Subscription, SubscriptionCollection } from './subscriptions';
+export { createChangeRecorderFactory, createSubscriptionStore, getCallbacksAndUpdateSubscriptionsFromPatches, subscribe, subscribeDeep, subscribeRecursive, unsubscribe } from './subscriptions';
+export type { ChildSubscriberRecursive, MutatorChangeRecorder, MutatorChangeRecorderFactory, SubscriptionStore, Subscription, SubscriptionCollection } from './subscriptions';
 export * from './types';
 

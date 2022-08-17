@@ -1,15 +1,15 @@
 import { createRecordingProxy, resetEnvironment } from './diagon';
 import { all, elements, map_get } from './pathRecorder';
-import { createChangeRecorderFactory, createPatchTracker, PatchTracker, MutatorChangeRecorderFactory, recordAndPublishMutations, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
+import { createChangeRecorderFactory, createSubscriptionStore, SubscriptionStore, MutatorChangeRecorderFactory, recordAndPublishMutations, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
 
 describe('subscriptions', () => {
-    let patchTracker: PatchTracker;
+    let subStore: SubscriptionStore;
     let createMutator: MutatorChangeRecorderFactory;
 
     beforeEach(() => {
         resetEnvironment();
-        patchTracker = createPatchTracker();
-        createMutator = createChangeRecorderFactory(patchTracker, recordAndPublishMutations);
+        subStore = createSubscriptionStore();
+        createMutator = createChangeRecorderFactory(subStore, recordAndPublishMutations);
     });
 
     function createIncrementerState() {
@@ -30,7 +30,7 @@ describe('subscriptions', () => {
 
         const callback = jest.fn(() => { });
 
-        subscribe(patchTracker, state, state => state.count, callback);
+        subscribe(subStore, state, state => state.count, callback);
         expect(callback).not.toHaveBeenCalled();
 
         increment(state, 1);
@@ -61,7 +61,7 @@ describe('subscriptions', () => {
 
         const callback = jest.fn(() => { });
 
-        subscribe(patchTracker, state, state => state.bob, callback);
+        subscribe(subStore, state, state => state.bob, callback);
         expect(callback).not.toHaveBeenCalled();
 
         changePerson(state, 'Robert');
@@ -82,7 +82,7 @@ describe('subscriptions', () => {
 
         const callback = jest.fn(() => { });
 
-        subscribe(patchTracker, state, state => state.bob.name, callback);
+        subscribe(subStore, state, state => state.bob.name, callback);
         expect(callback).not.toHaveBeenCalled();
 
         changeAge(state, 42);
@@ -97,7 +97,7 @@ describe('subscriptions', () => {
 
         const callback = jest.fn(() => { });
 
-        subscribe(patchTracker, state, state => all(state), callback);
+        subscribe(subStore, state, state => all(state), callback);
         expect(callback).not.toHaveBeenCalled();
 
         changePerson(state, 'Robert');
@@ -120,7 +120,7 @@ describe('subscriptions', () => {
 
         const callback = jest.fn(() => { });
 
-        subscribe(patchTracker, state, state => all(state.bob), callback);
+        subscribe(subStore, state, state => all(state.bob), callback);
         expect(callback).not.toHaveBeenCalled();
 
         changePerson(state, 113);
@@ -157,7 +157,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => state.people[0].name, callback);
+            subscribe(subStore, state, state => state.people[0].name, callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 0, 'Robert');
@@ -177,7 +177,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => state.people[0].name, callback);
+            subscribe(subStore, state, state => state.people[0].name, callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 1, 'Jessica');
@@ -197,7 +197,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => state.people[Symbol.iterator], callback);
+            subscribe(subStore, state, state => state.people[Symbol.iterator], callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 1, 'Jessica');
@@ -217,7 +217,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => elements(state.people), callback);
+            subscribe(subStore, state, state => elements(state.people), callback);
             expect(callback).not.toHaveBeenCalled();
 
             addPerson(state, 'Joan');
@@ -256,7 +256,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => map_get(state.people, 'owner')?.name, callback);
+            subscribe(subStore, state, state => map_get(state.people, 'owner')?.name, callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 'owner', 'Robert');
@@ -281,7 +281,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => map_get(state.people, 'owner')?.name, callback);
+            subscribe(subStore, state, state => map_get(state.people, 'owner')?.name, callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 'renter', 'Jessica');
@@ -306,7 +306,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => elements(state.people), callback);
+            subscribe(subStore, state, state => elements(state.people), callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 'owner', 'Robert');
@@ -331,7 +331,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => elements(state.people), callback);
+            subscribe(subStore, state, state => elements(state.people), callback);
             expect(callback).not.toHaveBeenCalled();
 
             changeName(state, 'owner', 'Robert');
@@ -362,7 +362,7 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            subscribe(patchTracker, state, state => elements(state.people), callback);
+            subscribe(subStore, state, state => elements(state.people), callback);
             expect(callback).not.toHaveBeenCalled();
 
             addPerson(state, 'Walter');
@@ -386,7 +386,7 @@ describe('subscriptions', () => {
     describe('subscribeRecursive', () => {
         it.todo('reacts to row additions');
         //TODO:
-        // subscribeRecursive(patchTracker,
+        // subscribeRecursive(subStore,
         //     state,
         //     state => elements(state.grid),
         //     (grid, subber) =>
@@ -405,20 +405,20 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            const subscribeToRows = jest.fn((tracker: PatchTracker, grid: Person[][], callback: () => void) =>
+            const subscribeToRows = jest.fn((tracker: SubscriptionStore, grid: Person[][], callback: () => void) =>
                 grid.map(row => subscribe(tracker, row, row => elements(row), callback))
             );
 
             const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
 
-            subscribeDeep(patchTracker, state, state => elements(state.grid), subscribeToRows, callback);
+            subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
 
             expect(callback).not.toHaveBeenCalled();
 
             addRow(state, [{ name: 'p20' }, { name: 'p21' }]);
 
-            subscribeRecursive(patchTracker,
+            subscribeRecursive(subStore,
                 state,
                 state => elements(state.grid),
                 (grid, subber) =>
@@ -441,13 +441,13 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            const subscribeToRows = jest.fn(function (tracker: PatchTracker, grid: Person[][], parentCallback: () => void): Array<() => void> {
+            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
                 return grid.map(row => subscribe(tracker, row, row => elements(row), parentCallback));
             });
 
             const addElementToRow = createMutator((state: Person[], value: Person) => state.push(value));
 
-            subscribeDeep(patchTracker, state, state => elements(state.grid), subscribeToRows, callback);
+            subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
             expect(callback).not.toHaveBeenCalled();
 
@@ -463,7 +463,7 @@ describe('subscriptions', () => {
 
             const unsubscribeCallbacks: Array<() => void> = [];
 
-            const subscribeToRows = jest.fn(function (tracker: PatchTracker, grid: Person[][], parentCallback: () => void): Array<() => void> {
+            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
                 const newRowSubs = grid.map(row => {
                     const unsubFromRow = jest.fn(subscribe(tracker, row, row => elements(row), parentCallback));
                     unsubscribeCallbacks.push(unsubFromRow);
@@ -476,7 +476,7 @@ describe('subscriptions', () => {
             const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
             const addElementToRow = createMutator((state: Person[], value: Person) => state.push(value));
 
-            const unsubscribe = subscribeDeep(patchTracker, state, state => elements(state.grid), subscribeToRows, callback);
+            const unsubscribe = subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
             expect(unsubscribeCallbacks.length).toEqual(2);
 
@@ -510,7 +510,7 @@ describe('subscriptions', () => {
             const callback = jest.fn(() => { });
 
             let lastElementSubscriptions: Array<() => void> = [];
-            const subscribeToRows = jest.fn(function (tracker: PatchTracker, grid: Person[][], parentCallback: () => void): Array<() => void> {
+            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
                 lastElementSubscriptions = [];
 
                 const newRowSubs = grid.map(row => {
@@ -524,7 +524,7 @@ describe('subscriptions', () => {
 
             const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
 
-            const topLevelSubscription = jest.fn(subscribeDeep(patchTracker, state, state => elements(state.grid), subscribeToRows, callback));
+            const topLevelSubscription = jest.fn(subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback));
 
             const initialSubscriptions = lastElementSubscriptions;
 

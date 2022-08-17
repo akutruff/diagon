@@ -90,12 +90,12 @@ const Incrementor: FC = React.memo(() => {
 const App: FC = () => {  
   const [state] = useState(() => createRootState());
 
-  const patchTrackerContextValue = usePatchTrackerContextValue({ state, dispatch: () => { } });
+  const subscriptionContextValue = useSubscriptionContextValue({ state, dispatch: () => { } });
 
   return (
-    <PatchTrackerContext.Provider value={patchTrackerContextValue}>
+    <SubscriptionContext.Provider value={subscriptionContextValue}>
       <Incrementor />
-    </PatchTrackerContext.Provider>
+    </SubscriptionContext.Provider>
   );
 };
 ```
@@ -133,7 +133,7 @@ see [caveats](#caveats)
 
 ## `useRootState()`
 
-Accesses the topmost state that you gave to the `PatchTrackerContext.Provider` via `usePatchTrackerContextValue`. 
+Accesses the topmost state that you gave to the `SubscriptionContext.Provider` via `useSubscriptionContextValue`. 
 
 It returns an untyped value, so it is a good idea to have a simple wrapper function around the hook that casts to your root type.
 

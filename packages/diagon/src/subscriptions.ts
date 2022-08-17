@@ -52,13 +52,13 @@ function createMapKeyValueNode(parent: SubscriptionNodeData, key: any): MapKeyVa
 }
 
 //TODO: rename to better associate to Subscriptions rather than "tracking patches" which is doesn't
-export interface PatchTracker {
+export interface SubscriptionStore {
     version: number;
     rootNodes: Map<any, SubscriptionNodeData>;
     objectSubscriptions: Map<any, Set<SubscriptionNodeData>>;
 }
 
-export function createPatchTracker(): PatchTracker {
+export function createSubscriptionStore(): SubscriptionStore {
     return {
         version: 0,
         rootNodes: new Map<any, SubscriptionNodeData>(),
@@ -71,17 +71,17 @@ export function createPatchTracker(): PatchTracker {
 //  https://github.com/microsoft/TypeScript/issues/39244 
 interface IMutatorChangeRecorderTypes {
     mutatorChangeTrackingFactory: <TState extends object, TArgs extends unknown[], R = unknown>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, void>;
-    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(tracker: PatchTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
+    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(tracker: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
 }
 
 export type MutatorChangeRecorder = IMutatorChangeRecorderTypes['mutatorChangeRecorder'];
 export type MutatorChangeRecorderFactory = IMutatorChangeRecorderTypes['mutatorChangeTrackingFactory'];
 
-export const createChangeRecorderFactory = (patchTracker: PatchTracker, trackChanges: MutatorChangeRecorder): MutatorChangeRecorderFactory => {
-    return mutator => (state, ...args) => trackChanges(patchTracker, mutator, state, ...args);
+export const createChangeRecorderFactory = (subStore: SubscriptionStore, trackChanges: MutatorChangeRecorder): MutatorChangeRecorderFactory => {
+    return mutator => (state, ...args) => trackChanges(subStore, mutator, state, ...args);
 };
 
-export function subscribeObject(tracker: PatchTracker, node: SubscriptionNodeData, objectToSubscribe: any) {
+export function subscribeObject(tracker: SubscriptionStore, node: SubscriptionNodeData, objectToSubscribe: any) {
     if (node.subscribedObject === objectToSubscribe) {
         return;
     }
@@ -118,7 +118,7 @@ export function isSubscribable(objectToSubscribe: any) {
     return objectToSubscribe && (typeof objectToSubscribe === 'object' || isCollection(objectToSubscribe));
 }
 
-export function unsubscribeObject(tracker: PatchTracker, node: SubscriptionNodeData) {
+export function unsubscribeObject(tracker: SubscriptionStore, node: SubscriptionNodeData) {
     if (!node.subscribedObject)
         return;
     //TODO: assert that the current node is actually the subscribed node
@@ -143,7 +143,7 @@ function addCallback(node: SubscriptionNodeData, callback: () => unknown) {
     node.callbacks.add(callback);
 }
 
-function addPathToSubscriptions(tracker: PatchTracker, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
+function addPathToSubscriptions(tracker: SubscriptionStore, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
     const childPropertiesToMonitor = Reflect.ownKeys(currentPathRecord);
 
     if (childPropertiesToMonitor.length === 0) {
@@ -197,7 +197,7 @@ function addPathToSubscriptions(tracker: PatchTracker, callback: () => unknown, 
     return subscribedNodes;
 }
 
-export function subscribe<TState, R>(tracker: PatchTracker, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
+export function subscribe<TState, R>(tracker: SubscriptionStore, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
     const originalState = asOriginal(state);
     const path = recordPath(pathAccessor);
     // console.log('subscribed path :>> ', path);
@@ -268,7 +268,7 @@ function getHighestCommonAncestors(nodes: Set<SubscriptionNodeData>) {
     return highestCommonAncestors;
 }
 
-function resubscribeAndGatherCallbacks(tracker: PatchTracker, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
+function resubscribeAndGatherCallbacks(tracker: SubscriptionStore, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
     if (currentSubscriptionNode.callbacks) {
         for (const callback of currentSubscriptionNode.callbacks) {
             callbacksToFire.add(callback);
@@ -307,7 +307,7 @@ function getValueFromParent(node: SubscriptionNodeData) {
     }
 }
 
-export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: PatchTracker, patches: Patch[]) {
+export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: SubscriptionStore, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
 
     // console.log('publishing');
@@ -395,7 +395,7 @@ function isCollection(target: any) {
 }
 
 //This is the simplest form of getting recordings and subscriptions.  Undo/redo history code would want to snap this function in the main application.
-export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: PatchTracker, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
+export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
     const patches = recordPatches(mutator, state, ...args);
 
     const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(tracker, patches);
@@ -435,7 +435,7 @@ export interface GenericSelectSubscribeFunctionRecurse {
 export type ChildSubscriberRecursive<TState> = (state: TState, subscribe: GenericSelectSubscribeFunctionRecurse) => SubscriptionCollection;
 
 export function subscribeRecursive<TState, TChildState>(
-    tracker: PatchTracker,
+    tracker: SubscriptionStore,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
     subscribeToChildren: ChildSubscriberRecursive<TChildState>,
@@ -481,10 +481,10 @@ export function subscribeRecursive<TState, TChildState>(
 }
 
 export function subscribeDeep<TState, TChildState>(
-    tracker: PatchTracker,
+    tracker: SubscriptionStore,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
-    subscribeToChildren: (patchTracker: PatchTracker, selectedChild: TChildState, callback: () => void) => SubscriptionCollection,
+    subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => SubscriptionCollection,
     callback: () => void): Subscription {
 
     let currentChildSubscriptions: SubscriptionCollection;
