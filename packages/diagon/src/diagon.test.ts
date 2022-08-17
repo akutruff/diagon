@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitPatches, createContext, createRecordingProxy, Diagon, getCurrentPatch, makePatchRecorder, modified, recordPatches, resetEnvironment } from './diagon';
-import { createReversePatch } from './history';
-import { Patch, ObjectPatch } from './types';
+import { commitPatches, modified } from './diagon';
+import { clearModified, createReversePatch, createRecordingProxy, Diagon, getCurrentPatch, makePatchRecorder, recordPatches, resetEnvironment } from '.';
+
+import { ObjectPatch, Patch } from './types';
 
 describe('Diagon', () => {
     describe(`${createRecordingProxy.name}()`, () => {
@@ -14,7 +15,7 @@ describe('Diagon', () => {
 
         beforeEach(() => {
             resetEnvironment();
-            createContext();
+            clearModified();
 
             target = {
                 prop0: 'hello',
@@ -23,7 +24,7 @@ describe('Diagon', () => {
         });
 
         afterEach(() => {
-            clearContext();
+            clearModified();
         });
 
         it('tracks changes', () => {
@@ -47,11 +48,11 @@ describe('Diagon', () => {
     describe('change tracking', () => {
         beforeEach(() => {
             resetEnvironment();
-            createContext();
+            clearModified();
         });
 
         afterEach(() => {
-            clearContext();
+            clearModified();
         });
 
         describe(`${commitPatches.name}`, () => {
@@ -100,7 +101,7 @@ describe('Diagon', () => {
                 proxy.referencedObject = otherObject;
 
                 const patches = commitPatches();
-                
+
                 expect(patches).toHaveLength(1);
 
                 expect(target.referencedObject).toEqual(otherObject);

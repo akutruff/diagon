@@ -345,11 +345,11 @@ function setSomeProperties(obj: any) {
     obj.i = 2;
 }
 
-//const contextForBasic = createContext();
+//const contextForBasic = clearModified();
 const diagonProxy = createRecordingProxy({ ...target });
 const simpleProxy = new Proxy({ ...target }, {});
 
-//const contextForOverrides = createContext();
+//const contextForOverrides = clearModified();
 const diagonProxyWithOverrides = createRecordingProxy({ ...target });
 setSomeProperties(diagonProxyWithOverrides);
 

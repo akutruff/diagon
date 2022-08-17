@@ -27,6 +27,7 @@ export const PersonEditor: FC = React.memo(() => {
 
 const style: CSSProperties = {
     padding: 10,
+    paddingTop: 0,
     minWidth: 200,
     display: 'inline-block',
     borderRadius: 5,

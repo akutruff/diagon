@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { AnyArray } from './generics';
+import { AnyArray, DiagonContext, DiagonEnvironment, DiagonId, DiagonMap, DiagonSet, DIAGON_ID, InferPatchType, Mutator, ORIGINAL, Patch } from '.';
 import { diagonArrayProxyHandler } from './diagonArray';
-import { DiagonMap } from './diagonMap';
 import { objectProxyHandler } from './diagonObject';
-import { DiagonSet } from './diagonSet';
-import { Patch, DiagonContext, DiagonEnvironment, DiagonId, DIAGON_ID, ORIGINAL, InferPatchType, Mutator } from './types';
 
 export const Diagon: DiagonEnvironment = { nextId: 0 };
 export const modified = new Set<any>();
-
-// let modified = () => {};
-// let proxier = () => {};
 
 export function resetEnvironment() {
     Diagon.nextId = 0;
@@ -26,17 +20,7 @@ export function currentContext(): DiagonContext | undefined {
     return Diagon.currentContext;
 }
 
-export function createContext() {
-    // if (Diagon.currentContext !== undefined) {
-    //     throw new Error('Diagon context already created');
-    // }
-    modified.clear();
-    // Diagon.currentContext = {
-    //     modified: new Set()
-    // };
-}
-
-export function clearContext() {
+export function clearModified() {
     //Diagon.currentContext = undefined;
     modified.clear();
 }
@@ -65,15 +49,17 @@ export function areSame(one: any, two: any): boolean {
     return asOriginal(one) === asOriginal(two);
 }
 
+//TODO: try to reorder state and mutator parameters
 export function makePatchRecorder<TState extends object, TArgs extends AnyArray, R = unknown>(mutator: Mutator<TState, TArgs, R>) {
     return (state: TState, ...args: TArgs) => recordPatches<TState, TArgs, R>(mutator, state, ...args);
 }
 
+//TODO: Should return mutator result as well as value.
 export function recordPatches<TState extends object, R>(mutator: (state: TState) => R, state: TState): Patch[];
 export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): Patch[];
 export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R> | ((state: TState) => R), state: TState, ...args: TArgs): Patch[] {
     try {
-        createContext();
+        clearModified();
         const stateProxy = tryGetProxy(state) || createRecordingProxy(state);
         mutator(stateProxy, ...args);
 
@@ -81,7 +67,7 @@ export function recordPatches<TState extends object, TArgs extends AnyArray, R>(
         return changes;
     }
     finally {
-        clearContext();
+        clearModified();
     }
 }
 
@@ -89,7 +75,6 @@ export function ensureProxy<T extends object>(obj: T): T {
     return tryGetProxy(obj) || createRecordingProxy(obj);
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export function createRecordingProxy<T extends object>(target: T): T {
     if (isProxy(target)) {
         throw new Error('trying to proxy a proxy');
@@ -124,17 +109,6 @@ export function proxify(value: any) {
             : createRecordingProxy(value));
 }
 
-function allocateDiagonId(): DiagonId {
-    return Diagon.nextId++;
-}
-
-//TODO: deprectated
-export function assignDiagonId(target: any) {
-    const id = allocateDiagonId();
-    Object.defineProperty(target, DIAGON_ID, { value: id, configurable: true, writable: true, enumerable: false });
-    return id;
-}
-
 export function commitPatches(): Patch[] {
     const changes: Patch[] = [];
 
@@ -157,3 +131,14 @@ export function commitPatches(): Patch[] {
     return changes;
 }
 
+//TODO: decide if deep cloning should be in package
+function allocateDiagonId(): DiagonId {
+    return Diagon.nextId++;
+}
+
+//TODO: decide if ID's should be used at all
+export function assignDiagonId(target: any) {
+    const id = allocateDiagonId();
+    Object.defineProperty(target, DIAGON_ID, { value: id, configurable: true, writable: true, enumerable: false });
+    return id;
+}
