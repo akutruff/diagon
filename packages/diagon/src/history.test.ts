@@ -40,9 +40,9 @@ describe('History', () => {
             const state: { root?: Node } = createRecordingProxy({});
             const history: Patch[][] = [];
 
-            history.push(recordPatches((state) => state.root = createNode(0), state));  //state change
-            history.push(recordPatches((state) => state.root!.child = createNode(2), state)); // root change
-            history.push(recordPatches((state) => state.root!.child = createNode(3), state)); // root change
+            history.push(recordPatches(state, (state) => state.root = createNode(0)));  //state change
+            history.push(recordPatches(state, (state) => state.root!.child = createNode(2))); // root change
+            history.push(recordPatches(state, (state) => state.root!.child = createNode(3))); // root change
 
             const statePatches = findAllPatchesInHistory(history, state);
             expect(statePatches[0].get('root')).toBeUndefined();
@@ -61,8 +61,8 @@ describe('History', () => {
             const state = createRecordingProxy({ root: createNode(0) });
             const history: Patch[][] = [];
 
-            history.push(recordPatches((state) => state.root!.child = state.root, state)); // root change
-            history.push(recordPatches((state) => state.root!.child!.child = state.root, state)); // root change
+            history.push(recordPatches(state, (state) => state.root!.child = state.root)); // root change
+            history.push(recordPatches(state, (state) => state.root!.child!.child = state.root)); // root change
 
             const rootPatches = findAllPatchesInHistory(history, state.root);
             expect(rootPatches).toHaveLength(2);
@@ -117,10 +117,10 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.set('foo', 123), target));
-                history.push(recordPatches(target => target.set('foo', 821), target));
-                history.push(recordPatches(target => target.delete('foo'), target));
-                history.push(recordPatches(target => target.set('foo', 1231), target));
+                history.push(recordPatches(target, target => target.set('foo', 123)));
+                history.push(recordPatches(target, target => target.set('foo', 821)));
+                history.push(recordPatches(target, target => target.delete('foo')));
+                history.push(recordPatches(target, target => target.set('foo', 1231)));
 
                 const patches = findAllPatchesInHistory(history, target);
 
@@ -147,10 +147,10 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.add('foo'), target));
-                history.push(recordPatches(target => target.add('bar'), target));
-                history.push(recordPatches(target => target.delete('foo'), target));
-                history.push(recordPatches(target => target.add('foo'), target));
+                history.push(recordPatches(target, target => target.add('foo')));
+                history.push(recordPatches(target, target => target.add('bar')));
+                history.push(recordPatches(target, target => target.delete('foo')));
+                history.push(recordPatches(target, target => target.add('foo')));
 
                 const patches = findAllPatchesInHistory(history, target);
 
@@ -185,11 +185,11 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.push('foo'), target));
-                history.push(recordPatches(target => target.push('bar'), target));
-                history.push(recordPatches(target => { target.push('baz'); target.push('buzz'); }, target));
-                history.push(recordPatches(target => target.splice(1, 1), target));
-                history.push(recordPatches(target => target[1] = 'hello', target));
+                history.push(recordPatches(target, target => target.push('foo')));
+                history.push(recordPatches(target, target => target.push('bar')));
+                history.push(recordPatches(target, target => { target.push('baz'); target.push('buzz'); }));
+                history.push(recordPatches(target, target => target.splice(1, 1)));
+                history.push(recordPatches(target, target => target[1] = 'hello'));
 
                 const patches = findAllPatchesInHistory(history, target);
 
@@ -230,7 +230,7 @@ describe('History', () => {
                 const keyProxy = createRecordingProxy(key);
                 const valueProxy = createRecordingProxy(value);
 
-                recordPatches(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
+                recordPatches(originalState, state => state.map = new Map([[keyProxy, valueProxy]]));
 
                 expect(isProxy(originalState.map)).toEqual(false);
 
@@ -239,7 +239,7 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(state => state.map.set(key, value), originalState));
+                history.push(recordPatches(originalState, state => state.map.set(key, value)));
                 expect(originalState.map.size).toEqual(1);
 
                 //Map should still be indexed by the proxy object.
@@ -263,7 +263,7 @@ describe('History', () => {
                 const keyProxy = createRecordingProxy(key);
                 const valueProxy = createRecordingProxy(value);
 
-                recordPatches(state => state.map = new Map([[keyProxy, valueProxy]]), originalState);
+                recordPatches(originalState, state => state.map = new Map([[keyProxy, valueProxy]]));
 
                 expect(isProxy(originalState.map)).toEqual(false);
 
@@ -272,15 +272,15 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(state => state.map.set(key, value), originalState));
+                history.push(recordPatches(originalState, state => state.map.set(key, value)));
 
                 expect(originalState.map.get(key)).toBeUndefined();
                 expect(originalState.map.get(keyProxy)).toBe(value);
 
-                history.push(recordPatches(state => {
+                history.push(recordPatches(originalState, state => {
                     state.map.set(keyProxy, value);
                     state.map.delete(key);
-                }, originalState));
+                }));
 
                 expect(originalState.map.size).toEqual(0);
 
@@ -307,9 +307,9 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.prop0 = 'hello', target));
-                history.push(recordPatches(target => target.prop0 = undefined, target));
-                history.push(recordPatches(target => target.prop0 = 'again', target));
+                history.push(recordPatches(target, target => target.prop0 = 'hello'));
+                history.push(recordPatches(target, target => target.prop0 = undefined));
+                history.push(recordPatches(target, target => target.prop0 = 'again'));
 
                 const patches = findAllPatchesInHistory(history, target);
                 expect(patches).toHaveLength(3);
@@ -343,10 +343,10 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.set('foo', 123), target));
-                history.push(recordPatches(target => target.set('bar', 821), target));
-                history.push(recordPatches(target => target.delete('foo'), target));
-                history.push(recordPatches(target => target.set('foo', 567), target));
+                history.push(recordPatches(target, target => target.set('foo', 123)));
+                history.push(recordPatches(target, target => target.set('bar', 821)));
+                history.push(recordPatches(target, target => target.delete('foo')));
+                history.push(recordPatches(target, target => target.set('foo', 567)));
 
                 const patches = findAllPatchesInHistory(history, target);
                 expect(patches).toHaveLength(4);
@@ -387,10 +387,10 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.add('foo'), target));
-                history.push(recordPatches(target => target.add('bar'), target));
-                history.push(recordPatches(target => target.delete('foo'), target));
-                history.push(recordPatches(target => target.add('foo'), target));
+                history.push(recordPatches(target, target => target.add('foo')));
+                history.push(recordPatches(target, target => target.add('bar')));
+                history.push(recordPatches(target, target => target.delete('foo')));
+                history.push(recordPatches(target, target => target.add('foo')));
 
                 const patches = findAllPatchesInHistory(history, target);
 
@@ -432,11 +432,11 @@ describe('History', () => {
 
                 const history: Patch[][] = [];
 
-                history.push(recordPatches(target => target.push('foo'), target));
-                history.push(recordPatches(target => target.push('bar'), target));
-                history.push(recordPatches(target => { target.push('baz'); target.push('buzz'); }, target));
-                history.push(recordPatches(target => target.splice(1, 1), target));
-                history.push(recordPatches(target => target[1] = 'hello', target));
+                history.push(recordPatches(target, target => target.push('foo')));
+                history.push(recordPatches(target, target => target.push('bar')));
+                history.push(recordPatches(target, target => { target.push('baz'); target.push('buzz'); }));
+                history.push(recordPatches(target, target => target.splice(1, 1)));
+                history.push(recordPatches(target, target => target[1] = 'hello'));
 
                 const patches = findAllPatchesInHistory(history, target);
 

@@ -396,7 +396,7 @@ function isCollection(target: any) {
 
 //This is the simplest form of getting recordings and subscriptions.  Undo/redo history code would want to snap this function in the main application.
 export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
-    const patches = recordPatches(mutator, state, ...args);
+    const patches = recordPatches(state, mutator, ...args);
 
     const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(tracker, patches);
 

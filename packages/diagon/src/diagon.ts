@@ -49,15 +49,11 @@ export function areSame(one: any, two: any): boolean {
     return asOriginal(one) === asOriginal(two);
 }
 
-//TODO: try to reorder state and mutator parameters
 export function makePatchRecorder<TState extends object, TArgs extends AnyArray, R = unknown>(mutator: Mutator<TState, TArgs, R>) {
-    return (state: TState, ...args: TArgs) => recordPatches<TState, TArgs, R>(mutator, state, ...args);
+    return (state: TState, ...args: TArgs) => recordPatches<TState, TArgs, R>(state, mutator, ...args);
 }
 
-//TODO: Should return mutator result as well as value.
-export function recordPatches<TState extends object, R>(mutator: (state: TState) => R, state: TState): Patch[];
-export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): Patch[];
-export function recordPatches<TState extends object, TArgs extends AnyArray, R>(mutator: Mutator<TState, TArgs, R> | ((state: TState) => R), state: TState, ...args: TArgs): Patch[] {
+export function recordPatches<TState extends object, TArgs extends AnyArray, R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs): Patch[] {
     try {
         clearModified();
         const stateProxy = tryGetProxy(state) || createRecordingProxy(state);

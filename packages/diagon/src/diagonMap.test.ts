@@ -354,14 +354,14 @@ describe('DiagonMap', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordPatches((state: State) => state.mapProp.set('fdfd', 100), state));
+            history.push(recordPatches(state, (state: State) => state.mapProp.set('fdfd', 100)));
             expect((underlyingMap as any)[PROXY]).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingMap);
 
             expect(timeline[0][1]).toEqual(new Map([['fdfd', NO_ENTRY]]));
 
-            history.push(recordPatches((state: State) => state.mapProp.set('fdfd', 311), state));
+            history.push(recordPatches(state, (state: State) => state.mapProp.set('fdfd', 311)));
 
             timeline = getObjectTimeline(history, underlyingMap);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', NO_ENTRY]]));
@@ -373,12 +373,12 @@ describe('DiagonMap', () => {
             type State = typeof state;
 
             const history = [];
-            history.push(recordPatches((state: State) => state.set('bob', 100), state));
+            history.push(recordPatches(state, (state: State) => state.set('bob', 100)));
 
             let timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['bob', NO_ENTRY]]));
 
-            history.push(recordPatches((state: State) => state.set('bob', 100), state));
+            history.push(recordPatches(state, (state: State) => state.set('bob', 100)));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['bob', NO_ENTRY]]));

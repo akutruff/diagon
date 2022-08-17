@@ -357,17 +357,16 @@ describe('DiagonSet', () => {
         it('proxies when child property', () => {
             const underlyingSet = new Set<string>();
             const state = { name: 'bob', setProp: underlyingSet };
-            type State = typeof state;
 
             const history = [];
-            history.push(recordPatches((state: State) => state.setProp.add('fdfd'), state));
+            history.push(recordPatches(state, state => state.setProp.add('fdfd')));
             expect((underlyingSet as any)[PROXY]).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingSet);
 
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
 
-            history.push(recordPatches((state: State) => state.setProp.add('bob'), state));
+            history.push(recordPatches(state, state => state.setProp.add('bob')));
 
             timeline = getObjectTimeline(history, underlyingSet);
 
@@ -377,21 +376,20 @@ describe('DiagonSet', () => {
 
         it('records history', () => {
             const state = new Set<string>();
-            type State = typeof state;
 
             const history = [];
-            history.push(recordPatches((state: State) => state.add('fdfd'), state));
+            history.push(recordPatches(state, state => state.add('fdfd')));
 
             let timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
 
-            history.push(recordPatches((state: State) => state.add('bob'), state));
+            history.push(recordPatches(state, state => state.add('bob')));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[0][1]).toEqual(new Map([['fdfd', false]]));
             expect(timeline[1][1]).toEqual(new Map([['bob', false]]));
 
-            history.push(recordPatches((state: State) => state.delete('fdfd'), state));
+            history.push(recordPatches(state, state => state.delete('fdfd')));
 
             timeline = getObjectTimeline(history, state);
             expect(timeline[2][1]).toEqual(new Map([['fdfd', true]]));

@@ -125,7 +125,7 @@ describe('Diagon', () => {
                 state.name = newName;
             };
 
-            const changes = recordPatches(changeName, state, 'Walker');
+            const changes = recordPatches(state,changeName,  'Walker');
 
             expect(state).toBe(referenceToOriginalNonProxyState);
             expect(state.name).toEqual('Walker');

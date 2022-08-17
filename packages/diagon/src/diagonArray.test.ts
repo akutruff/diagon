@@ -85,7 +85,7 @@ describe('DiagonArray', () => {
         const state = [{ prop0: 'a' }, { prop0: 'b' }];
 
         const history = [];
-        history.push(recordPatches((state: any[]) => state.length = 0, state));
+        history.push(recordPatches(state, (state: any[]) => state.length = 0));
 
         const timeline = getObjectTimeline(history, state);
         const previous0 = timeline[0][1];
@@ -99,8 +99,8 @@ describe('DiagonArray', () => {
             const state = [{ prop0: 'a' }, { prop0: 'b' }];
 
             const history = [];
-            history.push(recordPatches((state) => state.push({ prop0: 'q' }), state));
-            history.push(recordPatches((state) => state[2] = { prop0: 'r' }, state));
+            history.push(recordPatches(state, (state) => state.push({ prop0: 'q' })));
+            history.push(recordPatches(state, (state) => state[2] = { prop0: 'r' }));
 
             const timeline = getObjectTimeline(history, state);
             const previous0 = timeline[0][1];
