@@ -1,33 +1,33 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { PatchTracker, RecordingDispatcher, createPatchTracker, createRecordingDispatcher, DispatchContext, Next, getCallbacksAndUpdateSubscriptionsFromPatches, Patch, Middleware } from 'diagon';
+import { SubscriptionStore, RecordingDispatcher, createSubscriptionStore, createRecordingDispatcher, DispatchContext, Next, getCallbacksAndUpdateSubscriptionsFromPatches, Patch, Middleware } from 'diagon';
 import { createContext, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-export const PatchTrackerContext: React.Context<PatchTrackerContextValue> = createContext(undefined as any as PatchTrackerContextValue);
+export const SubscriptionContext: React.Context<SubscriptionContextValue> = createContext(undefined as any as SubscriptionContextValue);
 
-export interface PatchTrackerContextProps {
+export interface SubscriptionContextProps {
     state: any;
-    patchTracker: PatchTracker;
+    subscriptions: SubscriptionStore;
     dispatch: (state: any, ...args: any[]) => void;
 }
 
-export interface PatchTrackerContextValue extends PatchTrackerContextProps {
+export interface SubscriptionContextValue extends SubscriptionContextProps {
     recordingDispatcher: RecordingDispatcher
     mutableSources: WeakMap<object, any>;
-    setContextProps: (props: Partial<PatchTrackerContextProps>) => void;
+    setContextProps: (props: Partial<SubscriptionContextProps>) => void;
 }
 
-export const createPatchTrackerContextValue = (
+export const createSubscriptionContextValue = (
     {
         state,
-        patchTracker = createPatchTracker(),
+        subscriptions = createSubscriptionStore(),
         dispatch = ((_s, _a) => { })
-    }: Partial<PatchTrackerContextProps>,
-    setContextProps: PatchTrackerContextValue['setContextProps'],
+    }: Partial<SubscriptionContextProps>,
+    setContextProps: SubscriptionContextValue['setContextProps'],
     ...middlewares: Middleware<DispatchContext>[])
-    : PatchTrackerContextValue => {
+    : SubscriptionContextValue => {
 
-    const recordingDispatcher = createRecordingDispatcher(configureReactMiddleware(patchTracker), ...middlewares);
+    const recordingDispatcher = createRecordingDispatcher(configureReactMiddleware(subscriptions), ...middlewares);
 
     const dispatchWrappedWithRecording = (state: any, ...args: any[]) => {
         return recordingDispatcher.mutate(dispatch, state, ...args);
@@ -35,7 +35,7 @@ export const createPatchTrackerContextValue = (
 
     return {
         state,
-        patchTracker,
+        subscriptions,
         recordingDispatcher,
         dispatch: dispatchWrappedWithRecording,
         mutableSources: new WeakMap(),
@@ -43,19 +43,19 @@ export const createPatchTrackerContextValue = (
     };
 };
 
-export const usePatchTrackerContextValue = (initialValue: Partial<PatchTrackerContextProps>, ...middlewares: Middleware<DispatchContext>[]): PatchTrackerContextValue => {
+export const useSubscriptionContextValue = (initialValue: Partial<SubscriptionContextProps>, ...middlewares: Middleware<DispatchContext>[]): SubscriptionContextValue => {
     const [contextProps, setContextProps] = useState(initialValue);
-    const value = useMemo(() => createPatchTrackerContextValue(contextProps, setContextProps, ...middlewares), [contextProps, ...middlewares]);
+    const value = useMemo(() => createSubscriptionContextValue(contextProps, setContextProps, ...middlewares), [contextProps, ...middlewares]);
     return value;
 };
 
-export const configureReactMiddleware = (patchTracker: PatchTracker) => (context: DispatchContext, next: Next) => {
+export const configureReactMiddleware = (subStore: SubscriptionStore) => (context: DispatchContext, next: Next) => {
 
     next();
 
     if (context.pipelineStackDepth === 0) {
         //TODO: use Number.MAX_SAFE_INTEGER or BigInt
-        patchTracker.version++;
+        subStore.version++;
 
         const patches: Patch[] = [];
         if (context.patches) {
@@ -71,7 +71,7 @@ export const configureReactMiddleware = (patchTracker: PatchTracker) => (context
         }
 
         if (patches.length > 0) {
-            const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(patchTracker, patches);
+            const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(subStore, patches);
 
             //TODO: add history support externally
             //for consumers to do their own change tracking
@@ -84,9 +84,9 @@ export const configureReactMiddleware = (patchTracker: PatchTracker) => (context
                 });
             }
 
-            // if (callbacksToFire.size > 0 || patchTracker.onNewPatches.size > 0) {
+            // if (callbacksToFire.size > 0 || subStore.onNewPatches.size > 0) {
 
-            //     const onNewPatches = Array.from(patchTracker.onNewPatches.values());
+            //     const onNewPatches = Array.from(subStore.onNewPatches.values());
 
             //     ReactDOM.unstable_batchedUpdates(() => {
             //         for (const callback of callbacksToFire) {

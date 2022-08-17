@@ -1,5 +1,5 @@
 import { configureGlobalPatchRecording } from 'diagon';
-import { PatchTrackerContext, usePatchTrackerContextValue } from 'diagon-react';
+import { SubscriptionContext, useSubscriptionContextValue } from 'diagon-react';
 import React, { FC, useMemo, useState } from 'react';
 import { createRootState } from './app';
 import { globalHistoryMiddlware, History } from './History';
@@ -32,15 +32,15 @@ const App: FC = () => {
 
   const globalPatchRecordingMiddleware = useMemo(() => configureGlobalPatchRecording(state, globalHistoryMiddlware), [state]);
 
-  const patchTrackerContextValue = usePatchTrackerContextValue({ state }, globalPatchRecordingMiddleware);
+  const subscriptionContextValue = useSubscriptionContextValue({ state }, globalPatchRecordingMiddleware);
 
   return (
-    <PatchTrackerContext.Provider value={patchTrackerContextValue}>
+    <SubscriptionContext.Provider value={subscriptionContextValue}>
       <MainLayout />
       <div className='docked-bottom-right'>
         App <RenderCounter label={`<App/>`} />
       </div>
-    </PatchTrackerContext.Provider>
+    </SubscriptionContext.Provider>
   );
 };
 

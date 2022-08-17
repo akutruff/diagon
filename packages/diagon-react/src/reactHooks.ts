@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { asOriginal, AsyncMutator, ChildSubscriberRecursive, Mutator, PatchHandler, PatchTracker, subscribe, subscribeDeep, subscribeRecursive, Subscription, unsubscribe } from 'diagon';
+import { asOriginal, AsyncMutator, ChildSubscriberRecursive, Mutator, PatchHandler, SubscriptionStore, subscribe, subscribeDeep, subscribeRecursive, Subscription, unsubscribe } from 'diagon';
 import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
-import { PatchTrackerContext } from '.';
+import { SubscriptionContext } from '.';
 
 export const useRootState = () => {
-    const { state } = useContext(PatchTrackerContext);
+    const { state } = useContext(SubscriptionContext);
     return state;
 };
 
 export const useDispatch = () => {
-    const { dispatch, state } = useContext(PatchTrackerContext);
+    const { dispatch, state } = useContext(SubscriptionContext);
     const dispatchCallback = useCallback((args: any) => dispatch(state, args), [state, dispatch]);
     return dispatchCallback;
 };
 
 export const useMutator = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
-    const { recordingDispatcher } = useContext(PatchTrackerContext);
+    const { recordingDispatcher } = useContext(SubscriptionContext);
 
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutate(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
 
@@ -28,7 +28,7 @@ export const useMutatorWithPatches = <TPatchHandlerState extends object, TState 
     patchHandlerState: TPatchHandlerState,
     patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
     deps: Array<unknown> = []) => {
-    const { recordingDispatcher } = useContext(PatchTrackerContext);
+    const { recordingDispatcher } = useContext(SubscriptionContext);
 
     const patchHandlerCallback = useCallback(patchHandler, [recordingDispatcher, state, patchHandlerState, ...deps]);
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => {
@@ -39,7 +39,7 @@ export const useMutatorWithPatches = <TPatchHandlerState extends object, TState 
 };
 
 export const useMutatorAsync = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
-    const { recordingDispatcher } = useContext(PatchTrackerContext);
+    const { recordingDispatcher } = useContext(SubscriptionContext);
 
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutateAsync(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
 
@@ -48,15 +48,15 @@ export const useMutatorAsync = <TState extends object, TArgs extends unknown[], 
 
 export const useSnapshot = <TState extends object, TSnapshot>(state: TState, getSnapshot: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
     state = asOriginal(state);
-    const { patchTracker } = useContext(PatchTrackerContext);
+    const { subscriptions: subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscribe(patchTracker, state, getSnapshot, tellReactToRerender);
+        const subscriptions = subscribe(subStore, state, getSnapshot, tellReactToRerender);
         return () => unsubscribe(subscriptions);
-    }, [patchTracker, getSnapshotCallback]);
+    }, [subStore, getSnapshotCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
@@ -68,35 +68,35 @@ export const useProjectedSnapshot = <TState extends object, TSnapshot>(
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<any> = []): TSnapshot => {
     state = asOriginal(state);
-    const { patchTracker } = useContext(PatchTrackerContext);
+    const { subscriptions: subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscribe(patchTracker, state, subscriber, tellReactToRerender);
+        const subscriptions = subscribe(subStore, state, subscriber, tellReactToRerender);
         return () => unsubscribe(subscriptions);
-    }, [patchTracker, getSnapshotCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
+    }, [subStore, getSnapshotCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
 export const useSubscribedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
-    subscriber: (patchTracker: PatchTracker, state: TState, callback: () => void) => Subscription,
+    subscriber: (subStore: SubscriptionStore, state: TState, callback: () => void) => Subscription,
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { patchTracker } = useContext(PatchTrackerContext);
+    const { subscriptions: subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const subscriberCallback = useCallback(subscriber, []);
 
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscriber(patchTracker, state, tellReactToRerender);
+        const subscriptions = subscriber(subStore, state, tellReactToRerender);
         return () => unsubscribe(subscriptions);
-    }, [patchTracker, getSnapshotCallback, subscriberCallback]);
+    }, [subStore, getSnapshotCallback, subscriberCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
@@ -108,47 +108,47 @@ export const useRecursiveSnapshot = <TState extends object, TChildState, TSnapsh
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { patchTracker } = useContext(PatchTrackerContext);
+    const { subscriptions: subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscribeRecursive(patchTracker, state, childSelector, subscribeToChildren, tellReactToRerender);
+        const subscriptions = subscribeRecursive(subStore, state, childSelector, subscribeToChildren, tellReactToRerender);
         return () => unsubscribe(subscriptions);
-    }, [patchTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
+    }, [subStore, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
 export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
     state: TState,
     childSelector: (state: TState) => TChildState,
-    subscribeToChildren: (patchTracker: PatchTracker, selectedChild: TChildState, callback: () => void) => Subscription,
+    subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => Subscription,
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { patchTracker } = useContext(PatchTrackerContext);
+    const { subscriptions: subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(patchTracker, getSnapshot), [patchTracker, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscribeDeep(patchTracker, state, childSelector, subscribeToChildren, tellReactToRerender);
+        const subscriptions = subscribeDeep(subStore, state, childSelector, subscribeToChildren, tellReactToRerender);
         return () => unsubscribe(subscriptions);
-    }, [patchTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
+    }, [subStore, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
 };
 
-function createSnapshotMemoizer<TState extends object, TSnapshot>(patchTracker: PatchTracker, getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot) {
+function createSnapshotMemoizer<TState extends object, TSnapshot>(subStore: SubscriptionStore, getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot) {
     let previousVersion: number | undefined = undefined;
     let currentSnapshot: TSnapshot | undefined = undefined;
     return (state: TState) => {
-        if (previousVersion === undefined || previousVersion !== patchTracker.version) {
+        if (previousVersion === undefined || previousVersion !== subStore.version) {
             currentSnapshot = getSnapshot(state, currentSnapshot);
-            previousVersion = patchTracker.version;
+            previousVersion = subStore.version;
         }
         return currentSnapshot as TSnapshot;
     };

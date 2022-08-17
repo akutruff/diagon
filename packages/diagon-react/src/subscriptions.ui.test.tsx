@@ -1,48 +1,47 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
+import { createSubscriptionStore, createRecordingProxy, map_get, SubscriptionStore, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createPatchTrackerContextValue, PatchTrackerContext, PatchTrackerContextValue } from './PatchTrackerContext';
-import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from './reactHooks';
+import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot, createSubscriptionContextValue, SubscriptionContext, SubscriptionContextValue } from '.';
 
-interface PatchTrackerAppProps {
-    patchTrackerContextValue: PatchTrackerContextValue
+interface SubscriptionAppProps {
+    subscriptionContextValue: SubscriptionContextValue
 }
 
 type Action = { type: string };
 
-const PatchTrackerApp: FC<PropsWithChildren<PatchTrackerAppProps>> = ({ children, patchTrackerContextValue }) => {
+const SubscriptionApp: FC<PropsWithChildren<SubscriptionAppProps>> = ({ children, subscriptionContextValue }) => {
     return (
-        <PatchTrackerContext.Provider value={patchTrackerContextValue}>
+        <SubscriptionContext.Provider value={subscriptionContextValue}>
             {children}
-        </PatchTrackerContext.Provider>
+        </SubscriptionContext.Provider>
     );
 };
 
 type RestOfRenderOptions = Omit<RenderOptions, 'wrapper'>;
-const renderWithPatchTracking = (ui: ReactElement, patchTrackerProps: PatchTrackerAppProps, options?: RestOfRenderOptions) => {
+const renderWithPatchTracking = (ui: ReactElement, subscriptionAppProps: SubscriptionAppProps, options?: RestOfRenderOptions) => {
     const rendered = render(ui, {
-        wrapper: (props: any) => <PatchTrackerApp {...props} {...patchTrackerProps} />,
+        wrapper: (props: any) => <SubscriptionApp {...props} {...subscriptionAppProps} />,
         ...options,
     });
     return rendered;
 };
 
 describe('subscriptions', () => {
-    let patchTracker: PatchTracker;
-    let patchTrackerContextValue: PatchTrackerContextValue;
+    let subscriptions: SubscriptionStore;
+    let subscriptionContextValue: SubscriptionContextValue;
     let recordingDispatcher: RecordingDispatcher;
 
     beforeEach(() => {
         resetEnvironment();
-        patchTracker = createPatchTracker();
+        subscriptions = createSubscriptionStore();
 
-        patchTrackerContextValue = createPatchTrackerContextValue({
+        subscriptionContextValue = createSubscriptionContextValue({
             state: undefined,
-            patchTracker
+            subscriptions,
         }, () => { });
 
-        recordingDispatcher = patchTrackerContextValue.recordingDispatcher;
+        recordingDispatcher = subscriptionContextValue.recordingDispatcher;
     });
 
     describe('useMutateWithPatches', () => {
@@ -77,7 +76,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -120,7 +119,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -161,7 +160,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name: bob');
 
@@ -206,7 +205,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name: bob');
             getByText('address: 123 Sycamore Lane');
@@ -256,7 +255,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name0: bob');
             getByText('name1: jane');
@@ -303,7 +302,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('item: bob');
             getByText('item: jane');
@@ -350,7 +349,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name: bob');
 
@@ -396,7 +395,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name: bob');
 
@@ -446,7 +445,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('name: bob');
 
@@ -482,7 +481,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -524,7 +523,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText, rerender } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText, rerender } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -563,9 +562,9 @@ describe('subscriptions', () => {
             interface IncrementAction extends Action { type: 'increment', value: number }
             type ActionTypes = IncrementAction;
 
-            patchTrackerContextValue.state = state;
+            subscriptionContextValue.state = state;
 
-            patchTrackerContextValue.dispatch = recordingDispatcher.createMutator((state: State, action: ActionTypes) => {
+            subscriptionContextValue.dispatch = recordingDispatcher.createMutator((state: State, action: ActionTypes) => {
                 switch (action.type) {
                     case 'increment':
                         state.count += action.value;
@@ -588,7 +587,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -669,7 +668,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            renderWithPatchTracking(<TestComponent state={state} />, { patchTrackerContextValue });
+            renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
 
             expect(renderCount).toEqual(1);
 
