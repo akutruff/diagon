@@ -29,7 +29,7 @@ describe('RecordingDispatcher', () => {
 
             const command = jest.fn(() => { });
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            recordingDispatcher.mutate(command, {});
+            recordingDispatcher.mutate({}, command);
 
             expect(middleware.mock.calls.length).toBe(1);
             expect(command.mock.calls.length).toBe(1);
@@ -40,7 +40,7 @@ describe('RecordingDispatcher', () => {
 
             const command = jest.fn(() => { });
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            recordingDispatcher.mutate(command, {});
+            recordingDispatcher.mutate({}, command);
 
             expect(middleware.mock.calls.length).toBe(1);
             expect(command.mock.calls.length).toBe(0);
@@ -58,10 +58,10 @@ describe('RecordingDispatcher', () => {
             const recordingDispatcher = createRecordingDispatcher(middleware);
 
             const command = jest.fn(() => {
-                recordingDispatcher.mutate(reentrantCommand, {});
+                recordingDispatcher.mutate({}, reentrantCommand);
             });
 
-            recordingDispatcher.mutate(command, {});
+            recordingDispatcher.mutate({}, command);
 
             expect(middlewareReentrancy).toEqual([0, 1]);
 
@@ -83,7 +83,7 @@ describe('RecordingDispatcher', () => {
             });
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            recordingDispatcher.mutate(command, state);
+            recordingDispatcher.mutate(state, command);
 
             expect(state.prop0).toBe('adfaf');
             expect(middleware.mock.calls.length).toBe(1);
@@ -150,10 +150,10 @@ describe('RecordingDispatcher', () => {
             });
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 state = yield;
                 state.prop0 = 'foobar';
-            }, state);
+            });
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
@@ -171,11 +171,11 @@ describe('RecordingDispatcher', () => {
             });
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 const value = await sleep(100, 'foobar');
                 state = yield;
                 state.prop0 = value;
-            }, state);
+            });
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
@@ -192,11 +192,11 @@ describe('RecordingDispatcher', () => {
             });
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 const value = await sleep(100, 'foobar');
                 state = yield;
                 state.prop0 = value;
-            }, state);
+            });
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(2);
@@ -214,9 +214,9 @@ describe('RecordingDispatcher', () => {
             });
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 state.prop0 = 'foobar';
-            }, state);
+            });
 
             expect(state.prop0).toBe('foobar');
             expect(middleware.mock.calls.length).toBe(1);
@@ -236,10 +236,10 @@ describe('RecordingDispatcher', () => {
             }
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 yield* nestedAsyncGenerator(state);
 
-            }, state);
+            });
 
             expect(state.prop0).toBe('nested');
             expect(middleware.mock.calls.length).toBe(1);
@@ -262,13 +262,13 @@ describe('RecordingDispatcher', () => {
             }
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
-            await recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 const value = await sleep(100, 'top');
                 state = yield;
                 state.prop0 = value;
                 yield* nestedAsyncGenerator(state);
 
-            }, state);
+            });
 
             expect(state.prop0).toBe('nested');
             expect(middleware.mock.calls.length).toBe(3);
@@ -291,11 +291,11 @@ describe('RecordingDispatcher', () => {
             const recordingDispatcher = createRecordingDispatcher(middleware);
             let wasCancelThrown = false;
 
-            const asyncOperation = recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            const asyncOperation = recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 state.prop0 = 'one';
                 state = yield;
                 state.prop0 = 'two';
-            }, state);
+            });
 
             asyncOperation.catch(() => {
                 wasCancelThrown = true;
@@ -325,9 +325,9 @@ describe('RecordingDispatcher', () => {
             const recordingDispatcher = createRecordingDispatcher(middleware);
             let wasCancelThrown = false;
 
-            const asyncOperation = recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            const asyncOperation = recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 state.prop0 = 'one';
-            }, state);
+            });
 
             asyncOperation.catch(() => {
                 wasCancelThrown = true;
@@ -358,12 +358,12 @@ describe('RecordingDispatcher', () => {
             let wasCancelThrown = false;
 
             let didSleepFinish = false;
-            const asyncOperation = recordingDispatcher.mutateAsync(async function* asyncFunction(state) {
+            const asyncOperation = recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
                 await sleep(2000, 'dasfdadfaghmnjczv');
                 didSleepFinish = true;
                 state = yield;
                 state.prop0 = 'one';
-            }, state);
+            });
 
             asyncOperation.catch(() => {
                 wasCancelThrown = true;

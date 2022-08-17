@@ -7,7 +7,7 @@ export const SubscriptionContext: React.Context<SubscriptionContextValue> = crea
 
 export interface SubscriptionContextProps {
     state: any;
-    subscriptions: SubscriptionStore;
+    subStore: SubscriptionStore;
     dispatch: (state: any, ...args: any[]) => void;
 }
 
@@ -20,14 +20,14 @@ export interface SubscriptionContextValue extends SubscriptionContextProps {
 export const createSubscriptionContextValue = (
     {
         state,
-        subscriptions = createSubscriptionStore(),
+        subStore = createSubscriptionStore(),
         dispatch = ((_s, _a) => { })
     }: Partial<SubscriptionContextProps>,
     setContextProps: SubscriptionContextValue['setContextProps'],
     ...middlewares: Middleware<DispatchContext>[])
     : SubscriptionContextValue => {
 
-    const recordingDispatcher = createRecordingDispatcher(configureReactMiddleware(subscriptions), ...middlewares);
+    const recordingDispatcher = createRecordingDispatcher(configureReactMiddleware(subStore), ...middlewares);
 
     const dispatchWrappedWithRecording = (state: any, ...args: any[]) => {
         return recordingDispatcher.mutate(dispatch, state, ...args);
@@ -35,7 +35,7 @@ export const createSubscriptionContextValue = (
 
     return {
         state,
-        subscriptions,
+        subStore,
         recordingDispatcher,
         dispatch: dispatchWrappedWithRecording,
         mutableSources: new WeakMap(),

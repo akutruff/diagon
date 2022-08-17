@@ -20,7 +20,7 @@ export type AsyncMutator<TState extends object, TArgs extends unknown[], R> =
 //TODO: reorder state parameters with state, then mutator.
 export interface RecordingDispatcher {
     pipeline: Pipeline<DispatchContext>;
-    mutate: <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => R;
+    mutate: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs) => R;
     mutateWithPatches: <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
         state: TState,
         mutator: Mutator<TState, TArgs, R>,
@@ -29,7 +29,7 @@ export interface RecordingDispatcher {
         ...args: TArgs
     ) => R;
     createMutator: <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, R>;
-    mutateAsync: <TState extends object, TArgs extends unknown[], R>(asyncMutator: AsyncMutator<TState, TArgs, R>, state: TState, ...args: TArgs) => Promise<R>;
+    mutateAsync: <TState extends object, TArgs extends unknown[], R>(state: TState, asyncMutator: AsyncMutator<TState, TArgs, R>, ...args: TArgs) => Promise<R>;
     executingAsyncOperations: Set<AsyncGenerator>;
     cancelAllAsyncOperations: () => Promise<unknown>;
 }
@@ -55,7 +55,7 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
         },
         ...middlewares);
 
-    const mutate = <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): R => {
+    const mutate = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs): R => {
         const context: DispatchContext<TState> = {
             state,
         };
@@ -128,26 +128,26 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
     };
 
     const createMutator = <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>) =>
-        (state: TState, ...args: TArgs) => mutate(mutator, state, ...args);
+        (state: TState, ...args: TArgs) => mutate(state, mutator, ...args);
 
     const executingAsyncOperations = new Set<AsyncGenerator>();
 
-    const mutateAsync = async <TState extends object, TArgs extends unknown[], R>(asyncMutator: AsyncMutator<TState, TArgs, R>, state: TState, ...args: TArgs): Promise<R> => {
+    const mutateAsync = async <TState extends object, TArgs extends unknown[], R>(state: TState, asyncMutator: AsyncMutator<TState, TArgs, R>, ...args: TArgs): Promise<R> => {
         let coroutine: ReturnType<AsyncMutator<TState, TArgs, R>> | undefined = undefined;
 
         try {
-            let result = await mutate(stateProxy => {
+            let result = await mutate(state, stateProxy => {
                 coroutine = asyncMutator(stateProxy, ...args);
                 executingAsyncOperations.add(coroutine);
                 return coroutine.next(stateProxy);
-            }, state);
+            });
 
             if (!executingAsyncOperations.has(coroutine!)) {
                 throw new Error('async operation was cancelled externally');
             }
 
             while (!result.done) {
-                result = await mutate(stateProxy => coroutine!.next(stateProxy), state);
+                result = await mutate(state, stateProxy => coroutine!.next(stateProxy));
                 if (!executingAsyncOperations.has(coroutine!)) {
                     throw new Error('async operation was cancelled externally');
                 }
@@ -191,6 +191,6 @@ export const configureGlobalPatchRecording = <TPatchHandlerState extends object,
             }
             finally {
                 clearModified();
-            }                        
-        } 
+            }
+        }
     };

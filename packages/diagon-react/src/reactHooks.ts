@@ -17,7 +17,7 @@ export const useDispatch = () => {
 export const useMutator = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
     const { recordingDispatcher } = useContext(SubscriptionContext);
 
-    const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutate(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
+    const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutate(state, mutator, ...args), [recordingDispatcher, state, ...deps]);
 
     return mutatorWithChangeTrackingAdded;
 };
@@ -41,14 +41,14 @@ export const useMutatorWithPatches = <TPatchHandlerState extends object, TState 
 export const useMutatorAsync = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
     const { recordingDispatcher } = useContext(SubscriptionContext);
 
-    const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutateAsync(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
+    const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutateAsync(state, mutator, ...args), [recordingDispatcher, state, ...deps]);
 
     return mutatorWithChangeTrackingAdded;
 };
 
 export const useSnapshot = <TState extends object, TSnapshot>(state: TState, getSnapshot: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
     state = asOriginal(state);
-    const { subscriptions: subStore } = useContext(SubscriptionContext);
+    const { subStore } = useContext(SubscriptionContext);
 
     const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
@@ -68,7 +68,7 @@ export const useProjectedSnapshot = <TState extends object, TSnapshot>(
     getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<any> = []): TSnapshot => {
     state = asOriginal(state);
-    const { subscriptions: subStore } = useContext(SubscriptionContext);
+    const { subStore } = useContext(SubscriptionContext);
 
     const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
@@ -87,7 +87,7 @@ export const useSubscribedSnapshot = <TState extends object, TSnapshot>(
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { subscriptions: subStore } = useContext(SubscriptionContext);
+    const { subStore } = useContext(SubscriptionContext);
 
     const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
@@ -108,7 +108,7 @@ export const useRecursiveSnapshot = <TState extends object, TChildState, TSnapsh
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { subscriptions: subStore } = useContext(SubscriptionContext);
+    const { subStore } = useContext(SubscriptionContext);
 
     const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
@@ -129,7 +129,7 @@ export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
-    const { subscriptions: subStore } = useContext(SubscriptionContext);
+    const { subStore } = useContext(SubscriptionContext);
 
     const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);

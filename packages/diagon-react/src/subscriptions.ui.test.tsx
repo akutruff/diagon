@@ -28,17 +28,17 @@ const renderWithPatchTracking = (ui: ReactElement, subscriptionAppProps: Subscri
 };
 
 describe('subscriptions', () => {
-    let subscriptions: SubscriptionStore;
+    let subStore: SubscriptionStore;
     let subscriptionContextValue: SubscriptionContextValue;
     let recordingDispatcher: RecordingDispatcher;
 
     beforeEach(() => {
         resetEnvironment();
-        subscriptions = createSubscriptionStore();
+        subStore = createSubscriptionStore();
 
         subscriptionContextValue = createSubscriptionContextValue({
             state: undefined,
-            subscriptions,
+            subStore,
         }, () => { });
 
         recordingDispatcher = subscriptionContextValue.recordingDispatcher;
@@ -270,7 +270,7 @@ describe('subscriptions', () => {
 
             //Expect that adding another value to the map that isn't monitored wont cause a re-render
             const previousRenderCount = renderCount;
-            recordingDispatcher.mutate((state) => state.peopleMap.set('key3', { name: 'harry' }), state);
+            recordingDispatcher.mutate(state, (state) => state.peopleMap.set('key3', { name: 'harry' }));
 
             expect(renderCount).toEqual(previousRenderCount);
         });
