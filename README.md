@@ -313,7 +313,7 @@ Diagon tracks which properties change as your code executes. These changes are s
 import recordPatches from 'diagon'
 
 const state = { counter: 0, otherCounter: 0 };
-const patches = recordPatches(state => state.counter += 1, state);
+const patches = recordPatches(state, state => state.counter += 1);
 // patches equals: [{"counter" => 0}]
 ```
 
@@ -330,10 +330,10 @@ const fred = { favoriteFood: 'pizza', homie: bob };
 
 const state = { bob, alice, fred };
 
-const patches = recordPatches({alice, fred} => {
+const patches = recordPatches(state, {alice, fred} => {
     alice.homie = fred;
     alice.homie.favoriteFood = 'nachos'; // Will now modify fred as you would expect.
-    }, state);
+    });
 
 // patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
 getPatchTarget(patches[0]) // will equal alice
@@ -352,7 +352,7 @@ const reversePatch = createReversePatch(patches[0]);
 ## Undo / Redo:
 ```typescript
 const state = { counter: 0 };
-const [ backwardsPatch ] = recordPatches(state => state.counter += 1, state);
+const [ backwardsPatch ] = recordPatches(state, state => state.counter += 1);
 //state equals {counter: 1}
 
 const forwardPatch = createReversePatch(backwardsPatch);
