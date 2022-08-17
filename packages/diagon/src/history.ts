@@ -4,7 +4,7 @@ import { createMapPatch, getKeyUsedByMap } from './diagonMap';
 import { createObjectPatch } from './diagonObject';
 import { createSetPatch } from './diagonSet';
 
-import { Patch, DIAGON_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DiagonedObject } from './types';
+import { Patch, DIAGON_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPatch, MapPatch, ObjectPatch, HistoryIndex, DiagonObject } from './types';
 import { isMap, isPlainObject, isSet } from './utils';
 
 export function applyPatch(patch: Patch) {
@@ -152,6 +152,7 @@ export function findAllPatchesInHistory<T>(history: Patch[][], objectToFind: T):
     return patchesInHistory;
 }
 
+//TODO: decide if deep cloning should be in package
 export function cloneDeep<T>(value: T, clones: WeakMap<any, any> = new WeakMap()): T {
     if (typeof value !== 'object') {
         return value;
@@ -168,7 +169,7 @@ export function cloneDeep<T>(value: T, clones: WeakMap<any, any> = new WeakMap()
         return cloneDeep(proxyOriginal, clones);
     }
 
-    const diagonedValue = value as any as DiagonedObject;
+    const diagonedValue = value as any as DiagonObject;
     if (diagonedValue[DIAGON_ID] === undefined) {
         assignDiagonId(value);
     }

@@ -51,12 +51,11 @@ function createMapKeyValueNode(parent: SubscriptionNodeData, key: any): MapKeyVa
     };
 }
 
+//TODO: rename to better associate to Subscriptions rather than "tracking patches" which is doesn't
 export interface PatchTracker {
     version: number;
     rootNodes: Map<any, SubscriptionNodeData>;
     objectSubscriptions: Map<any, Set<SubscriptionNodeData>>;
-    lastPatches: Patch[];
-    onNewPatches: Map<() => void, (patches: Patch[]) => void>
 }
 
 export function createPatchTracker(): PatchTracker {
@@ -64,8 +63,6 @@ export function createPatchTracker(): PatchTracker {
         version: 0,
         rootNodes: new Map<any, SubscriptionNodeData>(),
         objectSubscriptions: new Map<any, Set<SubscriptionNodeData>>(),
-        lastPatches: [],
-        onNewPatches: new Map(),
     };
 }
 
@@ -312,7 +309,6 @@ function getValueFromParent(node: SubscriptionNodeData) {
 
 export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: PatchTracker, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
-    tracker.lastPatches = patches;
 
     // console.log('publishing');
     for (const patch of patches) {

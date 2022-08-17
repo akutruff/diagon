@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearContext, commitPatches, createContext, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
+import { clearModified, commitPatches, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
 import { findAllPatchesInHistory, removeDiagonMetadata, cloneDeep, applyPatch, createReversePatch } from './history';
 import { DIAGON_ID, Patch, NO_ENTRY } from './types';
 
@@ -76,11 +76,11 @@ describe('History', () => {
     describe(`${applyPatch.name}()`, () => {
         describe('proxy behavior', () => {
             beforeEach(() => {
-                createContext();
+                clearModified();
             });
 
             afterEach(() => {
-                clearContext();
+                clearModified();
             });
 
             it('supports a series of value changes', () => {
@@ -90,16 +90,16 @@ describe('History', () => {
                 const targetProxy = createRecordingProxy(target);
                 const changes: Patch[][] = [];
 
-                clearContext();
+                clearModified();
                 const changeCount = 10;
 
                 for (let i = 0; i < changeCount; i++) {
-                    createContext(); {
+                    clearModified(); {
                         targetProxy.name = i.toString();
                         const newPatches = commitPatches();
                         changes.push(newPatches);
                     }
-                    clearContext();
+                    clearModified();
                 }
 
                 for (let i = changes.length - 1; i >= 0; i--) {

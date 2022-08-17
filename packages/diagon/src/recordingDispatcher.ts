@@ -1,26 +1,35 @@
-import { clearContext, createContext, createRecordingProxy, Patch, Mutator, tryGetProxy } from '.';
-import { commitPatches } from './diagon';
-import { createPipeline, Middleware, Next, Pipeline } from './middleware';
 
-export interface DispatchContext<T extends object = object> {
+import { clearModified, Next, ensureProxy, Patch, Mutator, PatchHandler } from '.';
+import { commitPatches } from './diagon';
+import { createPipeline, Middleware, Pipeline } from './middleware';
+
+export interface DispatchContext<T extends object = object, TPatchHandlerState extends object = object> {
     state: T;
-    stateProxy?: T;
     patches?: Patch[];
+    patchHandlerState?: TPatchHandlerState;
+    patchesFromPatchHandler?: Patch[];
+    patchesFromGlobalPatchHandler?: Patch[];
     commandResult?: any;
-    callstackDepth?: number;
+    pipelineStackDepth?: number;
 }
 
-// export type AsyncMutatorGenerator<R, TState extends object> = AsyncGenerator<unknown, R, TState>;
 export type AsyncMutator<TState extends object, TArgs extends unknown[], R> =
     ((state: TState, ...args: TArgs) => AsyncGenerator<unknown, R, TState>) |
     ((state: TState, ...args: TArgs) => AsyncGenerator<unknown, R, unknown>);
 
+//TODO: reorder state parameters with state, then mutator.
 export interface RecordingDispatcher {
     pipeline: Pipeline<DispatchContext>;
     mutate: <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => R;
+    mutateWithPatches: <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
+        state: TState,
+        mutator: Mutator<TState, TArgs, R>,
+        patchHandlerState: TPatchHandlerState,
+        patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
+        ...args: TArgs
+    ) => R;
     createMutator: <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, R>;
     mutateAsync: <TState extends object, TArgs extends unknown[], R>(asyncMutator: AsyncMutator<TState, TArgs, R>, state: TState, ...args: TArgs) => Promise<R>;
-
     executingAsyncOperations: Set<AsyncGenerator>;
     cancelAllAsyncOperations: () => Promise<unknown>;
 }
@@ -33,9 +42,9 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
     const pipeline = createPipeline(
         (context, next) => {
             // console.log('callstackDepth', callstackDepth);
-            //Record the depth of the calls to mutate() / mutateAsync() at the start of this pipelines execution to avoid double recording.
+            //Record the depth of the calls to mutate() / mutateAsync() at the start of this pipeline's execution to avoid double recording.
             //  each pipeline records this at the start of their execution.
-            context.callstackDepth = callstackDepth;
+            context.pipelineStackDepth = callstackDepth;
             try {
                 callstackDepth++;
                 next();
@@ -46,18 +55,72 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
         },
         ...middlewares);
 
-    pipeline.push(recordChangesMiddleware);
-
     const mutate = <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs): R => {
         const context: DispatchContext<TState> = {
             state,
         };
 
         pipeline.execute(context, (context, next) => {
-            if (context.stateProxy) {
-                //This cast is safe-ish.  It is expected that the type of the stateProxy should not be changed by the middleware.                 
-                context.commandResult = mutator(context.stateProxy as TState, ...args);
+            if (context.pipelineStackDepth === 0) {
+                try {
+                    clearModified();
+                    const stateProxy = ensureProxy(context.state as TState);
+                    context.commandResult = mutator(stateProxy, ...args);
+                    context.patches = commitPatches();
+                }
+                finally {
+                    clearModified();
+                }
+            } else {
+                const stateProxy = ensureProxy(context.state as TState);
+                context.commandResult = mutator(stateProxy, ...args);
             }
+            next();
+        });
+
+        return context.commandResult as R;
+    };
+
+    const mutateWithPatches = <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
+        state: TState,
+        mutator: Mutator<TState, TArgs, R>,
+        patchHandlerState: TPatchHandlerState,
+        patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
+        ...args: TArgs): R => {
+
+        const context: DispatchContext<TState> = {
+            state,
+            patchHandlerState
+        };
+
+        pipeline.execute(context, (context, next) => {
+            if (context.pipelineStackDepth === 0) {
+                try {
+                    clearModified();
+
+                    const stateProxy = ensureProxy(context.state as TState);
+
+                    const result = mutator(stateProxy, ...args);
+                    const patches = commitPatches();
+                    context.patches = patches;
+                    context.commandResult = result;
+
+                    clearModified();
+
+                    const patchHandlerStateProxy = ensureProxy(context.patchHandlerState as TPatchHandlerState);
+                    patchHandler(patchHandlerStateProxy, patches, stateProxy, result, ...args);
+
+                    context.patchesFromPatchHandler = commitPatches();
+                }
+                finally {
+                    clearModified();
+                }
+            } else {
+                console.error('Attempting to observe patches in a nested mutator.  Patch handler will not be run.');
+                const stateProxy = ensureProxy(context.state as TState);
+                context.commandResult = mutator(stateProxy, ...args);
+            }
+
             next();
         });
 
@@ -105,6 +168,7 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
     return {
         pipeline,
         mutate,
+        mutateWithPatches,
         createMutator,
         mutateAsync,
         executingAsyncOperations,
@@ -112,19 +176,21 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
     };
 }
 
-export const recordChangesMiddleware = (context: DispatchContext, next: Next) => {
-    if (context.callstackDepth === 0) {
-        try {
-            createContext();
-            context.stateProxy = tryGetProxy(context.state) || createRecordingProxy(context.state);
-            next();
-            context.patches = commitPatches();
-        }
-        finally {
-            clearContext();
-        }
-    } else {
-        context.stateProxy = tryGetProxy(context.state) || createRecordingProxy(context.state);
+export const configureGlobalPatchRecording = <TPatchHandlerState extends object, TState extends object>(
+    patchHandlerState: TPatchHandlerState,
+    patchHandler: (patchHandlerState: TPatchHandlerState, patches: Patch[], state: TState) => void) =>
+    (context: DispatchContext, next: Next) => {
         next();
-    }
-};
+        if (context.pipelineStackDepth === 0 && context.patches) {
+            try {
+                clearModified();
+                const patchHandlerStateProxy = ensureProxy(patchHandlerState);
+                const stateProxy = ensureProxy(context.state as TState);
+                patchHandler(patchHandlerStateProxy, context.patches, stateProxy);
+                context.patchesFromGlobalPatchHandler = commitPatches();
+            }
+            finally {
+                clearModified();
+            }                        
+        } 
+    };

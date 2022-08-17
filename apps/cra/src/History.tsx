@@ -1,7 +1,7 @@
-import { applyPatchToProxy, asOriginal, createReversePatch, Patch } from 'diagon';
-import { useMutator, usePatches, useSnapshot } from 'diagon-react';
-import React, { FC, CSSProperties } from 'react';
-import { useAppState } from './app';
+import { applyPatchToProxy, asOriginal, createReversePatch, elements, Patch } from 'diagon';
+import { useMutator, useSnapshot } from 'diagon-react';
+import React, { CSSProperties, FC } from 'react';
+import { RootState, useAppState } from './app';
 
 function mapToString<TKey, TValue>(map: Map<TKey, TValue>) {
     const obj = {} as any;
@@ -23,27 +23,26 @@ function patchToString(patch: Patch) {
     }
 }
 
-export const History: FC = React.memo(() => {
-    const state = useAppState();
-
-    usePatches(patches => {
-        const { history } = state;
+export const globalHistoryMiddlware = (state: RootState, patches: Patch[]) => {
+    const history = state.history;
+    try {
         if (!history.isTimeTraveling) {
-
             if (history.timeTravelOffset < 0) {
                 history.entries = history.entries.slice(0, history.timeTravelOffset);
             }
             history.entries.push({ back: patches });
             history.timeTravelOffset = 0;
         }
-
+    }
+    finally {
         state.history.isTimeTraveling = false;
-    }, [state, state.history]);
+    }
+};
 
+export const History: FC = React.memo(() => {
+    const state = useAppState();
 
-    const [timeTravelOffset] = useSnapshot(state, state => [state.history.timeTravelOffset]);
-
-    const entries = state.history.entries;
+    const [entries, timeTravelOffset] = useSnapshot(state, state => [elements(state.history.entries), state.history.timeTravelOffset]);
     const currentHistoryIndex = entries.length + timeTravelOffset;
 
     const goBack = useMutator(state, ({ history }) => {

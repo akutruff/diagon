@@ -1,7 +1,8 @@
+import { configureGlobalPatchRecording } from 'diagon';
 import { PatchTrackerContext, usePatchTrackerContextValue } from 'diagon-react';
-import React, { FC, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { createRootState } from './app';
-import { History } from './History';
+import { globalHistoryMiddlware, History } from './History';
 import { Incrementor } from './Incrementor';
 import { PeopleList } from './PeopleList';
 import { PersonEditor } from './PersonEditor';
@@ -29,7 +30,9 @@ const MainLayout: FC = React.memo(() => {
 const App: FC = () => {
   const [state] = useState(() => createRootState());
 
-  const patchTrackerContextValue = usePatchTrackerContextValue({ state, dispatch: () => { } });
+  const globalPatchRecordingMiddleware = useMemo(() => configureGlobalPatchRecording(state, globalHistoryMiddlware), [state]);
+
+  const patchTrackerContextValue = usePatchTrackerContextValue({ state }, globalPatchRecordingMiddleware);
 
   return (
     <PatchTrackerContext.Provider value={patchTrackerContextValue}>

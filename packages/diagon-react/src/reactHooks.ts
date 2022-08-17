@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Mutator, AsyncMutator, asOriginal, subscribe, unsubscribe, PatchTracker, Subscription, subscribeDeep, ChildSubscriberRecursive, subscribeRecursive, Patch } from 'diagon';
+import { asOriginal, AsyncMutator, ChildSubscriberRecursive, Mutator, PatchHandler, PatchTracker, subscribe, subscribeDeep, subscribeRecursive, Subscription, unsubscribe } from 'diagon';
 import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
 import { PatchTrackerContext } from '.';
 
@@ -18,6 +18,22 @@ export const useMutator = <TState extends object, TArgs extends unknown[], R>(st
     const { recordingDispatcher } = useContext(PatchTrackerContext);
 
     const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => recordingDispatcher.mutate(mutator, state, ...args), [recordingDispatcher, state, ...deps]);
+
+    return mutatorWithChangeTrackingAdded;
+};
+
+export const useMutatorWithPatches = <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
+    state: TState,
+    mutator: Mutator<TState, TArgs, R>,
+    patchHandlerState: TPatchHandlerState,
+    patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
+    deps: Array<unknown> = []) => {
+    const { recordingDispatcher } = useContext(PatchTrackerContext);
+
+    const patchHandlerCallback = useCallback(patchHandler, [recordingDispatcher, state, patchHandlerState, ...deps]);
+    const mutatorWithChangeTrackingAdded = useCallback((...args: TArgs) => {
+        recordingDispatcher.mutateWithPatches(state, mutator, patchHandlerState, patchHandler, ...args);
+    }, [recordingDispatcher, patchHandlerCallback]);
 
     return mutatorWithChangeTrackingAdded;
 };
@@ -124,23 +140,6 @@ export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
         return () => unsubscribe(subscriptions);
     }, [patchTracker, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
-};
-
-export const usePatches = (onNewPatches: (patches: Patch[]) => void, deps: Array<unknown> = []): Patch[] => {
-    const { patchTracker } = useContext(PatchTrackerContext);
-
-    const onNewPatchesCallback = useCallback(onNewPatches, [patchTracker, ...deps]);
-    const getLastPatchesCallback = useCallback(() => patchTracker.lastPatches, [patchTracker, ...deps]);
-
-    const sub = useCallback((tellReactToRerender: any) => {
-        patchTracker.onNewPatches.set(tellReactToRerender, patches => {
-            onNewPatchesCallback(patches);
-            tellReactToRerender();
-        });
-        return () => patchTracker.onNewPatches.delete(tellReactToRerender);
-    }, [patchTracker, getLastPatchesCallback, onNewPatchesCallback]);
-
-    return useSyncExternalStore(sub, getLastPatchesCallback);
 };
 
 function createSnapshotMemoizer<TState extends object, TSnapshot>(patchTracker: PatchTracker, getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot) {

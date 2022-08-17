@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { Action, createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
+import { createPatchTracker, createRecordingProxy, PatchTracker, map_get, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
 import { createPatchTrackerContextValue, PatchTrackerContext, PatchTrackerContextValue } from './PatchTrackerContext';
@@ -8,6 +8,8 @@ import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnap
 interface PatchTrackerAppProps {
     patchTrackerContextValue: PatchTrackerContextValue
 }
+
+type Action = { type: string };
 
 const PatchTrackerApp: FC<PropsWithChildren<PatchTrackerAppProps>> = ({ children, patchTrackerContextValue }) => {
     return (
@@ -38,9 +40,13 @@ describe('subscriptions', () => {
         patchTrackerContextValue = createPatchTrackerContextValue({
             state: undefined,
             patchTracker
-        });
+        }, () => { });
 
         recordingDispatcher = patchTrackerContextValue.recordingDispatcher;
+    });
+
+    describe('useMutateWithPatches', () => {
+        it.todo('is tested');
     });
 
     describe('useProjectedSnapshot', () => {

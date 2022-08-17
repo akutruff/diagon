@@ -24,6 +24,4 @@ export const PersonDetails: FC<PersonDetailsProps> = React.memo(({ person, onCli
             <RenderCounter label={`<PersonDetailsProps/> ${name}`} />
         </button>
     );
-});
-
-
+}); 

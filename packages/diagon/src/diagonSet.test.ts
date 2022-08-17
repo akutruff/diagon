@@ -1,5 +1,5 @@
 import { DiagonSet } from './diagonSet';
-import { clearContext, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
+import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
 import { ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
@@ -325,7 +325,7 @@ describe('DiagonSet', () => {
         });
 
         afterEach(() => {
-            clearContext();
+            clearModified();
         });
 
         it('returns map of differences and clears diagon map', () => {
@@ -351,7 +351,7 @@ describe('DiagonSet', () => {
         });
 
         afterEach(() => {
-            clearContext();
+            clearModified();
         });
 
         it('proxies when child property', () => {
