@@ -13,7 +13,6 @@ export interface SubscriptionContextProps {
 
 export interface SubscriptionContextValue extends SubscriptionContextProps {
     recordingDispatcher: RecordingDispatcher
-    mutableSources: WeakMap<object, any>;
     setContextProps: (props: Partial<SubscriptionContextProps>) => void;
 }
 
@@ -38,7 +37,6 @@ export const createSubscriptionContextValue = (
         subStore,
         recordingDispatcher,
         dispatch: dispatchWrappedWithRecording,
-        mutableSources: new WeakMap(),
         setContextProps
     };
 };

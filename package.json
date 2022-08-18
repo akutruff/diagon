@@ -11,7 +11,8 @@
     "clean": "pnpm run -r clean",
     "build": "pnpm run -r build",
     "test": "pnpm run -r test",
-    "lint": "eslint --ext js,ts,tsx ."
+    "lint": "eslint --ext js,ts,tsx .",
+    "preinstall": "npx only-allow pnpm"
   },
   "devDependencies": {
     "doctoc": "~2.2.0",

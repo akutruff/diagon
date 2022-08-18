@@ -11,7 +11,6 @@ State-management designed to minimize renders while staying out of your way and 
 npm install diagon diagon-react # core and react bindings
 ```
 
-
 Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
 
 #### Features
@@ -82,7 +81,7 @@ const Incrementor: FC = React.memo(() => {
   return (
     <div>
       <div>value: {counter}</div>
-      <button type="button" onClick={increment}>Click me</button>
+      <button onClick={increment}>Click me</button>
     </div>
   );
 });
@@ -105,7 +104,6 @@ Shows the typical pattern for subscribing to and mutating data while isolating t
 ```typescript
 import createRecordingProxy from 'diagon'
 
-//Make a proxy for state
 const state = createRecordingProxy({
         bob: {
             name: "Bob",
@@ -235,7 +233,7 @@ const increment = useMutator(state, state => state.counter++);
 return (
     <div>
         <div>value: {counter}</div>
-        <button type="button" onClick={increment}>Click me</button>
+        <button onClick={increment}>Click me</button>
     </div>
 );
 

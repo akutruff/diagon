@@ -1,0 +1,61 @@
+---
+sidebar_position: 1
+---
+
+# App Setup
+
+## Create a store
+
+Your store is where you will be keeping all the state in your application.  [`createRecordingProxy`](/core/create-recording-proxy.mdx) returns a proxy wrapped object that now starts tracking **changes as patches** to your state tree.  
+
+For convenience, if you're using TypeScript it is recommended to wrap the [`useRootState`](use-root-state.mdx) hook so that it will return a strongly typed version of your store.
+
+```typescript
+import { createRecordingProxy } from 'diagon';
+import { useRootState } from 'diagon-react';
+
+export function createRootState() {
+    const people = [
+        { name: 'Bob', age: 42 },
+        { name: 'Alice', age: 40 }
+    ];
+
+    return createRecordingProxy({
+        selectedPerson: people[0],
+        people,
+        counter: 0
+    });
+}
+
+export type RootState = ReturnType<createRootState>;
+
+export function useAppState() {
+    return useRootState() as RootState;
+}
+
+```
+
+## Create State a Subscription Context
+
+First, you simply initialize your state.  You may use reacts useState hook or define your state globablly.  It's up to you. 
+
+At the top level of your app, you need a [`SubscriptionContext`](subscription-context.mdx) provider that will enable support for all of Diagon's hooks.
+
+That provider is initialized with [`useSubscriptionContextValue`](use-subscription-context-value.mdx) which holds your root state and tracks object subscriptions in your app. 
+
+```tsx
+import { useSubscriptionContextValue, SubscriptionContext } from 'diagon-react';
+
+const App: FC = ({children}) => {  
+  const [state] = useState(() => createRootState());
+
+  const subscriptionContextValue = useSubscriptionContextValue({ state });
+
+  return (
+    <SubscriptionContext.Provider value={subscriptionContextValue}>
+      /* rest of your app here */
+    </SubscriptionContext.Provider>
+  );
+};
+```
+

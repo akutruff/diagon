@@ -1,0 +1,85 @@
+---
+sidebar_position: 1
+---
+
+# Introduction
+
+[![Build Status](https://img.shields.io/github/workflow/status/akutruff/diagon/tests?style=flat&colorA=2B323B&colorB=1e2329)](https://github.com/akutruff/diagon/actions?query=workflow%3Atest)
+[![Build Size](https://img.shields.io/bundlephobia/minzip/diagon?label=bundle%20size&style=flat&colorA=2B323B&colorB=1e2329)](https://bundlephobia.com/result?p=diagon)
+[![Version](https://img.shields.io/npm/v/diagon?style=flat&colorA=2B323B&colorB=1e2329)](https://www.npmjs.com/package/diagon)
+[![Downloads](https://img.shields.io/npm/dt/diagon.svg?style=flat&colorA=2B323B&colorB=1e2329)](https://www.npmjs.com/package/diagon)
+
+Diagon is a state-management library focused on letting you safely write code in vanilla JavaScript or TypeScript in a mutable style just like you learned in school. You now do not have to copy your entire state tree when you want to increment a single value.  
+
+Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
+
+## Features
+
+### `diagon`
+
+✅ Object change recording  
+✅ Property change subscriptions  
+✅ Mutable coding style  
+✅ Object graphs with shared references  
+✅ Cyclic references  
+✅ Map, Set, and Array  
+✅ Time travel with undo/redo built-in  
+✅ Transparent to 3rd party libraries        
+
+### `diagon-react`
+
+✅ Re-renders components only if state changes  
+✅ Prevents parent re-renders  
+✅ Async mutation with rendering control  
+✅ Allows almost all your components to be wrapped in `React.Memo`  
+✅ React 18 support with useSyncExternalStore  
+✅ Render batching  
+⬛ Concurrent Mode (may work but needs testing)  
+
+## The Magic
+
+Diagon records changes to your objects as you make them, and outputs a list of patches containing only the parts of the object that have changed. These patches allow for hyper efficent reactivity and require no additional state copies.  
+
+### JavaScript
+```typescript
+import recordPatches from 'diagon'
+
+const state = { counter: 0, otherCounter: 0 };
+const patches = recordPatches(state, state => state.counter += 1);
+// patches equals: [{"counter" => 0}]
+// state equals: {"counter" => 1}
+```
+
+100% vanilla JavaScript code that lets you see what's changed.
+
+### React
+
+```tsx
+const state = { counter: 0 };  // Can come from anywhere or be a component prop!
+
+const Incrementor: FC = React.memo(() => {
+  const counter = useSnapshot(state, state => state.counter);
+  const increment = useMutator(state, state => state.counter++);
+
+  return (
+    <div>
+      <div>value: {counter}</div>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+});
+```
+
+The above will only re-render when `state.counter` changes no matter where it is in the React component tree.  Because Diagon recordes patches, it can precisely target only the affected components.
+
+## The Dark Side of Immmutability
+
+There are many benefits to writing immutable code, but there are many sacrifices when it's applied to an application's entire state tree.  You lose object references, shared references, and end up having to copy your entire state tree every time anything changes.  
+
+Immutability can be used as a means of detecting changes in objects in order to determine what work needs be performed.  This is exactly how the VDOM in React works.  You call `render()` and React compares the previous output to the new output and only tells the browser what has changed.  However, it still requires you to call `render()` on everything which can be very expensive.  Ironically, preventing expensive re-renders is put to the user to overcome by using `React.memo` and doing a shallow comparison of your component properties to skip component rendering... That means your props are going to be shallow compared and therefore, if you pass an object as one of your props, you need to completely replace the object even if a single property changes in order to cause a component to re-render.  Worse, if you have an object in a list, you have to regenerate the entire list as well and re-render your parent component.  
+
+Yikes.  
+
+Full immutable code can be a pain to write as people discovered while working with Redux and reducers.  If you weren't using React would you write `person.name = 'Bob'` or `{...person, name: 'Bob'}`?  Well, that's why a super cool and smart libary called [Immer](https://github.com/immerjs/immer) exists.   It lets you write immutable code in a mutable style again.  However, Immer must still produce immutable output and therefore must still do a full object copy when you even read a individual property.  It's pretty expensive and it unfortunately still destroys object references because it's outpting a Redux-style immutable state tree.
+
+Decide for yourself about the trade-offs between where you mutate and where you don't in your code.  With Diagon, you now have the option of using either.

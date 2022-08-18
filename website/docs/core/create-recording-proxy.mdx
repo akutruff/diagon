@@ -1,0 +1,36 @@
+---
+title: 'createRecordingProxy'
+description: 'Wraps an object in aproxy ta.'
+
+---
+
+# createRecordingProxy
+
+See the main discussion of [The Recording Proxy](/the-recording-proxy.mdx)
+
+Wraps an object in a proxy that does two things: 
+- Keeps track of property assignments 
+- Wraps child objects in proxies when they are accessed.
+
+## Usage
+```typescript
+import createRecordingProxy from 'diagon'
+
+const state = createRecordingProxy({
+         counter: 0,
+         greeting: 'hi'
+    });
+```
+## Parameters
+
+### `target : T`
+
+The object you want to setup for change recording.  This can be a plain JavaScript object, `Array`, `Map`, or `Set`.  Objects with functions on them are not supported at this time.
+
+## Return Value
+
+A proxy object wrapping `target` that is setup for change recording.
+
+## Description
+
+See the main discussion of [The Recording Proxy](/the-recording-proxy.mdx)
