@@ -71,12 +71,12 @@ const config = {
             position: 'left',
             label: 'Documentation',
           },
-          { to: '/blog', label: 'Blog', position: 'left' },
-          {
-            href: 'https://github.com/akutruff/diagon',
-            label: 'GitHub',
-            position: 'right',
-          },
+          // { to: '/blog', label: 'Blog', position: 'left' },
+          // {
+          //   href: 'https://github.com/akutruff/diagon',
+          //   label: 'GitHub',
+          //   position: 'right',
+          // },
         ],
       },
       footer: {
@@ -86,7 +86,7 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
+                label: 'Introduction',
                 to: '/docs/intro',
               },
             ],
