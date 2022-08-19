@@ -23,8 +23,8 @@ importers:
       '@types/react': ~18.0.17
       '@types/react-dom': ~18.0.6
       cross-env: ~7.0.3
-      diagon: ^0.6.0
-      diagon-react: ^0.6.0
+      diagon: ^0.7.0
+      diagon-react: ^0.7.0
       react: ~18.2.0
       react-dom: ~18.2.0
       react-scripts: ~5.0.1
