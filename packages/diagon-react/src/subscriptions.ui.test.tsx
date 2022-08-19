@@ -338,7 +338,7 @@ describe('subscriptions', () => {
                 const name = useDeepSnapshot(
                     state,
                     state => state.person,
-                    (tracker, person, callback) => subscribe(tracker, person, person => person.name, callback),
+                    (subStore, person, callback) => subscribe(subStore, person, person => person.name, callback),
                     state => state.person.name);
                 return (
                     <div>
@@ -384,7 +384,7 @@ describe('subscriptions', () => {
                 renderCount++;
                 const name = useSubscribedSnapshot(
                     state,
-                    (tracker, state, callback) => subscribe(tracker, state, state => state.person, callback),
+                    (subStore, state, callback) => subscribe(subStore, state, state => state.person, callback),
                     state => state.person.name);
                 return (
                     <div>
@@ -429,11 +429,11 @@ describe('subscriptions', () => {
                 renderCount++;
                 const name = useSubscribedSnapshot(
                     state,
-                    (tracker, state, callback) => subscribeDeep(
-                        tracker,
+                    (subStore, state, callback) => subscribeDeep(
+                        subStore,
                         state,
                         state => state.person,
-                        (tracker, person, callback) => subscribe(tracker, person, person => person.name, callback),
+                        (subStore, person, callback) => subscribe(subStore, person, person => person.name, callback),
                         callback),
                     state => state.person.name);
                 return (

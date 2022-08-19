@@ -71,7 +71,7 @@ export function createSubscriptionStore(): SubscriptionStore {
 //  https://github.com/microsoft/TypeScript/issues/39244 
 interface IMutatorChangeRecorderTypes {
     mutatorChangeTrackingFactory: <TState extends object, TArgs extends unknown[], R = unknown>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, void>;
-    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(tracker: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
+    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(subStore: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
 }
 
 export type MutatorChangeRecorder = IMutatorChangeRecorderTypes['mutatorChangeRecorder'];
@@ -81,11 +81,11 @@ export const createChangeRecorderFactory = (subStore: SubscriptionStore, trackCh
     return mutator => (state, ...args) => trackChanges(subStore, mutator, state, ...args);
 };
 
-export function subscribeObject(tracker: SubscriptionStore, node: SubscriptionNodeData, objectToSubscribe: any) {
+export function subscribeObject(subStore: SubscriptionStore, node: SubscriptionNodeData, objectToSubscribe: any) {
     if (node.subscribedObject === objectToSubscribe) {
         return;
     }
-    unsubscribeObject(tracker, node);
+    unsubscribeObject(subStore, node);
 
     //TODO: verify what can be subscribed 
     if (!isSubscribable(objectToSubscribe)) {
@@ -97,19 +97,19 @@ export function subscribeObject(tracker: SubscriptionStore, node: SubscriptionNo
     //TODO: assert that the current node is not already assigned    
     node.subscribedObject = objectToSubscribe;
 
-    let subscriptionNodesForObject = tracker.objectSubscriptions.get(objectToSubscribe);
+    let subscriptionNodesForObject = subStore.objectSubscriptions.get(objectToSubscribe);
     if (!subscriptionNodesForObject) {
         subscriptionNodesForObject = new Set();
-        tracker.objectSubscriptions.set(objectToSubscribe, subscriptionNodesForObject);
+        subStore.objectSubscriptions.set(objectToSubscribe, subscriptionNodesForObject);
     }
     subscriptionNodesForObject.add(node);
 
     //TODO: test this shit
     if (!node.parent) {
-        const rootNode = tracker.rootNodes.get(objectToSubscribe);
+        const rootNode = subStore.rootNodes.get(objectToSubscribe);
         if (!rootNode) {
             console.log('UNEXPECTED !!! NO ROOT NODE');
-            tracker.rootNodes.set(objectToSubscribe, node);
+            subStore.rootNodes.set(objectToSubscribe, node);
         }
     }
 }
@@ -118,21 +118,21 @@ export function isSubscribable(objectToSubscribe: any) {
     return objectToSubscribe && (typeof objectToSubscribe === 'object' || isCollection(objectToSubscribe));
 }
 
-export function unsubscribeObject(tracker: SubscriptionStore, node: SubscriptionNodeData) {
+export function unsubscribeObject(subStore: SubscriptionStore, node: SubscriptionNodeData) {
     if (!node.subscribedObject)
         return;
     //TODO: assert that the current node is actually the subscribed node
-    const subscribedNodes = tracker.objectSubscriptions.get(node.subscribedObject);
+    const subscribedNodes = subStore.objectSubscriptions.get(node.subscribedObject);
     if (subscribedNodes) {
         subscribedNodes.delete(node);
         if (subscribedNodes.size === 0) {
-            tracker.objectSubscriptions.delete(node.subscribedObject);
+            subStore.objectSubscriptions.delete(node.subscribedObject);
         }
     }
 
-    const rootNode = tracker.rootNodes.get(node.subscribedObject);
+    const rootNode = subStore.rootNodes.get(node.subscribedObject);
     if (node === rootNode) {
-        tracker.rootNodes.delete(node.subscribedObject);
+        subStore.rootNodes.delete(node.subscribedObject);
     }
 
     node.subscribedObject = undefined;
@@ -143,7 +143,7 @@ function addCallback(node: SubscriptionNodeData, callback: () => unknown) {
     node.callbacks.add(callback);
 }
 
-function addPathToSubscriptions(tracker: SubscriptionStore, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
+function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
     const childPropertiesToMonitor = Reflect.ownKeys(currentPathRecord);
 
     if (childPropertiesToMonitor.length === 0) {
@@ -167,9 +167,9 @@ function addPathToSubscriptions(tracker: SubscriptionStore, callback: () => unkn
 
                     // console.log('propertyName :>> ', propertyName);
                     const valueForKey = asOriginal(asOriginal(currentValue)?.get(key));
-                    subscribeObject(tracker, childNode, valueForKey);
+                    subscribeObject(subStore, childNode, valueForKey);
 
-                    addPathToSubscriptions(tracker, callback, valuePathRecord as PathRecord, childNode, valueForKey, subscribedNodes);
+                    addPathToSubscriptions(subStore, callback, valuePathRecord as PathRecord, childNode, valueForKey, subscribedNodes);
                 }
             } else {
                 if (!currentSubscriptionNode.children) currentSubscriptionNode.children = new Map();
@@ -187,9 +187,9 @@ function addPathToSubscriptions(tracker: SubscriptionStore, callback: () => unkn
                 } else {
                     // console.log('propertyName :>> ', propertyName);
                     const childPropertyValue = asOriginal(currentValue?.[propertyKey]);
-                    subscribeObject(tracker, childNode, childPropertyValue);
+                    subscribeObject(subStore, childNode, childPropertyValue);
 
-                    addPathToSubscriptions(tracker, callback, (currentPathRecord as any)[propertyKey], childNode, childPropertyValue, subscribedNodes);
+                    addPathToSubscriptions(subStore, callback, (currentPathRecord as any)[propertyKey], childNode, childPropertyValue, subscribedNodes);
                 }
             }
         }
@@ -197,19 +197,19 @@ function addPathToSubscriptions(tracker: SubscriptionStore, callback: () => unkn
     return subscribedNodes;
 }
 
-export function subscribe<TState, R>(tracker: SubscriptionStore, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
+export function subscribe<TState, R>(subStore: SubscriptionStore, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
     const originalState = asOriginal(state);
     const path = recordPath(pathAccessor);
     // console.log('subscribed path :>> ', path);
 
-    let rootNode = tracker.rootNodes.get(originalState);
+    let rootNode = subStore.rootNodes.get(originalState);
     if (!rootNode) {
         rootNode = createRootNode();
-        tracker.rootNodes.set(originalState, rootNode);
-        subscribeObject(tracker, rootNode, originalState);
+        subStore.rootNodes.set(originalState, rootNode);
+        subscribeObject(subStore, rootNode, originalState);
     }
 
-    const subscriptionNodesWithCallback = addPathToSubscriptions(tracker, callback, path, rootNode, originalState);
+    const subscriptionNodesWithCallback = addPathToSubscriptions(subStore, callback, path, rootNode, originalState);
 
     return () => {
         for (const subscriptionNode of subscriptionNodesWithCallback) {
@@ -220,7 +220,7 @@ export function subscribe<TState, R>(tracker: SubscriptionStore, state: TState, 
 
             while (nodeToCleanup && !nodeToCleanup.callbacks?.size && !nodeToCleanup.children?.size && !nodeToCleanup.mapKeyValues?.size) {
                 // console.log('cleaning up :>> ', nodeToCleanup);
-                unsubscribeObject(tracker, nodeToCleanup);
+                unsubscribeObject(subStore, nodeToCleanup);
                 if (!nodeToCleanup.parent) {
                     break;
                 }
@@ -239,7 +239,7 @@ export function subscribe<TState, R>(tracker: SubscriptionStore, state: TState, 
                 nodeToCleanup = nodeToCleanup.parent;
             }
         }
-        // console.log('unsubbed :>> ', tracker, Array.from(subscriptionNodesWithCallback).map(x => x.callbacks));
+        // console.log('unsubbed :>> ', subStore, Array.from(subscriptionNodesWithCallback).map(x => x.callbacks));
     };
 }
 
@@ -268,26 +268,26 @@ function getHighestCommonAncestors(nodes: Set<SubscriptionNodeData>) {
     return highestCommonAncestors;
 }
 
-function resubscribeAndGatherCallbacks(tracker: SubscriptionStore, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
+function resubscribeAndGatherCallbacks(subStore: SubscriptionStore, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
     if (currentSubscriptionNode.callbacks) {
         for (const callback of currentSubscriptionNode.callbacks) {
             callbacksToFire.add(callback);
         }
     }
 
-    subscribeObject(tracker, currentSubscriptionNode, newStateValue);
+    subscribeObject(subStore, currentSubscriptionNode, newStateValue);
 
     const children = currentSubscriptionNode.children;
     if (children) {
         for (const childNode of children.values()) {
-            resubscribeAndGatherCallbacks(tracker, childNode, newStateValue?.[childNode.propertyKey], callbacksToFire);
+            resubscribeAndGatherCallbacks(subStore, childNode, newStateValue?.[childNode.propertyKey], callbacksToFire);
         }
     }
 
     const mapKeyValues = currentSubscriptionNode.mapKeyValues;
     if (mapKeyValues) {
         for (const valueNode of mapKeyValues.values()) {
-            resubscribeAndGatherCallbacks(tracker, valueNode, newStateValue?.get(valueNode.key), callbacksToFire);
+            resubscribeAndGatherCallbacks(subStore, valueNode, newStateValue?.get(valueNode.key), callbacksToFire);
         }
     }
 }
@@ -307,14 +307,14 @@ function getValueFromParent(node: SubscriptionNodeData) {
     }
 }
 
-export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: SubscriptionStore, patches: Patch[]) {
+export function getCallbacksAndUpdateSubscriptionsFromPatches(subStore: SubscriptionStore, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
 
     // console.log('publishing');
     for (const patch of patches) {
         // console.log('patch :>> ', patch);
         const patchTarget = patchToSource.get(patch);
-        const subscriptionNodes = tracker.objectSubscriptions.get(patchTarget);
+        const subscriptionNodes = subStore.objectSubscriptions.get(patchTarget);
 
         if (subscriptionNodes) {
             const isTargetCollection = isCollection(patchTarget);
@@ -385,7 +385,7 @@ export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: Subscript
     const callbacksToFire = new Set<any>();
     for (const node of highestInvalidatedNodesInTree) {
         const currentStateValue = getValueFromParent(node);
-        resubscribeAndGatherCallbacks(tracker, node, currentStateValue, callbacksToFire);
+        resubscribeAndGatherCallbacks(subStore, node, currentStateValue, callbacksToFire);
     }
     return callbacksToFire;
 }
@@ -395,16 +395,16 @@ function isCollection(target: any) {
 }
 
 //This is the simplest form of getting recordings and subscriptions.  Undo/redo history code would want to snap this function in the main application.
-export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(tracker: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
+export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(subStore: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
     const patches = recordPatches(state, mutator, ...args);
 
-    const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(tracker, patches);
+    const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(subStore, patches);
 
     //TODO: add history support externally
     //for consumers to do their own change tracking
 
     //TODO: use Number.MAX_SAFE_INTEGER or BigInt
-    tracker.version++;
+    subStore.version++;
 
     for (const callback of callbacksToFire) {
         callback();
@@ -435,7 +435,7 @@ export interface GenericSelectSubscribeFunctionRecurse {
 export type ChildSubscriberRecursive<TState> = (state: TState, subscribe: GenericSelectSubscribeFunctionRecurse) => SubscriptionCollection;
 
 export function subscribeRecursive<TState, TChildState>(
-    tracker: SubscriptionStore,
+    subStore: SubscriptionStore,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
     subscribeToChildren: ChildSubscriberRecursive<TChildState>,
@@ -444,30 +444,30 @@ export function subscribeRecursive<TState, TChildState>(
     let currentChildSubscriptions: SubscriptionCollection;
     let hasUnsubscribed = false;
 
-    const subscribeWithTrackerAndCallback: GenericSelectSubscribeFunctionRecurse = (state, selector, subscribeToChildren?: ChildSubscriberRecursive<ReturnType<typeof selector>>) => {
+    const subscribeWithStoreAndCallback: GenericSelectSubscribeFunctionRecurse = (state, selector, subscribeToChildren?: ChildSubscriberRecursive<ReturnType<typeof selector>>) => {
         if (subscribeToChildren) {
-            return subscribeRecursive(tracker, state, selector, subscribeToChildren, callback);
+            return subscribeRecursive(subStore, state, selector, subscribeToChildren, callback);
         } else {
-            return subscribe(tracker, state, selector, callback);
+            return subscribe(subStore, state, selector, callback);
         }
     };
 
-    const resubscribeSubscription = subscribe(tracker, state, childPathAccessor, () => {
+    const resubscribeSubscription = subscribe(subStore, state, childPathAccessor, () => {
         if (hasUnsubscribed)
             return;
 
         //TODO: verify that this ordering is correct.  Subscribing to new values first and then unsubbing existing should keep 
         //   the subscription nodes from being created and destroyed when it's the same objects over and over.
         const selectedChild = childPathAccessor(state);
-        const newChildSubscriptions = subscribeToChildren(selectedChild, subscribeWithTrackerAndCallback);
+        const newChildSubscriptions = subscribeToChildren(selectedChild, subscribeWithStoreAndCallback);
 
         unsubscribe(currentChildSubscriptions);
         currentChildSubscriptions = newChildSubscriptions;
     });
 
     const selectedChild = childPathAccessor(state);
-    currentChildSubscriptions = subscribeToChildren(selectedChild, subscribeWithTrackerAndCallback);
-    const executeCallbackSubscription = subscribe(tracker, state, childPathAccessor, callback);
+    currentChildSubscriptions = subscribeToChildren(selectedChild, subscribeWithStoreAndCallback);
+    const executeCallbackSubscription = subscribe(subStore, state, childPathAccessor, callback);
 
     return () => {
         if (hasUnsubscribed) {
@@ -481,7 +481,7 @@ export function subscribeRecursive<TState, TChildState>(
 }
 
 export function subscribeDeep<TState, TChildState>(
-    tracker: SubscriptionStore,
+    subStore: SubscriptionStore,
     state: TState,
     childPathAccessor: (state: TState) => TChildState,
     subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => SubscriptionCollection,
@@ -490,22 +490,22 @@ export function subscribeDeep<TState, TChildState>(
     let currentChildSubscriptions: SubscriptionCollection;
     let hasUnsubscribed = false;
 
-    const resubscribeSubscription = subscribe(tracker, state, childPathAccessor, () => {
+    const resubscribeSubscription = subscribe(subStore, state, childPathAccessor, () => {
         if (hasUnsubscribed)
             return;
 
         //TODO: verify that this ordering is correct.  Subscribing to new values first and then unsubbing existing should keep 
         //   the subscription nodes from being created and destroyed when it's the same objects over and over.
         const selectedChild = childPathAccessor(state);
-        const newChildSubscriptions = subscribeToChildren(tracker, selectedChild, callback);
+        const newChildSubscriptions = subscribeToChildren(subStore, selectedChild, callback);
 
         unsubscribe(currentChildSubscriptions);
         currentChildSubscriptions = newChildSubscriptions;
     });
 
     const selectedChild = childPathAccessor(state);
-    currentChildSubscriptions = subscribeToChildren(tracker, selectedChild, callback);
-    const executeCallbackSubscription = subscribe(tracker, state, childPathAccessor, callback);
+    currentChildSubscriptions = subscribeToChildren(subStore, selectedChild, callback);
+    const executeCallbackSubscription = subscribe(subStore, state, childPathAccessor, callback);
 
     return () => {
         if (hasUnsubscribed) {

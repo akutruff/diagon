@@ -405,8 +405,8 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            const subscribeToRows = jest.fn((tracker: SubscriptionStore, grid: Person[][], callback: () => void) =>
-                grid.map(row => subscribe(tracker, row, row => elements(row), callback))
+            const subscribeToRows = jest.fn((subStore: SubscriptionStore, grid: Person[][], callback: () => void) =>
+                grid.map(row => subscribe(subStore, row, row => elements(row), callback))
             );
 
             const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
@@ -441,8 +441,8 @@ describe('subscriptions', () => {
 
             const callback = jest.fn(() => { });
 
-            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
-                return grid.map(row => subscribe(tracker, row, row => elements(row), parentCallback));
+            const subscribeToRows = jest.fn(function (subStore: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
+                return grid.map(row => subscribe(subStore, row, row => elements(row), parentCallback));
             });
 
             const addElementToRow = createMutator((state: Person[], value: Person) => state.push(value));
@@ -463,9 +463,9 @@ describe('subscriptions', () => {
 
             const unsubscribeCallbacks: Array<() => void> = [];
 
-            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
+            const subscribeToRows = jest.fn(function (subStore: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
                 const newRowSubs = grid.map(row => {
-                    const unsubFromRow = jest.fn(subscribe(tracker, row, row => elements(row), parentCallback));
+                    const unsubFromRow = jest.fn(subscribe(subStore, row, row => elements(row), parentCallback));
                     unsubscribeCallbacks.push(unsubFromRow);
                     return unsubFromRow;
                 });
@@ -510,11 +510,11 @@ describe('subscriptions', () => {
             const callback = jest.fn(() => { });
 
             let lastElementSubscriptions: Array<() => void> = [];
-            const subscribeToRows = jest.fn(function (tracker: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
+            const subscribeToRows = jest.fn(function (subStore: SubscriptionStore, grid: Person[][], parentCallback: () => void): Array<() => void> {
                 lastElementSubscriptions = [];
 
                 const newRowSubs = grid.map(row => {
-                    const unsubFromRow = jest.fn(subscribe(tracker, row, row => elements(row), parentCallback));
+                    const unsubFromRow = jest.fn(subscribe(subStore, row, row => elements(row), parentCallback));
                     lastElementSubscriptions.push(unsubFromRow);
                     return unsubFromRow;
                 });

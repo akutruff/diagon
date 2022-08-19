@@ -82,21 +82,6 @@ export const configureReactMiddleware = (subStore: SubscriptionStore) => (contex
                     }
                 });
             }
-
-            // if (callbacksToFire.size > 0 || subStore.onNewPatches.size > 0) {
-
-            //     const onNewPatches = Array.from(subStore.onNewPatches.values());
-
-            //     ReactDOM.unstable_batchedUpdates(() => {
-            //         for (const callback of callbacksToFire) {
-            //             callback();
-            //         }
-
-            //         for (const onNewPatchesCallback of onNewPatches) {
-            //             onNewPatchesCallback(patches);
-            //         }
-            //     });
-            // }
         }
     }
 };

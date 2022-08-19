@@ -64,7 +64,6 @@ export type ReadonlyPropertyNames<T> = {
 export type ReadonlyProperties<T> = Pick<T, ReadonlyPropertyNames<T>>;
 export type WritableProperties<T> = Pick<T, WritablePropertyNames<T>>;
 
-
 //mad science: https://stackoverflow.com/questions/50639496/is-there-a-way-to-prevent-union-types-in-typescript 
 export type NotAUnion<T, U = T> = U extends any ? [T] extends [boolean] ? T : [T] extends [U] ? T : never : never;
 
