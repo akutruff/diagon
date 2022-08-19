@@ -1,4 +1,4 @@
-import { applyPatchTo, asOriginal, createReversePatch, createReversePatchFrom, elements, ensureProxy, getPatchSource, Patch } from 'diagon';
+import { applyPatchTo, asOriginal, createReversePatchFrom, elements, ensureProxy, getPatchSource, Patch } from 'diagon';
 import { useMutator, useSnapshot } from 'diagon-react';
 import React, { CSSProperties, FC } from 'react';
 import { RootState, useAppState } from './app';
