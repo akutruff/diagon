@@ -16,19 +16,26 @@ Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/m
 
 Read the [Full Documenation](https://www.diagon.dev/)
 
-#### Features
+### `diagon`
 
-- [x] Object change recording
-- [x] Mutable coding style 
-- [x] Cyclic references
-- [x] Multiple references to same object in state graph
-- [x] Map, Set, and Array support
-- [x] Async mutation with rendering control and state change control
-- [x] Object property change subscriptions
-- [x] Time travel and undo / redo built-in
-- [x] React 18 support with useSyncExternalStore
-- [x] React render batching
-- [ ] React Concurrent Mode (may work but needs testing)
+✅ Object change recording  
+✅ Property change subscriptions  
+✅ Mutable coding style  
+✅ Object graphs with shared references  
+✅ Cyclic references  
+✅ Map, Set, and Array  
+✅ Time travel with undo/redo built-in  
+✅ Transparent to 3rd party libraries        
+
+### `diagon-react`
+
+✅ Re-renders components only if state changes  
+✅ Prevents parent re-renders  
+✅ Async mutation with rendering control  
+✅ Allows almost all your components to be wrapped in `React.Memo`  
+✅ React 18 support with useSyncExternalStore  
+✅ Render batching  
+⬛ Concurrent Mode (may work but needs testing)  
 
 
 Diagon is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use Diagon's hooks to determine when to trigger re-renders.
