@@ -105,17 +105,17 @@ const config = {
               },
               {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/diagon',
+                href: 'https://discord.gg/NmAEzy4vRd',
               }
             ],
           },
           {
             title: 'More',
             items: [
-              {
-                label: 'Blog',
-                to: '/blog',
-              },
+              // {
+              //   label: 'Blog',
+              //   to: '/blog',
+              // },
               {
                 label: 'GitHub',
                 href: 'https://github.com/akutruff/diagon',

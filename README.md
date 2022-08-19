@@ -13,6 +13,9 @@ npm install diagon diagon-react # core and react bindings
 
 Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
 
+
+Read the [Full Documenation](https://www.diagon.dev/)
+
 #### Features
 
 - [x] Object change recording
