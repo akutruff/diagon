@@ -1,0 +1,57 @@
+---
+description: 'Hook for mutating state.'
+sidebar_position: 4
+---
+
+# useMutator
+```tsx
+const Incrementor: FC = React.memo(() => {
+  const state = useAppState();
+  
+  const counter = useSnapshot(state, state => state.counter);
+  const increment = useMutator(state, state => state.counter++);
+
+  return (
+    <div>
+      <div>value: {counter}</div>
+      <button onClick={increment}>Click me</button>
+    </div>
+  );
+});
+```
+Allows you to do mutations on your state and record any changes that happen.  No mutations should be done outside the passed in mutator function and if you need to use additional values from your component props, you should add the prop to the optional dependency list as the third argument to `useMutator`.
+
+```tsx
+const Incrementor: FC = React.memo(() => {
+  const state = useAppState();
+  
+  const counter = useSnapshot(state, state => state.counter);
+  const increment = useMutator(state, (state, amount) => state.counter += amount);
+
+  return (
+    <div>
+      <div>value: {counter}</div>
+      <button onClick={increment(2)}>Add Two</button>
+    </div>
+  );
+});
+```
+Also, mutators can take any additional arguments that you like, and only the state will be closed upon.
+
+## Return Value
+
+Returns a callback that can be executed anywhere that will both mutate your state and trigger your react component to re-render.
+
+## Parameters
+
+### `state`
+
+The state you wish to mutate.  
+
+### `mutator`
+
+The function you wish to use to modify your state.  This function 
+
+### `deps : any[]` (optional)
+
+A standard React hooks dependency list will recreate your mutator.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 

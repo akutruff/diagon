@@ -46,15 +46,15 @@ export const useMutatorAsync = <TState extends object, TArgs extends unknown[], 
     return mutatorWithChangeTrackingAdded;
 };
 
-export const useSnapshot = <TState extends object, TSnapshot>(state: TState, getSnapshot: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
+export const useSnapshot = <TState extends object, TSnapshot>(state: TState, selector: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
     state = asOriginal(state);
     const { subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, selector), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((tellReactToRerender: any) => {
-        const subscriptions = subscribe(subStore, state, getSnapshot, tellReactToRerender);
+        const subscriptions = subscribe(subStore, state, selector, tellReactToRerender);
         return () => unsubscribe(subscriptions);
     }, [subStore, getSnapshotCallback]);
     return useSyncExternalStore(sub, getSnapshotCallback);
@@ -65,12 +65,12 @@ export const useSnapshot = <TState extends object, TSnapshot>(state: TState, get
 export const useProjectedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
     subscriber: (state: TState) => any,
-    getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<any> = []): TSnapshot => {
     state = asOriginal(state);
     const { subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, selector), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
 
     const sub = useCallback((tellReactToRerender: any) => {
@@ -83,13 +83,13 @@ export const useProjectedSnapshot = <TState extends object, TSnapshot>(
 export const useSubscribedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
     subscriber: (subStore: SubscriptionStore, state: TState, callback: () => void) => Subscription,
-    getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
     const { subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, selector), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const subscriberCallback = useCallback(subscriber, []);
 
@@ -104,13 +104,13 @@ export const useRecursiveSnapshot = <TState extends object, TChildState, TSnapsh
     state: TState,
     childSelector: (state: TState) => TChildState,
     subscribeToChildren: ChildSubscriberRecursive<TChildState>,
-    getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
     const { subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, selector), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
@@ -125,13 +125,13 @@ export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
     state: TState,
     childSelector: (state: TState) => TChildState,
     subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => Subscription,
-    getSnapshot: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
     : TSnapshot => {
     state = asOriginal(state);
     const { subStore } = useContext(SubscriptionContext);
 
-    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, getSnapshot), [subStore, state, ...deps]);
+    const memoizeSnapshot = useMemo(() => createSnapshotMemoizer(subStore, selector), [subStore, state, ...deps]);
     const getSnapshotCallback = useCallback(() => memoizeSnapshot(state), [memoizeSnapshot]);
     const childSelectorCallback = useCallback(childSelector, []);
     const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);

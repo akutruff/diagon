@@ -1,6 +1,6 @@
 
 import { DiagonMap } from './diagonMap';
-import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
+import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource } from './diagon';
 import { NO_ENTRY, ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
@@ -332,7 +332,7 @@ describe('DiagonMap', () => {
 
             const previous = diagonMap.commitPatch();
 
-            expect(patchToTarget.get(previous)).toBe(target);
+            expect(patchToSource.get(previous)).toBe(target);
             expect(diagonMap.size).toEqual(1);
             expect(Reflect.get(Map.prototype, 'size', diagonMap)).toEqual(0);
         });

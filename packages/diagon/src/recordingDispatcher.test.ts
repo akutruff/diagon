@@ -172,7 +172,7 @@ describe('RecordingDispatcher', () => {
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
             await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
-                const value = await sleep(100, 'foobar');
+                const value = await sleep(1, 'foobar');
                 state = yield;
                 state.prop0 = value;
             });
@@ -193,7 +193,7 @@ describe('RecordingDispatcher', () => {
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
             await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
-                const value = await sleep(100, 'foobar');
+                const value = await sleep(1, 'foobar');
                 state = yield;
                 state.prop0 = value;
             });
@@ -256,14 +256,14 @@ describe('RecordingDispatcher', () => {
             });
 
             async function* nestedAsyncGenerator(state: State) {
-                const value = await sleep(100, 'nested');
+                const value = await sleep(1, 'nested');
                 state = yield;
                 state.prop0 = value;
             }
 
             const recordingDispatcher = createRecordingDispatcher(middleware);
             await recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
-                const value = await sleep(100, 'top');
+                const value = await sleep(1, 'top');
                 state = yield;
                 state.prop0 = value;
                 yield* nestedAsyncGenerator(state);
@@ -359,7 +359,7 @@ describe('RecordingDispatcher', () => {
 
             let didSleepFinish = false;
             const asyncOperation = recordingDispatcher.mutateAsync(state, async function* asyncFunction(state) {
-                await sleep(2000, 'dasfdadfaghmnjczv');
+                await sleep(1, 'dasfdadfaghmnjczv');
                 didSleepFinish = true;
                 state = yield;
                 state.prop0 = 'one';

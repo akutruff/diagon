@@ -43,6 +43,7 @@ export const createSubscriptionContextValue = (
 
 export const useSubscriptionContextValue = (initialValue: Partial<SubscriptionContextProps>, ...middlewares: Middleware<DispatchContext>[]): SubscriptionContextValue => {
     const [contextProps, setContextProps] = useState(initialValue);
+    //TODO: verify that useMemo is okay instead of useState, since useMemo may not be guaranteed to cache.
     const value = useMemo(() => createSubscriptionContextValue(contextProps, setContextProps, ...middlewares), [contextProps, ...middlewares]);
     return value;
 };

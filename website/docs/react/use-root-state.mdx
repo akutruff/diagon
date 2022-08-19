@@ -1,0 +1,39 @@
+---
+description: 'Wraps an object in aproxy ta.'
+sidebar_position: 2
+---
+
+# useRootState
+
+Accesses the topmost state that you gave to the [`SubscriptionContext`](/react/subscription-context.mdx) via [`useSubscriptionContextValue`](/react/use-subscription-context-value.mdx). 
+
+It returns an untyped value, so it is a good idea to have a simple wrapper function around the hook that casts to your root type.
+
+## Usage
+```typescript
+import { createRecordingProxy } from 'diagon';
+import { useRootState } from 'diagon-react';
+
+export function createRootState() {
+    const people = [
+        { name: 'Bob', age: 42 },
+        { name: 'Alice', age: 40 }
+    ];
+
+    return createRecordingProxy({
+        selectedPerson: people[0],
+        people,
+        counter: 0
+    });
+}
+
+export type RootState = ReturnType<createRootState>;
+
+export function useAppState() {
+    return useRootState() as RootState;
+}
+
+```
+## Return Value
+
+The root state that was given to the [`SubscriptionContext`](/react/subscription-context.mdx) via [`useSubscriptionContextValue`](/react/use-subscription-context-value.mdx). 

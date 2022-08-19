@@ -1,0 +1,61 @@
+---
+description: 'See how a function changes an object.'
+---
+
+# Utilities
+
+## Recording Proxy Utilities
+
+### `isProxy`
+
+`isProxy(obj: any): boolean`
+
+Returns whether `obj` is a reference to a recording proxy or not.
+
+### `tryGetProxy`
+
+`tryGetProxy<T>(obj: T): T | undefined`
+
+Returns the current recording proxy for `obj` if one exists.  If `obj` is a reference to a proxy, then `obj` is returned.
+
+### `ensureProxy`
+
+`ensureProxy<T extends object>(obj: T) : T`
+
+If no recording proxy for `obj` exists, then one is created and returned.  If `obj` is a reference to a proxy, then `obj` is returned.
+
+### `asOriginal`
+
+`asOriginal<T>(obj: T): T`
+
+If the `obj` parameter is a recording proxy, the underlying object being recorded is returned.  If `obj` is not a proxy, then `obj` is returned.
+
+### `areSame`
+
+`areSame(one: any, two: any): boolean`
+
+Returns if one and two are the same object. If either object is a proxy, the underlying object is used for the comparison.  
+
+Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
+
+### `doNotTrack`
+
+`doNotTrack<T>(obj: T): T`
+
+Disables proxy generation and change tracking for an object.  This is useful for when you store references to 3rd party instances in your state tree that  don't behave well when proxied.  
+
+Untracked objects in your state tree will not return proxies from their child properties.
+
+Untracked objects will behave differently with some utility functions which will treat the object as its own "proxy."
+- `tryGetProxy` - will return the untracked object.
+- `ensureProxy` - will return the untracked object, and no proxy will be generated.
+
+`isProxy` will return false for untracked objects.
+
+## Patches 
+
+### `getPatchSource` 
+
+`getPatchSource<T>(patch: Patch): any`
+
+Returns the object from which the `patch` was calculated.

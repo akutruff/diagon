@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { asOriginal, patchToTarget, recordPatches } from './diagon';
+import { asOriginal, patchToSource, recordPatches } from './diagon';
 import { recordPath, PathRecord, MapKeys, AnyProperty } from './pathRecorder';
 import { ArrayPatch, Patch, MapPatch } from './types';
 import { Mutator } from '.';
@@ -313,7 +313,7 @@ export function getCallbacksAndUpdateSubscriptionsFromPatches(tracker: Subscript
     // console.log('publishing');
     for (const patch of patches) {
         // console.log('patch :>> ', patch);
-        const patchTarget = patchToTarget.get(patch);
+        const patchTarget = patchToSource.get(patch);
         const subscriptionNodes = tracker.objectSubscriptions.get(patchTarget);
 
         if (subscriptionNodes) {

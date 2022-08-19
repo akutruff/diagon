@@ -1,0 +1,65 @@
+---
+title: 'recordPatches'
+description: 'See how a function changes an object.'
+---
+
+# recordPatches
+## Change Recording with Patches
+
+```typescript
+import recordPatches from 'diagon'
+
+const state = { counter: 0, otherCounter: 0 };
+const patches = recordPatches(state, state => state.counter += 1);
+// patches equals: [{"counter" => 0}]
+```
+
+Runs the increment function and records any object mutation into a list of `Map<>` objects containing the **original value** of each property.  
+
+These patches allows you to rewind and undo changes by calling `applyPatchTo()`.
+
+## Deep Object Hierarchies
+```typescript
+
+const bob = { favoriteFood: 'tacos' };
+const alice = { favoriteFood: 'cake',  homie: bob };
+const fred = { favoriteFood: 'pizza', homie: bob };
+
+const state = { bob, alice, fred };
+
+const patches = recordPatches(state, {alice, fred} => {
+    alice.homie = fred;
+    alice.homie.favoriteFood = 'nachos'; // Will now modify fred as you would expect.
+    });
+
+// patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
+getPatchSource(patches[0]) // will equal alice
+getPatchSource(patches[1]) // will equal fred
+
+```
+
+Runs the increment function and records any object mutation into a list of `Patch` objects that stores which properties have changed and the **original value** of each property.
+
+`getPatchSource` returns the object that was the source of a patch.
+
+## Undo / Redo:
+
+```typescript
+const state = { counter: 0 };
+const [ backwardsPatch ] = recordPatches(state, state => state.counter += 1);
+//backwardsPatch equals  [{"counter" => 0}]
+//state equals: {counter: 1}
+
+const forwardPatch = createReversePatchFrom(backwardsPatch, state);
+//forwardPatch equals  [{"counter" => 1}]
+
+//undo
+applyPatchTo(backwardsPatch, state);
+//state equals {counter: 0}
+
+//redo
+applyPatchTo(forwardPatch, state);
+//state equals {counter: 1}
+
+```
+Increments the state counter and gets the `backwardsPatch`.  `createReversePatchFrom` produces a new patch that would undo that patch on the object passed to it.

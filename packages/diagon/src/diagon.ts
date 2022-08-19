@@ -14,7 +14,7 @@ export function resetEnvironment() {
 
 export const objectToProxy = new WeakMap<any, any>();
 export const objectToCurrentPatch = new WeakMap<any, Patch>();
-export const patchToTarget = new WeakMap<Patch, any>();
+export const patchToSource = new WeakMap<Patch, any>();
 
 export function currentContext(): DiagonContext | undefined {
     return Diagon.currentContext;
@@ -37,8 +37,8 @@ export function getCurrentPatch<T>(obj: T): InferPatchType<T> | undefined {
     return objectToCurrentPatch.get(obj as any) as InferPatchType<T> | undefined;
 }
 
-export function getPatchTarget<T>(patch: InferPatchType<T>): T | undefined {
-    return patchToTarget.get(patch) as T | undefined;
+export function getPatchSource(patch: Patch): any {
+    return patchToSource.get(asOriginal(patch));
 }
 
 export function tryGetProxy<T>(obj: T): T | undefined {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { patchToTarget, modified, objectToCurrentPatch, proxify, } from './diagon';
+import { patchToSource, modified, objectToCurrentPatch, proxify, } from './diagon';
 import { ORIGINAL, PROXY, ObjectPatch } from './types';
 
 export const objectProxyHandler: ProxyHandler<any> = {
@@ -38,9 +38,9 @@ export const objectProxyHandler: ProxyHandler<any> = {
 };
 
 export function createObjectPatch<T>(target: T): ObjectPatch<T> {
-    const patch = new Map<keyof T, T[keyof T]>(); 
+    const patch = new Map<keyof T, T[keyof T]>();
 
     // const patch = {} as ObjectPatch<T>;
-    patchToTarget.set(patch, target);
+    patchToSource.set(patch, target);
     return patch;
 }

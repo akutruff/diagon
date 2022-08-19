@@ -14,79 +14,37 @@ import Tabs from '@theme/Tabs';
 <TabItem value="npm" label="npm" default>
 
 ```bash
-npm i diagon diagon/react
+npm i diagon diagon-react
 ```
 
 </TabItem>
 <TabItem value="pnpm" label="pnpm">
 
 ```bash
-pnpm i diagon diagon/react
+pnpm i diagon diagon-react
 ```
 
 </TabItem>
 <TabItem value="yarn" label="yarn">
 
 ```bash
-yarn add diagon diagon/react
+yarn add diagon diagon-react
 ```
 
 </TabItem>
 </Tabs>
 
-## Create a store
+## React
 
-```typescript
-import { createRecordingProxy } from 'diagon';
-import { useRootState } from 'diagon-react';
+See the Full React example [sandbox](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) 
 
-export function useAppState() {
-    return useRootState() as RootState;
-}
+- [Setup your React App](/react/app-setup.mdx)
 
-export function createRootState() {
-    const people = [
-        { name: 'Bob', age: 42 },
-        { name: 'Alice', age: 40 }
-    ];
+<!-- 1. [Create components](/react/use-snapshot.mdx)
+1. [Add undo, redo and time travel](/react/undo-redo.mdx) -->
 
-    return createRecordingProxy({
-        selectedPerson: people[0],
-        people,
-        counter: 0
-    });
-}
+## Diagon For Vanilla Object Change Processing
 
-```
-
-`createRecordingProxy` returns a proxy wrapped object that now starts tracking **changes as patches** to your state tree.  
-
-## Simple Counter App
-```tsx
-const Incrementor: FC = React.memo(() => {
-  const state = useAppState();
-  
-  const counter = useSnapshot(state, state => state.counter);
-  const increment = useMutator(state, state => state.counter++);
-
-  return (
-    <div>
-      <div>value: {counter}</div>
-      <button onClick={increment}>Click me</button>
-    </div>
-  );
-});
-
-const App: FC = () => {  
-  const [state] = useState(() => createRootState());
-
-  const subscriptionContextValue = useSubscriptionContextValue({ state, dispatch: () => { } });
-
-  return (
-    <SubscriptionContext.Provider value={subscriptionContextValue}>
-      <Incrementor />
-    </SubscriptionContext.Provider>
-  );
-};
-```
-Shows the typical pattern for subscribing to and mutating data while isolating the rendering behavior to just the affected data.  Uses `React.memo` to ensure complete isolation.
+See how you can use Diagon to:
+- [Record object patches](/core/record-patches.mdx)
+- [Undo and redo object changes](/core/record-patches.mdx#undo--redo) 

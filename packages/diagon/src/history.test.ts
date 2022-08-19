@@ -562,7 +562,7 @@ describe('History', () => {
                     expect(tryGetProxy(key)).toBeTruthy();
                 }
             });
-            it.todo('create a ProxifyHierarchy() methoid');
+            it.todo('create a ProxifyHierarchy() method');
         });
     });
 });

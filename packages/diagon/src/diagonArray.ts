@@ -1,4 +1,4 @@
-import { patchToTarget, modified, objectToCurrentPatch, proxify } from './diagon';
+import { patchToSource, modified, objectToCurrentPatch, proxify } from './diagon';
 import { ArrayPatch, ORIGINAL, PROXY } from './types';
 
 export const diagonArrayProxyHandler: ProxyHandler<any> = {
@@ -57,7 +57,7 @@ export const diagonArrayProxyHandler: ProxyHandler<any> = {
 
 export function createArrayPatch<T>(target: T[]) {
     const patch = [] as any as ArrayPatch;
-    patchToTarget.set(patch, target);
+    patchToSource.set(patch, target);
     return patch;
 }
 

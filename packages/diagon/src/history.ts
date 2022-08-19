@@ -1,4 +1,4 @@
-import { assignDiagonId, asOriginal, patchToTarget, ensureProxy } from './diagon';
+import { assignDiagonId, asOriginal, patchToSource } from './diagon';
 import { createArrayPatch } from './diagonArray';
 import { createMapPatch, getKeyUsedByMap } from './diagonMap';
 import { createObjectPatch } from './diagonObject';
@@ -8,17 +8,11 @@ import { Patch, DIAGON_ID, ORIGINAL, InferPatchType, NO_ENTRY, SetPatch, ArrayPa
 import { isMap, isPlainObject, isSet } from './utils';
 
 export function applyPatch(patch: Patch) {
-    const target = patchToTarget.get(patch);
-    applyPatchTo(target, patch);
+    const target = patchToSource.get(patch);
+    applyPatchTo(patch, target);
 }
 
-export function applyPatchToProxy(patch: Patch) {
-    const target = ensureProxy(patchToTarget.get(patch));
-
-    applyPatchTo(target, patch);
-}
-
-export function applyPatchTo(target: any, patch: Patch) {
+export function applyPatchTo(patch: Patch, target: any) {
     const original = asOriginal(target);
     if (original instanceof Map) {
         const mapPatch = patch as MapPatch;
@@ -63,32 +57,36 @@ export function applyPatchTo(target: any, patch: Patch) {
 }
 
 export function createReversePatch(patch: Patch) {
-    const target = asOriginal(patchToTarget.get(asOriginal(patch)));
-    if (target instanceof Map) {
-        const reversePatch = createMapPatch(target);
+    return createReversePatchFrom(patch, patchToSource.get(asOriginal(patch)));
+}
+
+export function createReversePatchFrom(patch: Patch, source: any) {
+    source = asOriginal(source);
+    if (source instanceof Map) {
+        const reversePatch = createMapPatch(source);
         const mapPatch = patch as MapPatch;
 
         for (const key of mapPatch.keys()) {
-            if (!target.has(key)) {
+            if (!source.has(key)) {
                 reversePatch.set(key, NO_ENTRY);
             } else {
-                reversePatch.set(key, target.get(key));
+                reversePatch.set(key, source.get(key));
             }
         }
         return reversePatch;
-    } else if (target instanceof Set) {
-        const reversePatch = createSetPatch(target);
+    } else if (source instanceof Set) {
+        const reversePatch = createSetPatch(source);
         const setPatch = patch as SetPatch;
 
         for (const key of setPatch.keys()) {
-            const wasObjectRemovedInTarget = target.has(key);
+            const wasObjectRemovedInTarget = source.has(key);
             reversePatch.set(key, wasObjectRemovedInTarget);
         }
         return reversePatch;
-    } else if (Array.isArray(target)) {
-        const targetArray = target as unknown[];
+    } else if (Array.isArray(source)) {
+        const targetArray = source as unknown[];
 
-        const reversePatch = createArrayPatch(target as unknown[]);
+        const reversePatch = createArrayPatch(source as unknown[]);
         reversePatch.length = targetArray.length;
 
         for (let i = 0; i < targetArray.length; i++) {
@@ -97,12 +95,12 @@ export function createReversePatch(patch: Patch) {
 
         return reversePatch;
     } else {
-        const reversePatch: ObjectPatch<any> = createObjectPatch(target);
+        const reversePatch: ObjectPatch<any> = createObjectPatch(source);
 
         // const patchKeys = Object.keys(patch);
 
         for (const key of patch.keys()) {
-            reversePatch.set(key as any, (target as any)[(key as any)]);
+            reversePatch.set(key as any, (source as any)[(key as any)]);
             // (patch as any)[key] = (target as any)[key];
         }
 
@@ -141,13 +139,13 @@ export function getObjectTimeline<T>(history: Patch[][], objectToFind: T): Histo
 export function findPatchForObject<T>(patches: Patch[], objectToFind: T): InferPatchType<T> | undefined {
     const objTarget = asOriginal(objectToFind);
 
-    const patchForTarget = patches.find(x => patchToTarget.get(x) === objTarget);
+    const patchForTarget = patches.find(x => patchToSource.get(x) === objTarget);
     return patchForTarget as InferPatchType<T> | undefined;
 }
 
 export function findAllPatchesInHistory<T>(history: Patch[][], objectToFind: T): InferPatchType<T>[] {
     const objTarget = asOriginal(objectToFind);
-    const patchesInHistory = history.flat().filter((x): x is InferPatchType<T> => patchToTarget.get(x) === objTarget);
+    const patchesInHistory = history.flat().filter((x): x is InferPatchType<T> => patchToSource.get(x) === objTarget);
 
     return patchesInHistory;
 }

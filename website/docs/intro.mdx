@@ -9,7 +9,7 @@ sidebar_position: 1
 [![Version](https://img.shields.io/npm/v/diagon?style=flat&colorA=2B323B&colorB=1e2329)](https://www.npmjs.com/package/diagon)
 [![Downloads](https://img.shields.io/npm/dt/diagon.svg?style=flat&colorA=2B323B&colorB=1e2329)](https://www.npmjs.com/package/diagon)
 
-Diagon is a state-management library focused on letting you safely write code in vanilla JavaScript or TypeScript in a mutable style just like you learned in school. You now do not have to copy your entire state tree when you want to increment a single value.  
+Diagon is a state-management library focused on letting you safely write mutable code in vanilla JavaScript or TypeScript just like you learned in school.
 
 Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
 
@@ -41,7 +41,7 @@ Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/m
 Diagon records changes to your objects as you make them, and outputs a list of patches containing only the parts of the object that have changed. These patches allow for hyper efficent reactivity and require no additional state copies.  
 
 ### JavaScript
-```typescript
+```tsx
 import recordPatches from 'diagon'
 
 const state = { counter: 0, otherCounter: 0 };

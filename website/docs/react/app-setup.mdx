@@ -35,13 +35,30 @@ export function useAppState() {
 
 ```
 
-## Create State a Subscription Context
+## Create a Component 
+```tsx
+const Incrementor: FC = React.memo(() => {
+  const state = useAppState();
+  
+  const counter = useSnapshot(state, state => state.counter);
+  const increment = useMutator(state, state => state.counter++);
+
+  return (
+    <div>
+      <div>value: {counter}</div>
+      <button onClick={increment}>Click me</button>
+    </div>
+  );
+});
+```
+
+## Create a Subscription Context
 
 First, you simply initialize your state.  You may use reacts useState hook or define your state globablly.  It's up to you. 
 
-At the top level of your app, you need a [`SubscriptionContext`](subscription-context.mdx) provider that will enable support for all of Diagon's hooks.
+At the top level of your app, you need a [`SubscriptionContext`](/react/subscription-context.mdx) provider that will enable support for all of Diagon's hooks.
 
-That provider is initialized with [`useSubscriptionContextValue`](use-subscription-context-value.mdx) which holds your root state and tracks object subscriptions in your app. 
+That provider is initialized with [`useSubscriptionContextValue`](/react/use-subscription-context-value.mdx) which holds your root state and tracks object subscriptions in your app. 
 
 ```tsx
 import { useSubscriptionContextValue, SubscriptionContext } from 'diagon-react';
@@ -53,9 +70,8 @@ const App: FC = ({children}) => {
 
   return (
     <SubscriptionContext.Provider value={subscriptionContextValue}>
-      /* rest of your app here */
+      <Incrementor> 
     </SubscriptionContext.Provider>
   );
 };
 ```
-

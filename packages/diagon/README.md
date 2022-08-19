@@ -336,8 +336,8 @@ const patches = recordPatches(state, {alice, fred} => {
     });
 
 // patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
-getPatchTarget(patches[0]) // will equal alice
-getPatchTarget(patches[1]) // will equal fred
+getPatchSource(patches[0]) // will equal alice
+getPatchSource(patches[1]) // will equal fred
 
 ```
 
@@ -391,7 +391,7 @@ Returns if one and two are the same object. If either object is a proxy, the und
 
 Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
 
-### `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
+### `getPatchSource<T>(patch: InferPatchType<T>): T | undefined`
 
 Returns the object from which the `patch` was calculated.
 

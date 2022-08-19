@@ -1,4 +1,4 @@
-import { applyPatchToProxy, asOriginal, createReversePatch, elements, Patch } from 'diagon';
+import { applyPatchTo, asOriginal, createReversePatch, createReversePatchFrom, elements, ensureProxy, getPatchSource, Patch } from 'diagon';
 import { useMutator, useSnapshot } from 'diagon-react';
 import React, { CSSProperties, FC } from 'react';
 import { RootState, useAppState } from './app';
@@ -13,7 +13,7 @@ function mapToString<TKey, TValue>(map: Map<TKey, TValue>) {
 }
 
 function patchToString(patch: Patch) {
-    // const target = getPatchTarget(patch as any);
+    // const target = getPatchSource(patch as any);
     if (patch instanceof Map) {
         return mapToString(patch);
     } else if (Array.isArray(patch)) {
@@ -60,10 +60,11 @@ export const History: FC = React.memo(() => {
 
         const entry = history.entries[previousIndex];
         const backPatches = entry.back.map(x => asOriginal(x));
-        entry.forward ??= backPatches.map(patch => createReversePatch(patch));
+        entry.forward ??= backPatches.map(patch => createReversePatchFrom(patch, getPatchSource(patch)));
 
         for (const patch of backPatches) {
-            applyPatchToProxy(asOriginal(patch));
+            const patchTarget = getPatchSource(patch);
+            applyPatchTo(patch, ensureProxy(patchTarget));
         }
     });
 
@@ -84,7 +85,8 @@ export const History: FC = React.memo(() => {
             throw new Error('missing forward patches in history');
         }
         for (const patch of entry.forward) {
-            applyPatchToProxy(asOriginal(patch));
+            const patchTarget = getPatchSource(patch);
+            applyPatchTo(patch, ensureProxy(patchTarget));
         }
     });
 

@@ -1,16 +1,62 @@
 ---
 title: 'createRecordingProxy'
-description: 'Wraps an object in aproxy ta.'
-
+description: 'The core mechanism for recording object changes.'
+sidebar_position: 1
 ---
 
 # createRecordingProxy
 
-See the main discussion of [The Recording Proxy](/the-recording-proxy.mdx)
+At the core of Diagon is an object wrapper that records mutations to objects via a JavaScript [`Proxy`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy).  
 
-Wraps an object in a proxy that does two things: 
+# The Recording Proxy
+
+It does two things:
 - Keeps track of property assignments 
 - Wraps child objects in proxies when they are accessed.
+
+You create recording proxies via  `createRecordingProxy`.  This only needs to be called on the root of your object state tree.
+
+```typescript
+import createRecordingProxy from 'diagon'
+
+const state = createRecordingProxy({
+        bob: {
+            name: "Bob",
+            age: 42
+        },
+        alice: {
+            name: "Alice",
+            age: 40
+        }
+    });
+
+// The object returned is another recording proxy.
+const bob = state.bob;
+```
+
+Unlike many other state libraries, you can have multiple references to the same object in your state tree and it all just works automatically. 
+
+As a rule, **you should always be using proxies** when dealing with your objects.  It's best to create a root state object to store all your state as is typical in state stores.  That way, as you access objects in the hierarchy they are automatically guaranteed to be wrapped in a proxy at time of access.  This is not required though.  
+
+You may have multiple independent roots of objects and can be created as you wish.  Change tracking will totally work fine with independent trees of objects.
+
+Once a proxy has been created, it is cached and exists for the lifetime of its associated object.
+
+Plain JavaScript objects, `Array`, `Map`, and `Set` can be setup for recording, but other objects with functions on them are not supported at this time.
+
+Some functions like [`recordPatches`](/core/record-patches.mdx) will automatically ensure that a recording proxy exists or is created before calling your code. 
+
+#### Object Reference Comparison
+Be weary of object reference comparisons as you may be trying to compare an original object with its proxy or vice versa. 
+
+❌ `myObject === otherObject //either object could be a proxy!`  
+✅ `areSame(myObject, otherObject)`  
+✅ `asOriginal(myObject) === asOriginal(otherObject)`  
+✅ `ensureProxy(myObject) === ensureProxy(otherObject)`  
+
+If you trust that your code will always be accessing proxies consistently then reference comparisons should be okay.
+
+There are additional [Recording Proxy Utilities](/core/utilities.mdx)
 
 ## Usage
 ```typescript
@@ -30,7 +76,3 @@ The object you want to setup for change recording.  This can be a plain JavaScri
 ## Return Value
 
 A proxy object wrapping `target` that is setup for change recording.
-
-## Description
-
-See the main discussion of [The Recording Proxy](/the-recording-proxy.mdx)

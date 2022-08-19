@@ -1,0 +1,135 @@
+---
+description: 'Wraps an object in aproxy ta.'
+sidebar_position: 3
+---
+
+# useSnaphot
+
+The main hook for reading and subscribing to state changes in your components.
+
+## Reacting to State Changes
+
+```tsx
+const state = {    
+    name: 'Bob', age: 42,    
+};
+
+const PersonDetails : FC = React.memo(() => {
+  const [name, age] = useSnapshot(state, state => [state.name, state.age]);
+  return (
+    <div>Name: {name}</div>
+    <div>Age: {age}</div>
+  );
+});
+```
+
+`useSnapshot` is the main way to achieve reactivity against your state.  The first parameter is the state you wish to observe, and the second parameter is a selector function.
+
+In the above example, by accessing `person.name` and `person.age` in the selector, the component will rerender ONLY when the `name` or `age` properties change on the person object.  
+
+## Selectors
+
+The selector parameter is special.  When your component is mounted, this function is first used to record the properties you will be accessing from the subscribed state.  This is done by passing an empty `PathRecorder` object as the parameter to the selector and executing it to record what properties it accessed.  
+
+This means that you should not put any code that does any type of complex logic in the selector.  After the initial selector is run and the properties its observing are recorded, the selector is then executed with your real state to read all the values you are selecting.
+
+After a change is detected in your subscriptions, the output of the selection is cached and re-rendering only happens if the value return from your selector has changed.  The value change check is an object reference comparison, so you should generally wrap your selector in an array of outputs if you plan on return object references from your selector.
+
+There is an optional third parameter that allows you to pass a dependency list that will trigger a re-render and resubscribe to the object tree.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 
+
+### Deep values
+
+```tsx
+const [name] = useSnapshot(state, state => [state.person.friend.name]);
+```
+If any property value in the chain changes the component will re-render. This includes if `state.person` is reassigned.
+
+### Subscribing to an array index
+```tsx
+const [name] = useSnapshot(state, state => [state.people[0].name]);
+```
+In the above example, the array index is respected.
+
+### Depending on external properties
+
+```tsx
+const ObserveArrayIndex : FC<{index: number}> = ({index}) => {    
+    const [name] = useSnapshot(state, state => [state.people[index].name], [index]);
+}
+```
+
+The selector depends on an external parameter that is not on the state object.  To make sure it resubscribes, pass in the parameters as a dependency like in typical react hooks
+
+## Selector Paths
+
+The selector function can include pattern functions that allow you to control how you are subscribing to properties.
+
+### `all()`
+```tsx
+const [person] = useSnapshot(state, state => [all(state.person)]);
+```
+Subscribes to **all** property changes on the person object only.  Will re-render if **any** property on the person object changes.
+
+```tsx
+const [value] = useSnapshot(state, state => [all(state.person).friend.name]);
+```
+Note that you can also make complicated chains.  Here, any property change on `state.person` will trigger a re-render as well as the subproperty `friend.name`.
+
+### `elements()`
+```tsx
+const state = {
+    people: [
+        { name: 'Bob', age: 42 },
+        { name: 'Alice', age: 40 }
+    ];
+}
+
+const ObserveAllArrayChanges : FC = React.memo(() => {
+    const [people] = useSnapshot(state, state => [elements(state.people)]);
+});
+```
+
+Subscribes to the collection as a whole and will re-render if an item is added, removed, or replaced.  
+
+`Array`, `Map`, and `Set` are supported. 
+
+Note the selector is wrapped in an array. This is intentional since this selector returns a reference to the people object and selectors memoize output.  Without the wrapping array, the `CollectionComponent` would not re-render.
+
+Note: if a property on a `Person` object inside the `people` array changes, it will **not** trigger a re-render of the component.  This is by design.
+
+### `map_get()`
+
+```tsx
+const state = {
+  myMap = new Map([['wizard', 'Merlin']]);
+}
+
+const MapGetter : FC = () => {    
+    const [theWizard] = useSnapshot(state, state => [map_get(state.myMap, 'wizard')]);
+}
+```
+Subscribes to individual `Map` keys and will call `Map.get` on your state.
+
+## Usage
+
+```typescript
+const [name, age] = useSnapshot(person, person => [person.name, person.age]);
+```
+
+## Return Value
+
+Returns the result of running your selector on the supplied state. 
+
+## Parameters
+
+### `state`
+
+The state you wish to observe.  
+
+### `selector`
+
+A function that both describes the state that will be subscribed to as well as copies the state that used in your React components.
+
+### `deps : any[]` (optional)
+
+A standard React hooks dependency list will trigger a resubscribe to the object tree.  This is helpful for when you have a value from your component params that you wish to use to access your data, such as an id in a `Map` or array index. 

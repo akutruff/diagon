@@ -1,4 +1,4 @@
-import { asOriginal, tryGetProxy, proxify, patchToTarget, modified } from './diagon';
+import { asOriginal, tryGetProxy, proxify, patchToSource, modified } from './diagon';
 import { ORIGINAL, PROXY, SetPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
 export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
@@ -98,7 +98,7 @@ export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
     commitPatch(): SetPatch<T> {
         //TODO: instead of copying, perhaps just send current
         const commitedPatch = new Map(this.currentPatch) as SetPatch<T>;
-        patchToTarget.set(commitedPatch, this.target);
+        patchToSource.set(commitedPatch, this.target);
 
         this.currentPatch.clear();
         return commitedPatch;
@@ -119,7 +119,7 @@ export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
 
 export function createSetPatch<T>(target: Set<T>) {
     const patch = (new Map<any, boolean>()) as SetPatch<T>;
-    patchToTarget.set(patch, target);
+    patchToSource.set(patch, target);
     return patch;
 }
 

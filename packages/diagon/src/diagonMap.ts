@@ -1,4 +1,4 @@
-import { tryGetProxy, asOriginal, proxify, patchToTarget, modified } from './diagon';
+import { tryGetProxy, asOriginal, proxify, patchToSource, modified } from './diagon';
 import { ORIGINAL, PROXY, NO_ENTRY, MapPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
 export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
@@ -111,7 +111,7 @@ export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
 
     commitPatch() {
         const commitedPatch = new Map(super.entries()) as MapPatch<K, V>;
-        patchToTarget.set(commitedPatch, this.target);
+        patchToSource.set(commitedPatch, this.target);
 
         super.clear();
         return commitedPatch;
@@ -136,7 +136,7 @@ export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
 
 export function createMapPatch<K, V>(target: Map<K, V>) {
     const patch = new Map<K, V>() as MapPatch<K, V>;
-    patchToTarget.set(patch, target);
+    patchToSource.set(patch, target);
     return patch;
 }
 

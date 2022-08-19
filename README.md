@@ -334,12 +334,12 @@ const patches = recordPatches(state, {alice, fred} => {
     });
 
 // patches equals: [{"homie" => bob}, {"favoriteFood" => 'pizza'}]
-getPatchTarget(patches[0]) // will equal alice
-getPatchTarget(patches[1]) // will equal fred
+getPatchSource(patches[0]) // will equal alice
+getPatchSource(patches[1]) // will equal fred
 
 ```
 
-Runs the increment function and records any object mutation into a list of `Patch` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatch()`.
+Runs the increment function and records any object mutation into a list of `Patch` objects that store which properties have changed and the **original value** of each property.  These patches allows you to rewind and undo changes by calling `applyPatchTo()`.
 
 ### Reverse a patch to go the opposite direction in history
 ```typescript
@@ -353,14 +353,14 @@ const state = { counter: 0 };
 const [ backwardsPatch ] = recordPatches(state, state => state.counter += 1);
 //state equals {counter: 1}
 
-const forwardPatch = createReversePatch(backwardsPatch);
+const forwardPatch = createReversePatchFrom(backwardsPatch, state);
 
 //undo
-applyPatch(backwardsPatch);
+applyPatchTo(backwardsPatch, state);
 //state equals {counter: 0}
 
 //redo
-applyPatch(forwardPatch);
+applyPatchTo(forwardPatch, state);
 //state equals {counter: 1}
 
 ```
@@ -389,7 +389,7 @@ Returns if one and two are the same object. If either object is a proxy, the und
 
 Equivalent to `asOriginal(myObject) === asOriginal(otherObject)`
 
-### `getPatchTarget<T>(patch: InferPatchType<T>): T | undefined`
+### `getPatchSource<T>(patch: InferPatchType<T>): T | undefined`
 
 Returns the object from which the `patch` was calculated.
 

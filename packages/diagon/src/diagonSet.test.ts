@@ -1,5 +1,5 @@
 import { DiagonSet } from './diagonSet';
-import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToTarget } from './diagon';
+import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource } from './diagon';
 import { ORIGINAL, PROXY } from './types';
 import { getObjectTimeline } from './history';
 
@@ -338,7 +338,7 @@ describe('DiagonSet', () => {
 
             const previous = diagonSet.commitPatch();
 
-            expect(patchToTarget.get(previous)).toBe(target);
+            expect(patchToSource.get(previous)).toBe(target);
             expect(diagonSet.size).toEqual(1);
             expect(diagonSet.currentPatch.size).toEqual(0);
         });

@@ -27,7 +27,7 @@ const pathRecorderProxy: ProxyHandler<any> = {
         //TODO: put in safety check such that property keys cannot be dynamic
         //if(Reflect.get(propertyKey as unknown as PathRecordProxy, RecordingTarget)) throw Error('map keys cannot be dynamic');
 
-        if (!propertyValue) {
+        if (propertyValue === undefined) {
             if (propertyKey === RecordingTarget) {
                 return target;
             }
