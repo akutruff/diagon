@@ -2,7 +2,7 @@ import { configureGlobalPatchRecording } from 'diagon';
 import { SubscriptionContext, useSubscriptionContextValue } from 'diagon-react';
 import React, { FC, useMemo, useState } from 'react';
 import { createRootState } from './app';
-import { globalHistoryMiddlware, History } from './History';
+import { History, savePatchesToHistory } from './History';
 import { Incrementor } from './Incrementor';
 import { PeopleList } from './PeopleList';
 import { PersonEditor } from './PersonEditor';
@@ -30,7 +30,7 @@ const MainLayout: FC = React.memo(() => {
 const App: FC = () => {
   const [state] = useState(() => createRootState());
 
-  const globalPatchRecordingMiddleware = useMemo(() => configureGlobalPatchRecording(state, globalHistoryMiddlware), [state]);
+  const globalPatchRecordingMiddleware = useMemo(() => configureGlobalPatchRecording(state, savePatchesToHistory), [state]);
 
   const subscriptionContextValue = useSubscriptionContextValue({ state }, globalPatchRecordingMiddleware);
 

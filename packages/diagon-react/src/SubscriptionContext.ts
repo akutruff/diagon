@@ -56,21 +56,9 @@ export const configureReactMiddleware = (subStore: SubscriptionStore) => (contex
         //TODO: use Number.MAX_SAFE_INTEGER or BigInt
         subStore.version++;
 
-        const patches: Patch[] = [];
-        if (context.patches) {
-            patches.push(...context.patches);
-        }
-
-        if (context.patchesFromPatchHandler) {
-            patches.push(...context.patchesFromPatchHandler);
-        }
-
-        if (context.patchesFromGlobalPatchHandler) {
-            patches.push(...context.patchesFromGlobalPatchHandler);
-        }
-
-        if (patches.length > 0) {
-            const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(subStore, patches);
+        const allPatches = context.allPatchSetsFromPipeline.flat();
+        if (allPatches.length > 0) {
+            const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(subStore, allPatches);
 
             //TODO: add history support externally
             //for consumers to do their own change tracking

@@ -7,10 +7,9 @@ export interface DispatchContext<T extends object = object, TPatchHandlerState e
     state: T;
     patches?: Patch[];
     patchHandlerState?: TPatchHandlerState;
-    patchesFromPatchHandler?: Patch[];
-    patchesFromGlobalPatchHandler?: Patch[];
     commandResult?: any;
     pipelineStackDepth?: number;
+    allPatchSetsFromPipeline: Patch[][];
 }
 
 export type AsyncMutator<TState extends object, TArgs extends unknown[], R> =
@@ -58,6 +57,7 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
     const mutate = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs): R => {
         const context: DispatchContext<TState> = {
             state,
+            allPatchSetsFromPipeline: [],
         };
 
         pipeline.execute(context, (context, next) => {
@@ -66,7 +66,9 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
                     clearModified();
                     const stateProxy = ensureProxy(context.state as TState);
                     context.commandResult = mutator(stateProxy, ...args);
-                    context.patches = commitPatches();
+                    const patches = commitPatches();
+                    context.patches = patches;
+                    context.allPatchSetsFromPipeline.push(patches);
                 }
                 finally {
                     clearModified();
@@ -90,7 +92,8 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
 
         const context: DispatchContext<TState> = {
             state,
-            patchHandlerState
+            patchHandlerState,
+            allPatchSetsFromPipeline: []
         };
 
         pipeline.execute(context, (context, next) => {
@@ -102,15 +105,15 @@ export function createRecordingDispatcher(...middlewares: Middleware<DispatchCon
 
                     const result = mutator(stateProxy, ...args);
                     const patches = commitPatches();
-                    context.patches = patches;
                     context.commandResult = result;
-
+                    context.patches = patches;
+                    context.allPatchSetsFromPipeline.push(patches);
                     clearModified();
 
                     const patchHandlerStateProxy = ensureProxy(context.patchHandlerState as TPatchHandlerState);
                     patchHandler(patchHandlerStateProxy, patches, stateProxy, result, ...args);
 
-                    context.patchesFromPatchHandler = commitPatches();
+                    context.allPatchSetsFromPipeline.push(commitPatches());
                 }
                 finally {
                     clearModified();
@@ -187,7 +190,8 @@ export const configureGlobalPatchRecording = <TPatchHandlerState extends object,
                 const patchHandlerStateProxy = ensureProxy(patchHandlerState);
                 const stateProxy = ensureProxy(context.state as TState);
                 patchHandler(patchHandlerStateProxy, context.patches, stateProxy);
-                context.patchesFromGlobalPatchHandler = commitPatches();
+
+                context.allPatchSetsFromPipeline.push(commitPatches());
             }
             finally {
                 clearModified();

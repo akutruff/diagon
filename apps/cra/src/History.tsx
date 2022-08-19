@@ -23,7 +23,7 @@ function patchToString(patch: Patch) {
     }
 }
 
-export const globalHistoryMiddlware = (state: RootState, patches: Patch[]) => {
+export const savePatchesToHistory = (state: RootState, patches: Patch[]) => {
     const history = state.history;
     try {
         if (!history.isTimeTraveling) {

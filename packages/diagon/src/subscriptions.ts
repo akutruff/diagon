@@ -31,8 +31,7 @@ export interface MapKeyValueNode extends SubscriptionNodeData {
 export type ChildNodeTypes = PropertyNode | MapKeyValueNode;
 
 function createRootNode(): SubscriptionNodeData {
-    return {
-    };
+    return {};
 }
 
 function createPropertyNode(parent: SubscriptionNodeData, propertyKey: PropertyKey): PropertyNode {
@@ -51,7 +50,6 @@ function createMapKeyValueNode(parent: SubscriptionNodeData, key: any): MapKeyVa
     };
 }
 
-//TODO: rename to better associate to Subscriptions rather than "tracking patches" which is doesn't
 export interface SubscriptionStore {
     version: number;
     rootNodes: Map<any, SubscriptionNodeData>;

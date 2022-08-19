@@ -135,7 +135,7 @@ describe('RecordingDispatcher', () => {
             expect(dispatchContext.patches?.length).toEqual(1);
             expect((dispatchContext.patches![0] as ObjectPatch<State>).get('prop0')).toBe('hello');
 
-            expect(dispatchContext.patchesFromPatchHandler?.length).toEqual(1);
+            expect(dispatchContext.allPatchSetsFromPipeline[1]?.length).toEqual(1);
         });
         it.todo('allows patchHandlerState and patchState to be the same and/or different');
         it.todo('global patch recording middleware works');
