@@ -77,11 +77,17 @@ const config = {
             label: 'Documentation',
           },
           // { to: '/blog', label: 'Blog', position: 'left' },
-          // {
-          //   href: 'https://github.com/akutruff/diagon',
-          //   label: 'GitHub',
-          //   position: 'right',
-          // },
+          {
+            href: 'https://github.com/akutruff/diagon',
+            label: 'GitHub',
+            position: 'right',
+          },
+          {
+            href: 'https://github.com/akutruff/diagon',
+            // label: 'GitHub',
+            className: 'header-github-link',
+            position: 'right',
+          },
         ],
       },
       footer: {
