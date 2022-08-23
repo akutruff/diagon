@@ -12,7 +12,7 @@ export class GlobalPatchHandlerMiddleware<TPatchHandlerState extends object, TSt
         this.patchHandlerState = patchHandlerState;
     }
 
-    middleWare = (context: DispatchContext, next: Next) => {
+    middleware = (context: DispatchContext, next: Next) => {
         next();
 
         if (context.pipelineStackDepth === 0 && context.patches && this.patchHandlerState) {

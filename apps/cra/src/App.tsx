@@ -27,7 +27,7 @@ const MainLayout: FC = React.memo(() => {
 });
 
 const globalPatchRecording = new GlobalPatchHandlerMiddleware(savePatchesToHistory);
-const recorder = createReactRecorder(globalPatchRecording.middleWare);
+const recorder = createReactRecorder(globalPatchRecording.middleware);
 
 const App: FC = () => {
   //simplest store
