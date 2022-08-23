@@ -17,10 +17,3 @@ export function isMap(target: any): target is Map<any, any> {
 export function isSet(target: any): target is Set<any> {
     return target instanceof Set;
 }
-
-type Arr = unknown[];
-
-export function applyPartial<T extends Arr, U extends Arr, R>(fn: (...args: [...T, ...U]) => R, ...headArgs: T) {
-    return (...tailArgs: U) => fn(...headArgs, ...tailArgs);
-}
-

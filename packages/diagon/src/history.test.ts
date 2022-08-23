@@ -479,7 +479,6 @@ describe('History', () => {
         });
     });
 
-
     describe('cloneDeep', () => {
         it('assigns diagon id to source objects', () => {
             const state = { root: { data: 1 } };
