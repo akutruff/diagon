@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # App Setup
 
-## Create a store
+## Create your state
 
 Your store is where you will be keeping all the state in your application.  [`createRecordingProxy`](/core/create-recording-proxy.mdx) returns a proxy wrapped object that now starts tracking **changes as patches** to your state tree.  
 
@@ -52,26 +52,24 @@ const Incrementor: FC = React.memo(() => {
 });
 ```
 
-## Create a Subscription Context
+## Create a Store
 
-First, you simply initialize your state.  You may use reacts useState hook or define your state globablly.  It's up to you. 
+First, you simply initialize your state with `createReactStore`.  You may use reacts useState hook or define your state globablly.  It's up to you. 
 
-At the top level of your app, you need a `SubscriptionContext` provider that will enable support for all of Diagon's hooks.
+At the top level of your app, you need a `StoreContext` provider that will enable support for all of Diagon's hooks.
 
-That provider is initialized with `useSubscriptionContextValue` which holds your root state and tracks object subscriptions in your app. 
+That provider is initialized with your store. 
 
 ```tsx
-import { useSubscriptionContextValue, SubscriptionContext } from 'diagon-react';
+import { createReactStore, useStoreContext, StoreContext } from 'diagon-react';
 
 const App: FC = ({children}) => {  
-  const [state] = useState(() => createRootState());
-
-  const subscriptionContextValue = useSubscriptionContextValue({ state });
+  const [store] = useState(() => createReactStore(createRootState()));
 
   return (
-    <SubscriptionContext.Provider value={subscriptionContextValue}>
+    <StoreContext.Provider value={store}>
       <Incrementor> 
-    </SubscriptionContext.Provider>
+    </StoreContext.Provider>
   );
 };
 ```

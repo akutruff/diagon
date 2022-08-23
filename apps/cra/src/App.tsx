@@ -1,5 +1,5 @@
 import { GlobalPatchHandlerMiddleware } from 'diagon';
-import { createReactRecorder, createReactStore, StoreContext, useStoreContext } from 'diagon-react';
+import { createReactRecorder, createReactStore, StoreContext } from 'diagon-react';
 import React, { FC, useState } from 'react';
 import { createRootState } from './app';
 import { History, savePatchesToHistory } from './History';
@@ -39,9 +39,8 @@ const App: FC = () => {
     return createReactStore(state, recorder);
   });
 
-  const storeContextValue = useStoreContext(store);
   return (
-    <StoreContext.Provider value={storeContextValue}>
+    <StoreContext.Provider value={store}>
       <MainLayout />
       <div className='docked-bottom-right'>
         App <RenderCounter label={`<App/>`} />

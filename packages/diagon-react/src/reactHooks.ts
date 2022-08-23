@@ -4,7 +4,7 @@ import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
 import { StoreContext } from '.';
 
 export const useStore = () => {
-    return useContext(StoreContext).store;
+    return useContext(StoreContext);
 };
 
 export const useRootState = () => {
