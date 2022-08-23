@@ -72,7 +72,7 @@ const Incrementor: FC = React.memo(() => {
 
 The above will only re-render when `state.counter` changes no matter where it is in the React component tree.  Because Diagon recordes patches, it can precisely target only the affected components.
 
-## The Dark Side of Immmutability
+## The Dark Side of Immutability
 
 There are many benefits to writing immutable code, but there are many sacrifices when it's applied to an application's entire state tree.  You lose object references, shared references, and end up having to copy your entire state tree every time anything changes.  
 
