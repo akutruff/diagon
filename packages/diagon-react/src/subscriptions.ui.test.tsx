@@ -1,20 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
-import { createSubscriptionStore, createRecordingProxy, map_get, SubscriptionStore, RecordingDispatcher, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
+import { createRecordingProxy, map_get, Recorder, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { useDeepSnapshot, useDispatch, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot, createSubscriptionContextValue, SubscriptionContext, SubscriptionContextValue } from '.';
+import { createReactStore, createStoreContextValue, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
 
 interface SubscriptionAppProps {
-    subscriptionContextValue: SubscriptionContextValue
+    subscriptionContextValue: StoreContextValue
 }
-
-type Action = { type: string };
 
 const SubscriptionApp: FC<PropsWithChildren<SubscriptionAppProps>> = ({ children, subscriptionContextValue }) => {
     return (
-        <SubscriptionContext.Provider value={subscriptionContextValue}>
+        <StoreContext.Provider value={subscriptionContextValue}>
             {children}
-        </SubscriptionContext.Provider>
+        </StoreContext.Provider>
     );
 };
 
@@ -28,20 +26,15 @@ const renderWithPatchTracking = (ui: ReactElement, subscriptionAppProps: Subscri
 };
 
 describe('subscriptions', () => {
-    let subStore: SubscriptionStore;
-    let subscriptionContextValue: SubscriptionContextValue;
-    let recordingDispatcher: RecordingDispatcher;
+    let subscriptionContextValue: StoreContextValue;
+    let recorder: Recorder;
 
     beforeEach(() => {
         resetEnvironment();
-        subStore = createSubscriptionStore();
+        const store = createReactStore(undefined);
+        subscriptionContextValue = createStoreContextValue(store);
 
-        subscriptionContextValue = createSubscriptionContextValue({
-            state: undefined,
-            subStore,
-        }, () => { });
-
-        recordingDispatcher = subscriptionContextValue.recordingDispatcher;
+        recorder = store;
     });
 
     describe('useMutateWithPatches', () => {
@@ -57,7 +50,7 @@ describe('subscriptions', () => {
 
             createRecordingProxy(state);
 
-            const increment = recordingDispatcher.createMutator((state: State, value: number) => {
+            const increment = recorder.createMutator((state: State, value: number) => {
                 state.count += value;
             });
 
@@ -103,7 +96,7 @@ describe('subscriptions', () => {
 
             createRecordingProxy(state);
 
-            const increment = recordingDispatcher.createMutator((state: State, value: number) => {
+            const increment = recorder.createMutator((state: State, value: number) => {
                 state.count += value;
             });
 
@@ -144,7 +137,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
@@ -178,15 +171,15 @@ describe('subscriptions', () => {
 
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changeAddress = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeAddress = recorder.createMutator((state: State, value: string) => {
                 state.person.address.street += value;
             });
 
-            const setAddress = recordingDispatcher.createMutator((state: State, value: State['person']['address']) => {
+            const setAddress = recorder.createMutator((state: State, value: State['person']['address']) => {
                 state.person.address = value;
             });
 
@@ -235,7 +228,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, key: string, value: string) => {
+            const changeName = recorder.createMutator((state: State, key: string, value: string) => {
                 expect(state.peopleMap.has(key)).toEqual(true);
                 state.peopleMap.get(key)!.name += value;
             });
@@ -270,7 +263,7 @@ describe('subscriptions', () => {
 
             //Expect that adding another value to the map that isn't monitored wont cause a re-render
             const previousRenderCount = renderCount;
-            recordingDispatcher.mutate(state, (state) => state.peopleMap.set('key3', { name: 'harry' }));
+            recorder.mutate(state, (state) => state.peopleMap.set('key3', { name: 'harry' }));
 
             expect(renderCount).toEqual(previousRenderCount);
         });
@@ -285,7 +278,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const addPerson = recordingDispatcher.createMutator((state: State, name: string) => {
+            const addPerson = recorder.createMutator((state: State, name: string) => {
                 state.people.push({ name: name + state.people.length });
             });
 
@@ -324,11 +317,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -371,11 +364,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -416,11 +409,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = recordingDispatcher.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -551,55 +544,6 @@ describe('subscriptions', () => {
         });
     });
 
-    describe('useDispatch', () => {
-        it('causes change', async () => {
-            const state = {
-                count: 0,
-            };
-            createRecordingProxy(state);
-            type State = typeof state;
-
-            interface IncrementAction extends Action { type: 'increment', value: number }
-            type ActionTypes = IncrementAction;
-
-            subscriptionContextValue.state = state;
-
-            subscriptionContextValue.dispatch = recordingDispatcher.createMutator((state: State, action: ActionTypes) => {
-                switch (action.type) {
-                    case 'increment':
-                        state.count += action.value;
-                        break;
-                    default:
-                        break;
-                }
-            });
-
-            let renderCount = 0;
-            const TestComponent: FC<{ state: State }> = ({ state }) => {
-                renderCount++;
-                const dispatch = useDispatch();
-                const count = useSnapshot(state, state => state.count);
-                return (
-                    <div>
-                        <div>count: {count}</div>
-                        <button onClick={() => dispatch({ type: 'increment', value: 1 })}>increment</button>
-                    </div>
-                );
-            };
-
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { subscriptionContextValue });
-
-            getByText('count: 0');
-            expect(state.count).toEqual(0);
-            expect(renderCount).toEqual(1);
-
-            fireEvent.click(getByText('increment'));
-            getByText('count: 1');
-            expect(state.count).toEqual(1);
-            expect(renderCount).toEqual(2);
-        });
-    });
-
     interface MemoState {
         child: MemoChild;
     }
@@ -650,7 +594,7 @@ describe('subscriptions', () => {
             };
             createRecordingProxy(state);
 
-            const externalMutator = recordingDispatcher.createMutator((state: MemoState, value: string) => {
+            const externalMutator = recorder.createMutator((state: MemoState, value: string) => {
                 state.child.status += value;
             });
 

@@ -59,8 +59,8 @@ export function recordPatches<TState extends object, TArgs extends AnyArray, R>(
         const stateProxy = tryGetProxy(state) || createRecordingProxy(state);
         mutator(stateProxy, ...args);
 
-        const changes = commitPatches();
-        return changes;
+        const patches = endRecording();
+        return patches;
     }
     finally {
         clearModified();
@@ -105,7 +105,7 @@ export function proxify(value: any) {
             : createRecordingProxy(value));
 }
 
-export function commitPatches(): Patch[] {
+export function endRecording(): Patch[] {
     const changes: Patch[] = [];
 
     for (const target of modified) {

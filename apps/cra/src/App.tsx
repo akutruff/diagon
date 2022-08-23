@@ -1,6 +1,6 @@
-import { configureGlobalPatchRecording } from 'diagon';
-import { SubscriptionContext, useSubscriptionContextValue } from 'diagon-react';
-import React, { FC, useMemo, useState } from 'react';
+import { GlobalPatchHandlerMiddleware } from 'diagon';
+import { createReactRecorder, createReactStore, StoreContext, useStoreContext } from 'diagon-react';
+import React, { FC, useState } from 'react';
 import { createRootState } from './app';
 import { History, savePatchesToHistory } from './History';
 import { Incrementor } from './Incrementor';
@@ -22,25 +22,31 @@ const MainLayout: FC = React.memo(() => {
           <History />
         </div>
       </div>
-
     </div>
   );
 });
 
+const globalPatchRecording = new GlobalPatchHandlerMiddleware(savePatchesToHistory);
+const recorder = createReactRecorder(globalPatchRecording.middleWare);
+
 const App: FC = () => {
-  const [state] = useState(() => createRootState());
+  //simplest store
+  // const [store] = useState(() => createReactStore(createRootState()));
 
-  const globalPatchRecordingMiddleware = useMemo(() => configureGlobalPatchRecording(state, savePatchesToHistory), [state]);
+  const [store] = useState(() => {
+    const state = createRootState();
+    globalPatchRecording.setPatchHandlerState(state);
+    return createReactStore(state, recorder);
+  });
 
-  const subscriptionContextValue = useSubscriptionContextValue({ state }, globalPatchRecordingMiddleware);
-
+  const storeContextValue = useStoreContext(store);
   return (
-    <SubscriptionContext.Provider value={subscriptionContextValue}>
+    <StoreContext.Provider value={storeContextValue}>
       <MainLayout />
       <div className='docked-bottom-right'>
         App <RenderCounter label={`<App/>`} />
       </div>
-    </SubscriptionContext.Provider>
+    </StoreContext.Provider>
   );
 };
 

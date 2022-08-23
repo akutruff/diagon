@@ -64,19 +64,40 @@ export function createSubscriptionStore(): SubscriptionStore {
     };
 }
 
+export interface BoundSubscriptionStore {
+    subStore: SubscriptionStore,
+    subscribe: <TState, R>(state: TState, pathAccessor: (state: TState) => R, callback: () => void) => Subscription,
+    recordAndPublishMutations: <TState extends object, TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void,
+    subscribeRecursive: <TState, TChildState>(state: TState, childPathAccessor: (state: TState) => TChildState, subscribeToChildren: ChildSubscriberRecursive<TChildState>, callback: () => void) => Subscription,
+    subscribeDeep: <TState, TChildState>(state: TState, childPathAccessor: (state: TState) => TChildState, subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => SubscriptionCollection, callback: () => void) => Subscription,
+    // unsubscribe: (subscriptions: SubscriptionCollection) => void,
+    commitPatches: (patches: Patch[]) => Set<any>,
+}
+
+export function addMethods(subStore: SubscriptionStore): BoundSubscriptionStore {
+    return {
+        subStore,
+        subscribe: (state, pathAccessor, callback) => subscribe(subStore, state, pathAccessor, callback),
+        recordAndPublishMutations: (mutator, state, ...args) => recordAndPublishMutations(subStore, state, mutator, ...args),
+        subscribeRecursive: (state, childPathAccessor, subscribeToChildren, callback) => subscribeRecursive(subStore, state, childPathAccessor, subscribeToChildren, callback),
+        subscribeDeep: (state, childPathAccessor, subscribeToChildren, callback) => subscribeDeep(subStore, state, childPathAccessor, subscribeToChildren, callback),
+        commitPatches: patches => commitPatches(subStore, patches),
+    };
+}
+
 //These method types are first defined on an interface so that they stay completely generic with no bound types.
 //  Unfortunately, this is all basically partial function application, but variadic types aren't as general as we would like
 //  https://github.com/microsoft/TypeScript/issues/39244 
 interface IMutatorChangeRecorderTypes {
     mutatorChangeTrackingFactory: <TState extends object, TArgs extends unknown[], R = unknown>(mutator: Mutator<TState, TArgs, R>) => Mutator<TState, TArgs, void>;
-    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(subStore: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) => void;
+    mutatorChangeRecorder: <TState extends object, TArgs extends unknown[], R = unknown>(subStore: SubscriptionStore, state: TState, mutator: Mutator<TState, TArgs, R>,  ...args: TArgs) => void;
 }
 
 export type MutatorChangeRecorder = IMutatorChangeRecorderTypes['mutatorChangeRecorder'];
 export type MutatorChangeRecorderFactory = IMutatorChangeRecorderTypes['mutatorChangeTrackingFactory'];
 
 export const createChangeRecorderFactory = (subStore: SubscriptionStore, trackChanges: MutatorChangeRecorder): MutatorChangeRecorderFactory => {
-    return mutator => (state, ...args) => trackChanges(subStore, mutator, state, ...args);
+    return mutator => (state, ...args) => trackChanges(subStore, state, mutator, ...args);
 };
 
 export function subscribeObject(subStore: SubscriptionStore, node: SubscriptionNodeData, objectToSubscribe: any) {
@@ -305,7 +326,7 @@ function getValueFromParent(node: SubscriptionNodeData) {
     }
 }
 
-export function getCallbacksAndUpdateSubscriptionsFromPatches(subStore: SubscriptionStore, patches: Patch[]) {
+export function commitPatches(subStore: SubscriptionStore, patches: Patch[]) {
     const invalidatedNodes = new Set<SubscriptionNodeData>();
 
     // console.log('publishing');
@@ -392,11 +413,12 @@ function isCollection(target: any) {
     return Array.isArray(target) || target instanceof Map || target instanceof Set;
 }
 
+//TODO: reorder state argument to come first
 //This is the simplest form of getting recordings and subscriptions.  Undo/redo history code would want to snap this function in the main application.
-export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(subStore: SubscriptionStore, mutator: Mutator<TState, TArgs, R>, state: TState, ...args: TArgs) {
+export function recordAndPublishMutations<TState extends object, TArgs extends unknown[], R>(subStore: SubscriptionStore, state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs) {
     const patches = recordPatches(state, mutator, ...args);
 
-    const callbacksToFire = getCallbacksAndUpdateSubscriptionsFromPatches(subStore, patches);
+    const callbacksToFire = commitPatches(subStore, patches);
 
     //TODO: add history support externally
     //for consumers to do their own change tracking

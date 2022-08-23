@@ -5,9 +5,7 @@ export interface Person {
     id: number,
     name: string,
     age: number,
-
 }
-
 
 export interface RootState {
     selectedPerson: Person,

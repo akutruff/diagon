@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { commitPatches, modified } from './diagon';
-import { clearModified, createReversePatch, createRecordingProxy, Diagon, getCurrentPatch, makePatchRecorder, recordPatches, resetEnvironment } from '.';
+import { clearModified, endRecording, createReversePatch, createRecordingProxy, Diagon, getCurrentPatch, makePatchRecorder, recordPatches, resetEnvironment } from '.';
+import { modified } from './diagon';
 
 import { ObjectPatch, Patch } from './types';
 
@@ -55,9 +55,9 @@ describe('Diagon', () => {
             clearModified();
         });
 
-        describe(`${commitPatches.name}`, () => {
+        describe(`${endRecording.name}`, () => {
             it('produces no changes when there are no changes', () => {
-                const previouses = commitPatches();
+                const previouses = endRecording();
                 expect(previouses).toEqual([]);
             });
 
@@ -68,12 +68,12 @@ describe('Diagon', () => {
 
                 const proxy = createRecordingProxy(target);
 
-                const initialChanges = commitPatches();
+                const initialChanges = endRecording();
                 expect(initialChanges).toHaveLength(0);
                 expect(modified.size).toEqual(0);
 
                 proxy.name = 'Steve';
-                const changes = commitPatches();
+                const changes = endRecording();
                 expect(changes).toHaveLength(1);
                 expect(modified.size).toEqual(1);
 
@@ -97,10 +97,10 @@ describe('Diagon', () => {
                 } = {};
 
                 const proxy = createRecordingProxy(target);
-                commitPatches();
+                endRecording();
                 proxy.referencedObject = otherObject;
 
-                const patches = commitPatches();
+                const patches = endRecording();
 
                 expect(patches).toHaveLength(1);
 
@@ -125,7 +125,7 @@ describe('Diagon', () => {
                 state.name = newName;
             };
 
-            const changes = recordPatches(state,changeName,  'Walker');
+            const changes = recordPatches(state, changeName, 'Walker');
 
             expect(state).toBe(referenceToOriginalNonProxyState);
             expect(state.name).toEqual('Walker');

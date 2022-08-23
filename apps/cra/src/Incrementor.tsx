@@ -4,7 +4,7 @@ import { useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
 
 export const Incrementor: FC = React.memo(() => {
-    const state = useAppState();
+    const state = useAppState();    
 
     const counter = useSnapshot(state, state => state.counter);
     const increment = useMutator(state, state => state.counter++);
@@ -15,11 +15,13 @@ export const Incrementor: FC = React.memo(() => {
                 <div>value: {counter}</div>
                 <button type="button" onClick={increment}>Click me</button>
             </div >
-            <br />
+            <br />            
             <RenderCounter label="<Incrementor/>" />
         </div>
+
     );
 });
+
 const style: CSSProperties = {
     padding: 10,
     minWidth: 200,

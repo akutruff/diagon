@@ -1,2 +1,3 @@
 export * from './reactHooks';
-export * from './SubscriptionContext';
+export * from './StoreContext';
+export * from './reactMiddleware';

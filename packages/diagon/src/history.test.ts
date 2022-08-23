@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { clearModified, commitPatches, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
+import { clearModified, endRecording, createRecordingProxy, tryGetProxy, asOriginal, isProxy, recordPatches, resetEnvironment } from './diagon';
 import { findAllPatchesInHistory, removeDiagonMetadata, cloneDeep, applyPatch, createReversePatch } from './history';
 import { DIAGON_ID, Patch, NO_ENTRY } from './types';
 
@@ -96,7 +96,7 @@ describe('History', () => {
                 for (let i = 0; i < changeCount; i++) {
                     clearModified(); {
                         targetProxy.name = i.toString();
-                        const newPatches = commitPatches();
+                        const newPatches = endRecording();
                         changes.push(newPatches);
                     }
                     clearModified();
