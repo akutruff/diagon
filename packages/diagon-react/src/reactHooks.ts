@@ -14,7 +14,7 @@ export const useRootState = () => {
 
 export const getTypedUseRootState = <T>() => {
     return useRootState as () => T;
-}
+};
 
 export const useMutator = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, deps: Array<unknown> = []) => {
     const { recorder } = useStore();

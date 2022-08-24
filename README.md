@@ -35,4 +35,4 @@ Read the [Full Documenation](https://www.diagon.dev/)
 ✅ Allows almost all your components to be wrapped in `React.Memo`  
 ✅ React 18 support with useSyncExternalStore  
 ✅ Render batching  
-⬛ Concurrent Mode (may work but needs testing)  
+⬛ Concurrent Mode (may work but needs testing)

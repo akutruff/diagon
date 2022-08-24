@@ -23,8 +23,8 @@ importers:
       '@types/react': ~18.0.17
       '@types/react-dom': ~18.0.6
       cross-env: ~7.0.3
-      diagon: ^0.8.2
-      diagon-react: ^0.8.2
+      diagon: ^0.9.1
+      diagon-react: ^0.9.1
       react: ~18.2.0
       react-dom: ~18.2.0
       react-scripts: ~5.0.1
@@ -80,7 +80,7 @@ importers:
       '@types/node': ^18.6.5
       '@types/react': ^18.0.17
       '@types/react-dom': ^18.0.6
-      diagon: 0.8.2
+      diagon: 0.9.1
       jest: ~28.1.3
       jest-environment-jsdom: ^28.1.3
       react: ^18.2.0
@@ -132,8 +132,8 @@ importers:
       '@docusaurus/preset-classic': 2.0.1_ho6fjndodpbjneckqorxlgfyre
       '@mdx-js/react': 1.6.22_react@18.2.0
       clsx: 1.2.1
-      diagon: link:../packages/diagon
-      diagon-react: link:../packages/diagon-react
+      diagon: 0.8.2
+      diagon-react: 0.8.2
       prism-react-renderer: 1.3.5_react@18.2.0
       raw-loader: 4.0.2
       react: 18.2.0
@@ -6063,6 +6063,18 @@ packages:
       defined: 1.0.0
       minimist: 1.2.6
     dev: true
+
+  /diagon-react/0.8.2:
+    resolution: {integrity: sha512-kIkcOQzQShi2hKqpKPZwdk/dwNxZ/mVIHfBWA68LHM67FeRoYmbLFsItbdE4FQTUGlAzMGBkG5m0J296P+tw3A==}
+    dependencies:
+      diagon: 0.8.2
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
+  /diagon/0.8.2:
+    resolution: {integrity: sha512-wk6MzFl5Ky+E01HC9r/arWCa9ghHAHx4yUv6ANmVk2jZLrWw17Pp/2id8hX+4SImOeII5USfqim7BpGYp04/kA==}
+    dev: false
 
   /didyoumean/1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}

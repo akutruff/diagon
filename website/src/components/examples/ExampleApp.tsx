@@ -1,4 +1,4 @@
-import { createReactRecorder, createReactStore, StoreContext } from 'diagon-react';
+import { createReactRecorder, StoreContext } from 'diagon-react';
 import React, { FC, useState } from 'react';
 import { createRootState } from './state';
 

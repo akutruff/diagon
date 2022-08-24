@@ -3,7 +3,7 @@ import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 import { SubscribingRecorder } from 'packages/diagon/dist';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createReactRecorder, createReactStore, ReactStore, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
+import { createReactRecorder, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
 
 const SubscriptionApp: FC<PropsWithChildren<StoreContextValue>> = ({ children, state, recorder }) => {
     return (
