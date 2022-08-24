@@ -1,9 +1,15 @@
 import React, { FC } from 'react';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
-export const Demo: FC = ({ children }) => {
+export interface DemoProps {
+    render: () => JSX.Element
+}
+export const Demo: FC<DemoProps> = ({ render }) => {
     return (
         <div className="demoBlock">
-            {children}
+            <BrowserOnly fallback={<div>Loading...</div>}>
+                {() => render()}
+            </BrowserOnly>
         </div>
     );
 };

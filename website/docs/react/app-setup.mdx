@@ -3,6 +3,7 @@ sidebar_position: 1
 ---
 
 import CodeBlock from '@theme/CodeBlock';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 import {Incrementor} from '@site/src/components/examples/Incrementor';
 import {ExampleApp} from '@site/src/components/examples/ExampleApp';
@@ -14,11 +15,16 @@ import ExampleAppSource from '!!raw-loader!/src/components/examples/ExampleApp';
 # App Setup
 
 #### Demo
-<Demo>
-  <ExampleApp>
-    <Incrementor/>
-  </ExampleApp>
-</Demo>
+
+<Demo render={ ()=>{
+  return (
+    <ExampleApp>
+      <Incrementor/>
+    </ExampleApp>);
+    }
+  }/>
+
+
 
 ## Create your state
 
