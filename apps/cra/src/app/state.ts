@@ -1,5 +1,5 @@
 import { createRecordingProxy, Patch } from 'diagon';
-import { useRootState } from 'diagon-react';
+import { getTypedUseRootState } from 'diagon-react';
 
 export interface Person {
     id: number,
@@ -15,9 +15,7 @@ export interface RootState {
     nextPersonId: number
 }
 
-export function useAppState() {
-    return useRootState() as RootState;
-}
+export const useAppState = getTypedUseRootState<RootState>();
 
 export function createPerson(state: RootState, person: Omit<Person, 'id'>) {
     return { ...person, id: state.nextPersonId++ };

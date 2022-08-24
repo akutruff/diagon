@@ -1,15 +1,13 @@
 import { createRecordingProxy, resetEnvironment } from './diagon';
 import { all, elements, map_get } from './pathRecorder';
-import { createChangeRecorderFactory, createSubscriptionStore, SubscriptionStore, MutatorChangeRecorderFactory, recordAndPublishMutations, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
+import { createSubscriptionStore, SubscriptionStore, createPublishingMutator, subscribe, subscribeDeep, subscribeRecursive } from './subscriptions';
 
 describe('subscriptions', () => {
     let subStore: SubscriptionStore;
-    let createMutator: MutatorChangeRecorderFactory;
 
     beforeEach(() => {
         resetEnvironment();
         subStore = createSubscriptionStore();
-        createMutator = createChangeRecorderFactory(subStore, recordAndPublishMutations);
     });
 
     function createIncrementerState() {
@@ -26,7 +24,7 @@ describe('subscriptions', () => {
     it('updates when single property changes', async () => {
         const state = createIncrementerState();
 
-        const increment = createMutator((state: IncrementerState, value: number) => state.count += value);
+        const increment = createPublishingMutator(subStore, (state: IncrementerState, value: number) => state.count += value);
 
         const callback = jest.fn(() => { });
 
@@ -57,7 +55,7 @@ describe('subscriptions', () => {
     it('supports deep properties hierarchies', async () => {
         const state = createPersonState();
 
-        const changePerson = createMutator((state: PersonState, value: string) => state.bob = { name: value });
+        const changePerson = createPublishingMutator(subStore, (state: PersonState, value: string) => state.bob = { name: value });
 
         const callback = jest.fn(() => { });
 
@@ -76,7 +74,7 @@ describe('subscriptions', () => {
     it('ignores unsubscribed properties', async () => {
         const state = createPersonState();
 
-        const changeAge = createMutator((state: PersonState, value: number) => {
+        const changeAge = createPublishingMutator(subStore, (state: PersonState, value: number) => {
             state.bob.age = value;
         });
 
@@ -93,7 +91,7 @@ describe('subscriptions', () => {
     it('reacts to any property change', async () => {
         const state = createPersonState();
 
-        const changePerson = createMutator((state: PersonState, value: string) => state.bob = { name: value });
+        const changePerson = createPublishingMutator(subStore, (state: PersonState, value: string) => state.bob = { name: value });
 
         const callback = jest.fn(() => { });
 
@@ -116,7 +114,7 @@ describe('subscriptions', () => {
 
         const state = createRecordingProxy(targetState);
 
-        const changePerson = createMutator((state: PersonState, value: number) => state.bob.age = value);
+        const changePerson = createPublishingMutator(subStore, (state: PersonState, value: number) => state.bob.age = value);
 
         const callback = jest.fn(() => { });
 
@@ -152,8 +150,8 @@ describe('subscriptions', () => {
         it('subscribes to individual element changes', async () => {
             const state = createPeopleState();
 
-            const changeName = createMutator((state: PeopleState, index: number, value: string) => state.people[index].name = value);
-            const changePerson = createMutator((state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
+            const changeName = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index].name = value);
+            const changePerson = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
 
             const callback = jest.fn(() => { });
 
@@ -172,8 +170,8 @@ describe('subscriptions', () => {
         it('ignores changes to unsubscribed elements', async () => {
             const state = createPeopleState();
 
-            const changeName = createMutator((state: PeopleState, index: number, value: string) => state.people[index].name = value);
-            const changePerson = createMutator((state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
+            const changeName = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index].name = value);
+            const changePerson = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
 
             const callback = jest.fn(() => { });
 
@@ -192,8 +190,8 @@ describe('subscriptions', () => {
         it('reacts to any change shallow to items in collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleState();
 
-            const changeName = createMutator((state: PeopleState, index: number, value: string) => state.people[index].name = value);
-            const changePerson = createMutator((state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
+            const changeName = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index].name = value);
+            const changePerson = createPublishingMutator(subStore, (state: PeopleState, index: number, value: string) => state.people[index] = { name: value });
 
             const callback = jest.fn(() => { });
 
@@ -213,7 +211,7 @@ describe('subscriptions', () => {
         it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleState();
 
-            const addPerson = createMutator((state: PeopleState, value: string) => state.people.push({ name: value }));
+            const addPerson = createPublishingMutator(subStore, (state: PeopleState, value: string) => state.people.push({ name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -246,13 +244,13 @@ describe('subscriptions', () => {
         it('subscribes to individual element changes', async () => {
             const state = createPeopleMapState();
 
-            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+            const changeName = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => {
                 const person = state.people.get(key);
                 if (person) {
                     person.name = value;
                 }
             });
-            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+            const changePerson = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -271,13 +269,13 @@ describe('subscriptions', () => {
         it('ignores changes to unsubscribed elements', async () => {
             const state = createPeopleMapState();
 
-            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+            const changeName = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => {
                 const person = state.people.get(key);
                 if (person) {
                     person.name = value;
                 }
             });
-            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+            const changePerson = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -296,13 +294,13 @@ describe('subscriptions', () => {
         it('reacts to any change shallow to items in collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleMapState();
 
-            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+            const changeName = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => {
                 const person = state.people.get(key);
                 if (person) {
                     person.name = value;
                 }
             });
-            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+            const changePerson = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -321,13 +319,13 @@ describe('subscriptions', () => {
         it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleMapState();
 
-            const changeName = createMutator((state: PeopleMapState, key: string, value: string) => {
+            const changeName = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => {
                 const person = state.people.get(key);
                 if (person) {
                     person.name = value;
                 }
             });
-            const changePerson = createMutator((state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
+            const changePerson = createPublishingMutator(subStore, (state: PeopleMapState, key: string, value: string) => state.people.set(key, { name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -358,7 +356,7 @@ describe('subscriptions', () => {
         it('reacts to additions to collection when subscribed to Symbol.Iterator', async () => {
             const state = createPeopleSetState();
 
-            const addPerson = createMutator((state: PeopleSetState, value: string) => state.people.add({ name: value }));
+            const addPerson = createPublishingMutator(subStore, (state: PeopleSetState, value: string) => state.people.add({ name: value }));
 
             const callback = jest.fn(() => { });
 
@@ -409,7 +407,7 @@ describe('subscriptions', () => {
                 grid.map(row => subscribe(subStore, row, row => elements(row), callback))
             );
 
-            const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
+            const addRow = createPublishingMutator(subStore, (state: Grid, value: Person[]) => state.grid.push(value));
 
             subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
@@ -445,7 +443,7 @@ describe('subscriptions', () => {
                 return grid.map(row => subscribe(subStore, row, row => elements(row), parentCallback));
             });
 
-            const addElementToRow = createMutator((state: Person[], value: Person) => state.push(value));
+            const addElementToRow = createPublishingMutator(subStore, (state: Person[], value: Person) => state.push(value));
 
             subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
@@ -473,8 +471,8 @@ describe('subscriptions', () => {
                 return newRowSubs;
             });
 
-            const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
-            const addElementToRow = createMutator((state: Person[], value: Person) => state.push(value));
+            const addRow = createPublishingMutator(subStore, (state: Grid, value: Person[]) => state.grid.push(value));
+            const addElementToRow = createPublishingMutator(subStore, (state: Person[], value: Person) => state.push(value));
 
             const unsubscribe = subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback);
             expect(subscribeToRows).toHaveBeenCalledTimes(1);
@@ -522,7 +520,7 @@ describe('subscriptions', () => {
                 return newRowSubs;
             });
 
-            const addRow = createMutator((state: Grid, value: Person[]) => state.grid.push(value));
+            const addRow = createPublishingMutator(subStore, (state: Grid, value: Person[]) => state.grid.push(value));
 
             const topLevelSubscription = jest.fn(subscribeDeep(subStore, state, state => elements(state.grid), subscribeToRows, callback));
 

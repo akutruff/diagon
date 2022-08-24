@@ -39,7 +39,6 @@ export interface Recorder {
     cancelAllAsyncOperations: () => Promise<unknown>;
 }
 
-
 export function createRecorder(...middlewares: Middleware<DispatchContext>[]): Recorder {
     // This is the depth of the mutate() / mutateAsync() callstack so that a pipeline executed while another pipeline is running can
     // detect if it can skip a new set of change recording.
@@ -138,10 +137,10 @@ export function createRecorder(...middlewares: Middleware<DispatchContext>[]): R
         return context.commandResult as R;
     };
 
-    const createMutator: CreateMutator = <TState extends object, TArgs extends unknown[], R>(state: TState | Mutator<TState, TArgs, R>, mutator?: Mutator<TState, TArgs, R>) => {
+    const createMutator: CreateMutator = <TState extends object, TArgs extends unknown[], R>(stateOrMutator: TState | Mutator<TState, TArgs, R>, mutator?: Mutator<TState, TArgs, R>) => {
         return mutator !== undefined ?
-            (...args: TArgs) => mutate(state as TState, mutator, ...args)
-            : (st: TState, ...args: TArgs) => mutate(st, state as Mutator<TState, TArgs, R>, ...args);
+            (...args: TArgs) => mutate(stateOrMutator as TState, mutator, ...args)
+            : (state: TState, ...args: TArgs) => mutate(state, stateOrMutator as Mutator<TState, TArgs, R>, ...args);
     };
 
     const executingAsyncOperations = new Set<AsyncGenerator>();

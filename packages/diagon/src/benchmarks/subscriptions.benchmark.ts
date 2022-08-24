@@ -65,7 +65,7 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     resetEnvironment();
     const subStore = createSubStore();
     const createMutator = createChangeRecorderFactory(subStore, recordAndPublishMutations);
-    const increment = createMutator((state: StateWithCount, value: number) => {
+    const increment = createPublishingMutator(subStore, (state: StateWithCount, value: number) => {
         state.count += value;
     });
 
@@ -89,7 +89,7 @@ type StateWithCount = ReturnType<typeof createStateWithCount>;
     resetEnvironment();
     const subStore = createSubStore();
     const createMutator = createChangeRecorderFactory(subStore, recordAndPublishMutations);
-    const changeName = createMutator((state: Person, value: string) => {
+    const changeName = createPublishingMutator(subStore, (state: Person, value: string) => {
         state.name = value;
     });
 

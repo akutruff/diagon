@@ -1,8 +1,7 @@
-import { createReactRecorder, createReactStore, StoreContext, useMutator, useRootState, useSnapshot } from 'diagon-react';
-import React, { FC, useState } from 'react';
+import { createReactRecorder, StoreContext, useMutator, useRootState, useSnapshot } from 'diagon-react';
+import React, { FC } from 'react';
 
 const recorder = createReactRecorder();
-
 const state = {
     counter: 0
 };
