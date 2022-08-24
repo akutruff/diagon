@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "target": "es2020",
+    "outDir": "./dist",
+    "resolveJsonModule": true,
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "src/**/test/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx"
+  ]
+}

@@ -7,7 +7,7 @@ export { applyPatch, applyPatchTo, createReversePatch, createReversePatchFrom, f
 export * from './middleware';
 export { all, elements, map_get } from './pathRecorder';
 export * from './recorder';
-export { commitPatches, createSubscriptionStore, subscribe, subscribeDeep, subscribeRecursive, unsubscribe } from './subscriptions';
+export { commitPatches, createPublishingMutator, createSubscriptionStore, subscribe, subscribeDeep, subscribeRecursive, unsubscribe } from './subscriptions';
 export type { ChildSubscriberRecursive, Subscription, SubscriptionCollection, SubscriptionStore } from './subscriptions';
 export * from './subscriptionsMiddleware';
 export * from './types';
