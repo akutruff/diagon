@@ -24,8 +24,6 @@ import ExampleAppSource from '!!raw-loader!/src/components/examples/ExampleApp';
     }
   }/>
 
-
-
 ## Create your state
 
 Your store is where you will be keeping all the state in your application.  [`createRecordingProxy`](/core/create-recording-proxy.mdx) returns a proxy wrapped object that now starts tracking **changes as patches** to your state tree.  
@@ -47,15 +45,17 @@ At the top level of your app, you need a `StoreContext` provider that will enabl
 That provider is initialized with your store. 
 
 ```tsx
-import { createReactStore, useStoreContext, StoreContext } from 'diagon-react';
+import { createReactStore, StoreContext } from 'diagon-react';
+import React, { FC, useState } from 'react';
+import { createRootState } from './state';
 
-const App: FC = ({children}) => {  
-  const [store] = useState(() => createReactStore(createRootState()));
+export const App: FC = ({ children }) => {
+    const [store] = useState(() => createReactStore(createRootState()));
 
-  return (
-    <StoreContext.Provider value={store}>
-      <Incrementor> 
-    </StoreContext.Provider>
-  );
+    return (
+        <StoreContext.Provider value={store}>
+            <Incrementor/>
+        </StoreContext.Provider>
+    );
 };
 ```
