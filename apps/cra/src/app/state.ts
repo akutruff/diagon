@@ -1,4 +1,4 @@
-import { createRecordingProxy, Patch } from 'diagon';
+import { Patch } from 'diagon';
 import { getTypedUseRootState } from 'diagon-react';
 
 export interface Person {
@@ -32,13 +32,13 @@ export function createRootState() {
         { id: id++, name: 'Alana', age: 28 },
     ];
 
-    return createRecordingProxy({
+    return {
         selectedPerson: people[0],
         people,
         counter: 0,
         history: createHistoryTrackingState(),
         nextPersonId: id,
-    });
+    };
 }
 
 export interface HistoryEntry {
