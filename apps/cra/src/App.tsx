@@ -30,13 +30,10 @@ const globalPatchRecording = new GlobalPatchHandlerMiddleware(savePatchesToHisto
 const recorder = createReactRecorder(globalPatchRecording.middleware);
 
 const App: FC = () => {
-  //simplest store
-  // const [store] = useState(() => createReactStore(createRootState()));
-
   const [store] = useState(() => {
     const state = createRootState();
     globalPatchRecording.setPatchHandlerState(state);
-    return createReactStore(state, recorder);
+    return { state, recorder };
   });
 
   return (

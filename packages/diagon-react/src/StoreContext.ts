@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
+import { SubscribingRecorder } from 'diagon';
 import { createContext } from 'react';
-import { ReactStore } from './reactMiddleware';
 
-export const StoreContext: React.Context<ReactStore<any>> = createContext(undefined as any as ReactStore<any>);
+export interface StoreContextValue {
+    state: any,
+    recorder: SubscribingRecorder
+}
+
+export const StoreContext: React.Context<StoreContextValue> = createContext(undefined as any as StoreContextValue);

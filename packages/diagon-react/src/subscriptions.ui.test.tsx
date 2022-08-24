@@ -1,36 +1,33 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
+import { SubscribingRecorder } from 'packages/diagon/dist';
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createReactStore, ReactStore, StoreContext, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
+import { createReactRecorder, createReactStore, ReactStore, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
 
-interface SubscriptionAppProps {
-    store: ReactStore<any>
-}
-
-const SubscriptionApp: FC<PropsWithChildren<SubscriptionAppProps>> = ({ children, store }) => {
+const SubscriptionApp: FC<PropsWithChildren<StoreContextValue>> = ({ children, state, recorder }) => {
     return (
-        <StoreContext.Provider value={store}>
+        <StoreContext.Provider value={{ state, recorder }}>
             {children}
         </StoreContext.Provider>
     );
 };
 
 type RestOfRenderOptions = Omit<RenderOptions, 'wrapper'>;
-const renderWithPatchTracking = (ui: ReactElement, subscriptionAppProps: SubscriptionAppProps, options?: RestOfRenderOptions) => {
+const renderWithPatchTracking = (ui: ReactElement, storeContextValue: StoreContextValue, options?: RestOfRenderOptions) => {
     const rendered = render(ui, {
-        wrapper: (props: any) => <SubscriptionApp {...props} {...subscriptionAppProps} />,
+        wrapper: (props: any) => <SubscriptionApp {...props} {...storeContextValue} />,
         ...options,
     });
     return rendered;
 };
 
 describe('subscriptions', () => {
-    let store: ReactStore<any>;
+    let recorder: SubscribingRecorder;
 
     beforeEach(() => {
         resetEnvironment();
-        store = createReactStore(undefined);
+        recorder = createReactRecorder();
     });
 
     describe('useMutateWithPatches', () => {
@@ -46,7 +43,7 @@ describe('subscriptions', () => {
 
             createRecordingProxy(state);
 
-            const increment = store.createMutator((state: State, value: number) => {
+            const increment = recorder.createMutator((state: State, value: number) => {
                 state.count += value;
             });
 
@@ -65,7 +62,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -92,7 +89,7 @@ describe('subscriptions', () => {
 
             createRecordingProxy(state);
 
-            const increment = store.createMutator((state: State, value: number) => {
+            const increment = recorder.createMutator((state: State, value: number) => {
                 state.count += value;
             });
 
@@ -108,7 +105,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -133,7 +130,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
@@ -149,7 +146,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name: bob');
 
@@ -167,15 +164,15 @@ describe('subscriptions', () => {
 
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changeAddress = store.createMutator((state: State, value: string) => {
+            const changeAddress = recorder.createMutator((state: State, value: string) => {
                 state.person.address.street += value;
             });
 
-            const setAddress = store.createMutator((state: State, value: State['person']['address']) => {
+            const setAddress = recorder.createMutator((state: State, value: State['person']['address']) => {
                 state.person.address = value;
             });
 
@@ -194,7 +191,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name: bob');
             getByText('address: 123 Sycamore Lane');
@@ -224,7 +221,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, key: string, value: string) => {
+            const changeName = recorder.createMutator((state: State, key: string, value: string) => {
                 expect(state.peopleMap.has(key)).toEqual(true);
                 state.peopleMap.get(key)!.name += value;
             });
@@ -244,7 +241,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name0: bob');
             getByText('name1: jane');
@@ -259,7 +256,7 @@ describe('subscriptions', () => {
 
             //Expect that adding another value to the map that isn't monitored wont cause a re-render
             const previousRenderCount = renderCount;
-            store.mutate(state, (state) => state.peopleMap.set('key3', { name: 'harry' }));
+            recorder.mutate(state, (state) => state.peopleMap.set('key3', { name: 'harry' }));
 
             expect(renderCount).toEqual(previousRenderCount);
         });
@@ -274,7 +271,7 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const addPerson = store.createMutator((state: State, name: string) => {
+            const addPerson = recorder.createMutator((state: State, name: string) => {
                 state.people.push({ name: name + state.people.length });
             });
 
@@ -291,7 +288,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('item: bob');
             getByText('item: jane');
@@ -313,11 +310,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = store.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -338,7 +335,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name: bob');
 
@@ -360,11 +357,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = store.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -384,7 +381,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name: bob');
 
@@ -405,11 +402,11 @@ describe('subscriptions', () => {
             createRecordingProxy(state);
             type State = typeof state;
 
-            const changeName = store.createMutator((state: State, value: string) => {
+            const changeName = recorder.createMutator((state: State, value: string) => {
                 state.person.name += value;
             });
 
-            const changePerson = store.createMutator((state: State, value: string) => {
+            const changePerson = recorder.createMutator((state: State, value: string) => {
                 state.person = { name: value };
             });
 
@@ -434,7 +431,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('name: bob');
 
@@ -470,7 +467,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -512,7 +509,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            const { getByText, rerender } = renderWithPatchTracking(<TestComponent state={state} />, { store });
+            const { getByText, rerender } = renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             getByText('count: 0');
             expect(state.count).toEqual(0);
@@ -590,7 +587,7 @@ describe('subscriptions', () => {
             };
             createRecordingProxy(state);
 
-            const externalMutator = store.createMutator((state: MemoState, value: string) => {
+            const externalMutator = recorder.createMutator((state: MemoState, value: string) => {
                 state.child.status += value;
             });
 
@@ -608,7 +605,7 @@ describe('subscriptions', () => {
                 );
             };
 
-            renderWithPatchTracking(<TestComponent state={state} />, { store });
+            renderWithPatchTracking(<TestComponent state={state} />, { state, recorder });
 
             expect(renderCount).toEqual(1);
 

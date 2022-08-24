@@ -39,21 +39,6 @@ export interface Recorder {
     cancelAllAsyncOperations: () => Promise<unknown>;
 }
 
-//TODO: reorder state parameters with state, then mutator.
-export interface BoundRecorder<TState extends object> {
-    recorder: Recorder,
-    state: TState,
-    mutate: <TArgs extends unknown[], R>(mutator: Mutator<TState, TArgs, R>, ...args: TArgs) => R;
-    mutateWithPatches: <TPatchHandlerState extends object, TArgs extends unknown[], R>(
-        mutator: Mutator<TState, TArgs, R>,
-        patchHandlerState: TPatchHandlerState,
-        patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
-        ...args: TArgs
-    ) => R;
-    createMutator: CreateMutator;
-    mutateAsync: <TArgs extends unknown[], R>(asyncMutator: AsyncMutator<TState, TArgs, R>, ...args: TArgs) => Promise<R>;
-    cancelAllAsyncOperations: () => Promise<unknown>;
-}
 
 export function createRecorder(...middlewares: Middleware<DispatchContext>[]): Recorder {
     // This is the depth of the mutate() / mutateAsync() callstack so that a pipeline executed while another pipeline is running can
