@@ -1,17 +1,13 @@
-import { createReactRecorder, StoreContext } from 'diagon-react';
+import { StoreProvider } from 'diagon-react';
 import React, { FC, useState } from 'react';
-import { createRootState } from './state';
+import { createRootState, recorder } from './state';
 
 export const ExampleApp: FC = ({ children }) => {
-    
-    const [store] = useState(() => ({
-        state: createRootState(),
-        recorder: createReactRecorder
-    }));
+    const [store] = useState(() => ({ state: createRootState(), recorder }));
 
     return (
-        <StoreContext.Provider value={store}>
+        <StoreProvider {...store}>
             {children}
-        </StoreContext.Provider>
+        </StoreProvider>
     );
 };

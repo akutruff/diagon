@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@akutruff/*": [
+        "../packages/*/src"
+      ],
+      "diagon": [
+        "../packages/diagon/src"
+      ],
+      "diagon-react": [
+        "../packages/diagon-react/src"
+      ]
+    }
+  }
+}

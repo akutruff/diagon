@@ -26,36 +26,44 @@ import ExampleAppSource from '!!raw-loader!/src/components/examples/ExampleApp';
 
 ## Create your state
 
-Your store is where you will be keeping all the state in your application.  [`createRecordingProxy`](/core/create-recording-proxy.mdx) returns a proxy wrapped object that now starts tracking **changes as patches** to your state tree.  
-
-For convenience, if you're using TypeScript it is recommended to wrap the [`useRootState`](use-root-state.mdx) hook so that it will return a strongly typed version of your store.
-
 <CodeBlock language="ts">{StoreSource}</CodeBlock>
+
+First, you need to define a `Recorder` which is the brains of Diagon. This object your main way to make changes to your state that trigger optimized re-renders in your application.
+
+Your application state is a plain JavaScript object. Simple!
+
+For TypeScript convenience, there is `getTypedUseRootState` to wrap the [`useRootState`](use-root-state.mdx) hook so that it will return a strongly typed version of the state for your components.
+
+## Create a Store
+
+```tsx
+import { StoreProvider } from 'diagon-react';
+import React, { FC, useState } from 'react';
+import { createRootState, recorder } from './state';
+
+export const ExampleApp: FC = ({ children }) => {
+    const [store] = useState(() => ({state: createRootState(), recorder}));
+
+    return (
+        <StoreProvider {...store}>
+          <Incrementor/>
+        </StoreProvider>
+    );
+};
+```
+
+At the top level of your app, you need a `StoreProvider` that will enable support for all of Diagon's hooks.  You simply pass it an object containing your state and the `Recorder` you created earlier.  
+
+The state is optional, but since most React applications tend to have a single state store, Diagon includes the `useRootState` hook to grab the state you passed in here.  
 
 ## Create a Component 
 
 <CodeBlock language="tsx">{IncrementorSource}</CodeBlock>
 
-## Create a Store
+Here you see a simple counter component showing the main pattern when using Diagon with React:  
 
-First, you simply initialize your state with `createReactStore`.  You may use reacts useState hook or define your state globablly.  It's up to you. 
-
-At the top level of your app, you need a `StoreContext` provider that will enable support for all of Diagon's hooks.
-
-That provider is initialized with your store. 
-
-```tsx
-import { createReactStore, StoreContext } from 'diagon-react';
-import React, { FC, useState } from 'react';
-import { createRootState } from './state';
-
-export const App: FC = ({ children }) => {
-    const [store] = useState(() => createReactStore(createRootState()));
-
-    return (
-        <StoreContext.Provider value={store}>
-            <Incrementor/>
-        </StoreContext.Provider>
-    );
-};
-```
+1. Get access to the state you want to use. Any state source will work!
+    - You can get the root state from the `useAppState` hook you defined.  
+    - Props, or any other JavaScript are perfectly fine to use.  They don't have to be in your root state and can come from anywhere!
+1. Subscribe to the properties of the state that you want to observe with [`useSnapshot`](use-snapshot.mdx). When those properties change, your component will re-render.
+1. Define mutators with [`useMutator`](use-mutator.mdx) to make modifications to your state.
