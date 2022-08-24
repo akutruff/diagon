@@ -2,7 +2,23 @@
 sidebar_position: 1
 ---
 
+import CodeBlock from '@theme/CodeBlock';
+
+import {Incrementor} from '@site/src/components/examples/Incrementor';
+import {ExampleApp} from '@site/src/components/examples/ExampleApp';
+import {Demo} from '@site/src/components/examples/Demo';
+import StoreSource from '!!raw-loader!/src/components/examples/state';
+import IncrementorSource from '!!raw-loader!/src/components/examples/Incrementor';
+import ExampleAppSource from '!!raw-loader!/src/components/examples/ExampleApp';
+
 # App Setup
+
+#### Demo
+<Demo>
+  <ExampleApp>
+    <Incrementor/>
+  </ExampleApp>
+</Demo>
 
 ## Create your state
 
@@ -10,47 +26,11 @@ Your store is where you will be keeping all the state in your application.  [`cr
 
 For convenience, if you're using TypeScript it is recommended to wrap the [`useRootState`](use-root-state.mdx) hook so that it will return a strongly typed version of your store.
 
-```typescript
-import { createRecordingProxy } from 'diagon';
-import { useRootState } from 'diagon-react';
-
-export function createRootState() {
-    const people = [
-        { name: 'Bob', age: 42 },
-        { name: 'Alice', age: 40 }
-    ];
-
-    return createRecordingProxy({
-        selectedPerson: people[0],
-        people,
-        counter: 0
-    });
-}
-
-export type RootState = ReturnType<createRootState>;
-
-export function useAppState() {
-    return useRootState() as RootState;
-}
-
-```
+<CodeBlock language="ts">{StoreSource}</CodeBlock>
 
 ## Create a Component 
-```tsx
-const Incrementor: FC = React.memo(() => {
-  const state = useAppState();
-  
-  const counter = useSnapshot(state, state => state.counter);
-  const increment = useMutator(state, state => state.counter++);
 
-  return (
-    <div>
-      <div>value: {counter}</div>
-      <button onClick={increment}>Click me</button>
-    </div>
-  );
-});
-```
+<CodeBlock language="tsx">{IncrementorSource}</CodeBlock>
 
 ## Create a Store
 
