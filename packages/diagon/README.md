@@ -36,6 +36,3 @@ Read the [Full Documenation](https://www.diagon.dev/)
 ✅ React 18 support with useSyncExternalStore  
 ✅ Render batching  
 ⬛ Concurrent Mode (may work but needs testing)  
-
-
-Diagon is designed to minimize component re-rendering as much as possible.  In general, almost all your components should be wrapped in `React.Memo` and use Diagon's hooks to determine when to trigger re-renders.
