@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
-import { SubscribingRecorder, createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
+import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createReactRecorder, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
+import { createReactRecorder, ReactRecorder, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
 
 const SubscriptionApp: FC<PropsWithChildren<StoreContextValue>> = ({ children, state, recorder }) => {
     return (
@@ -23,7 +23,7 @@ const renderWithPatchTracking = (ui: ReactElement, storeContextValue: StoreConte
 };
 
 describe('subscriptions', () => {
-    let recorder: SubscribingRecorder;
+    let recorder: ReactRecorder;
 
     beforeEach(() => {
         resetEnvironment();
