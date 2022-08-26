@@ -1,6 +1,5 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-export const PROXY: unique symbol = Symbol('PROXY');
 export const NO_ENTRY: unique symbol = Symbol('NO_ENTRY');
 export const ORIGINAL: unique symbol = Symbol('ORIGINAL');
 
@@ -15,16 +14,13 @@ export interface DiagonEnvironment {
 
 export interface DiagonProxyMetadata {
     [DIAGON_ID]: DiagonId;
-    [PROXY]: any;
 }
 
 export interface DiagonArray<T = unknown> extends Array<T>, DiagonProxyMetadata {
-    [PROXY]: DiagonArray<T>;
 }
 
 export interface DiagonObject<T = any> extends DiagonProxyMetadata {
     [key: string]: any;
-    [PROXY]: DiagonObject<T>;
 }
 
 //TODO: decided if contexts should used for change scoping.

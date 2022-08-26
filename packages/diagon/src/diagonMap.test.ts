@@ -1,7 +1,7 @@
 
 import { DiagonMap } from './diagonMap';
-import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource } from './diagon';
-import { NO_ENTRY, ORIGINAL, PROXY } from './types';
+import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource, tryGetProxy } from './diagon';
+import { NO_ENTRY, ORIGINAL } from './types';
 import { getObjectTimeline } from './history';
 
 describe('DiagonMap', () => {
@@ -165,19 +165,6 @@ describe('DiagonMap', () => {
 
             const diagonMap = new DiagonMap<string, number>(target);
             expect(diagonMap[ORIGINAL]).toBe(target);
-        });
-    });
-
-    describe(`[${PROXY.description}]`, () => {
-        it(`returns diagon map for both target and diagon map target.`, () => {
-            const target = new Map();
-
-            const diagonMap = new DiagonMap<string, number>(target);
-            expect((target as any)[PROXY]).toBe(diagonMap);
-            expect(diagonMap[PROXY]).toBe(diagonMap);
-        });
-        it('is typeof object', () => {
-            expect(typeof null).toEqual('object');
         });
     });
 
@@ -355,7 +342,7 @@ describe('DiagonMap', () => {
 
             const history = [];
             history.push(recordPatches(state, (state: State) => state.mapProp.set('fdfd', 100)));
-            expect((underlyingMap as any)[PROXY]).toBeDefined();
+            expect(tryGetProxy(underlyingMap)).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingMap);
 

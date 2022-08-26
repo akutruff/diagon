@@ -1,5 +1,5 @@
 import { asOriginal, tryGetProxy, proxify, patchToSource, modified } from './diagon';
-import { ORIGINAL, PROXY, SetPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
+import { ORIGINAL, SetPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
 export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
     currentPatch = new Map<T, boolean>();
@@ -8,7 +8,7 @@ export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
 
     constructor(private target: Set<T>) {
         super();
-        Object.defineProperty(target, PROXY, { value: this, enumerable: false, configurable: true, writable: true });
+        // Object.defineProperty(target, PROXY, { value: this, enumerable: false, configurable: true, writable: true });
     }
 
     get size(): number {
@@ -106,10 +106,6 @@ export class DiagonSet<T> extends Set<T> implements DiagonProxyMetadata {
 
     get [ORIGINAL]() {
         return this.target;
-    }
-
-    get [PROXY]() {
-        return this;
     }
 
     [Symbol.iterator]() {

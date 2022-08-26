@@ -153,7 +153,9 @@ function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unk
         for (const propertyKey of childPropertiesToMonitor) {
             if (propertyKey === MapKeys) {
                 // console.log('map Key :>> ', propertyKey);
-                if (!currentSubscriptionNode.mapKeyValues) currentSubscriptionNode.mapKeyValues = new Map();
+                if (!currentSubscriptionNode.mapKeyValues) {
+                    currentSubscriptionNode.mapKeyValues = new Map();
+                }
                 const keyValues = currentSubscriptionNode.mapKeyValues;
                 for (const [key, valuePathRecord] of currentPathRecord[MapKeys]!) {
                     // console.log('[key, valuePathRecord] :>> ', [key, valuePathRecord]);
@@ -171,7 +173,9 @@ function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unk
                     addPathToSubscriptions(subStore, callback, valuePathRecord as PathRecord, childNode, valueForKey, subscribedNodes);
                 }
             } else {
-                if (!currentSubscriptionNode.children) currentSubscriptionNode.children = new Map();
+                if (!currentSubscriptionNode.children) {
+                    currentSubscriptionNode.children = new Map();
+                }
                 const children = currentSubscriptionNode.children;
                 let childNode = children.get(propertyKey);
 

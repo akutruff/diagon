@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { patchToSource, modified, objectToCurrentPatch, proxify, } from './diagon';
-import { ORIGINAL, PROXY, ObjectPatch } from './types';
+import { ORIGINAL, ObjectPatch } from './types';
 
 export const objectProxyHandler: ProxyHandler<any> = {
-    get(target: any, propertyKey: PropertyKey, receiver?: any) {
+    get(target: any, propertyKey: PropertyKey) {
         //console.log('propertyKey :>> ', propertyKey);
         switch (propertyKey) {
             case ORIGINAL: {
                 return target;
-            }
-            case PROXY: {
-                return receiver;
             }
             default: {
                 const propertyValue = Reflect.get(target, propertyKey);

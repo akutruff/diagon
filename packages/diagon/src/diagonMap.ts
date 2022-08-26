@@ -1,11 +1,11 @@
 import { tryGetProxy, asOriginal, proxify, patchToSource, modified } from './diagon';
-import { ORIGINAL, PROXY, NO_ENTRY, MapPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
+import { ORIGINAL, NO_ENTRY, MapPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
 export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
 
     constructor(private target: Map<K, V>) {
         super();
-        Object.defineProperties(target, { [PROXY]: { value: this, enumerable: false, configurable: true, writable: true } });
+        // Object.defineProperties(target, { [PROXY]: { value: this, enumerable: false, configurable: true, writable: true } });
     }
 
     get size(): number {
@@ -123,10 +123,6 @@ export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
 
     get [ORIGINAL]() {
         return this.target;
-    }
-
-    get [PROXY]() {
-        return this;
     }
 
     [Symbol.iterator]() {

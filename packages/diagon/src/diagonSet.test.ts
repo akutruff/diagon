@@ -1,6 +1,6 @@
 import { DiagonSet } from './diagonSet';
-import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource } from './diagon';
-import { ORIGINAL, PROXY } from './types';
+import { clearModified, createRecordingProxy, asOriginal, isProxy, recordPatches, resetEnvironment, patchToSource, tryGetProxy } from './diagon';
+import { ORIGINAL } from './types';
 import { getObjectTimeline } from './history';
 
 describe('DiagonSet', () => {
@@ -199,16 +199,6 @@ describe('DiagonSet', () => {
         });
     });
 
-    describe(`[${PROXY.description}]`, () => {
-        it(`returns diagon map for both target and diagon map target.`, () => {
-            const target = new Set<string>();
-
-            const diagonSet = new DiagonSet<string>(target);
-            expect((target as any)[PROXY]).toBe(diagonSet);
-            expect(diagonSet[PROXY]).toBe(diagonSet);
-        });
-    });
-
     describe('clear()', () => {
         it('records previous value when present.', () => {
             const target = new Set<string>();
@@ -360,7 +350,7 @@ describe('DiagonSet', () => {
 
             const history = [];
             history.push(recordPatches(state, state => state.setProp.add('fdfd')));
-            expect((underlyingSet as any)[PROXY]).toBeDefined();
+            expect(tryGetProxy(underlyingSet)).toBeDefined();
 
             let timeline = getObjectTimeline(history, underlyingSet);
 

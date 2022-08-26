@@ -1,15 +1,12 @@
 import { patchToSource, modified, objectToCurrentPatch, proxify } from './diagon';
-import { ArrayPatch, ORIGINAL, PROXY } from './types';
+import { ArrayPatch, ORIGINAL } from './types';
 
 export const diagonArrayProxyHandler: ProxyHandler<any> = {
 
-    get(target: any, propertyKey: PropertyKey, receiver?: any) {
+    get(target: any, propertyKey: PropertyKey) {
         switch (propertyKey) {
             case ORIGINAL: {
                 return target;
-            }
-            case PROXY: {
-                return receiver;
             }
             default: {
                 const propertyValue = Reflect.get(target, propertyKey);
@@ -23,7 +20,6 @@ export const diagonArrayProxyHandler: ProxyHandler<any> = {
         const currentPatch = objectToCurrentPatch.get(target);
         if (!currentPatch) {
             modified.add(target);
-
             const patch = createArrayPatch(target);
 
             patch.length = target.length;
