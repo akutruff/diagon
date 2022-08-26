@@ -1,6 +1,6 @@
 {
   "name": "diagon",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "Mutable state management for object graphs and React",
   "homepage": "https://diagon.dev",
   "repository": {
