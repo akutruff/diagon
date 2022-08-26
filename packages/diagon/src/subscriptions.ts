@@ -2,8 +2,7 @@
 
 import { asOriginal, patchToSource, recordPatches } from './diagon';
 import { recordPath, PathRecord, MapKeys, AnyProperty } from './pathRecorder';
-import { ArrayPatch, Patch, MapPatch } from './types';
-import { Mutator } from '.';
+import { MapPatch, Mutator, Patch } from '.';
 
 const propertyNodeType = 0;
 const mapKeyValueNodeType = 1;
@@ -142,11 +141,17 @@ function addCallback(node: SubscriptionNodeData, callback: () => unknown) {
     node.callbacks.add(callback);
 }
 
-function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unknown, currentPathRecord: PathRecord, currentSubscriptionNode: SubscriptionNodeData, currentValue: any, subscribedNodes: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
+function addPathToSubscriptions(
+    subStore: SubscriptionStore,
+    callback: () => unknown,
+    currentPathRecord: PathRecord,
+    currentSubscriptionNode: SubscriptionNodeData,
+    currentValue: any,
+    subscribedLeaves: Set<SubscriptionNodeData> = new Set<SubscriptionNodeData>()) {
     const childPropertiesToMonitor = Reflect.ownKeys(currentPathRecord);
 
     if (childPropertiesToMonitor.length === 0) {
-        subscribedNodes.add(currentSubscriptionNode);
+        subscribedLeaves.add(currentSubscriptionNode);
         addCallback(currentSubscriptionNode, callback);
         // console.log('addding path :>> ', currentPathRecord, currentSubscriptionNode);
     } else {
@@ -170,7 +175,7 @@ function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unk
                     const valueForKey = asOriginal(asOriginal(currentValue)?.get(key));
                     subscribeObject(subStore, childNode, valueForKey);
 
-                    addPathToSubscriptions(subStore, callback, valuePathRecord as PathRecord, childNode, valueForKey, subscribedNodes);
+                    addPathToSubscriptions(subStore, callback, valuePathRecord as PathRecord, childNode, valueForKey, subscribedLeaves);
                 }
             } else {
                 if (!currentSubscriptionNode.children) {
@@ -185,19 +190,19 @@ function addPathToSubscriptions(subStore: SubscriptionStore, callback: () => unk
                 }
 
                 if (propertyKey === Symbol.iterator || propertyKey === AnyProperty) {
-                    subscribedNodes.add(childNode);
+                    subscribedLeaves.add(childNode);
                     addCallback(childNode, callback);
                 } else {
                     // console.log('propertyName :>> ', propertyName);
                     const childPropertyValue = asOriginal(currentValue?.[propertyKey]);
                     subscribeObject(subStore, childNode, childPropertyValue);
 
-                    addPathToSubscriptions(subStore, callback, (currentPathRecord as any)[propertyKey], childNode, childPropertyValue, subscribedNodes);
+                    addPathToSubscriptions(subStore, callback, (currentPathRecord as any)[propertyKey], childNode, childPropertyValue, subscribedLeaves);
                 }
             }
         }
     }
-    return subscribedNodes;
+    return subscribedLeaves;
 }
 
 export function subscribe<TState, R>(subStore: SubscriptionStore, state: TState, pathAccessor: (state: TState) => R, callback: () => void): Subscription {
@@ -244,31 +249,6 @@ export function subscribe<TState, R>(subStore: SubscriptionStore, state: TState,
         }
         // console.log('unsubbed :>> ', subStore, Array.from(subscriptionNodesWithCallback).map(x => x.callbacks));
     };
-}
-
-function getHighestCommonAncestors(nodes: Set<SubscriptionNodeData>) {
-    const highestCommonAncestors = new Set<SubscriptionNodeData>();
-    const visited = new WeakSet<any>();
-
-    for (const node of nodes) {
-        if (!visited.has(node)) {
-            visited.add(node);
-            let highest = node;
-            let parent = node.parent;
-            while (parent && !visited.has(parent)) {
-                visited.add(parent);
-                if (nodes.has(parent)) {
-                    highest = parent;
-                    if (highestCommonAncestors.has(parent)) {
-                        break;
-                    }
-                }
-                parent = parent.parent;
-            }
-            highestCommonAncestors.add(highest);
-        }
-    }
-    return highestCommonAncestors;
 }
 
 function resubscribeAndGatherCallbacks(subStore: SubscriptionStore, currentSubscriptionNode: SubscriptionNodeData, newStateValue: any, callbacksToFire: Set<any>) {
@@ -351,7 +331,7 @@ export function commitPatches(subStore: SubscriptionStore, patches: Patch[]) {
 
                     let hasFoundChangedProperty = false;
                     if (patch instanceof Map) {
-                        for (const [changedPropertyName, patchValue] of (patch as Map<any, any> | ArrayPatch).entries()) {
+                        for (const [changedPropertyName, patchValue] of (patch as Map<any, any>).entries()) {
                             if (patchTarget[changedPropertyName] !== patchValue) {
                                 hasFoundChangedProperty = true;
                                 const nodeForProperty = subscriptionNode.children.get(changedPropertyName);
@@ -383,10 +363,8 @@ export function commitPatches(subStore: SubscriptionStore, patches: Patch[]) {
         }
     }
 
-    const highestInvalidatedNodesInTree = getHighestCommonAncestors(invalidatedNodes);
-
     const callbacksToFire = new Set<any>();
-    for (const node of highestInvalidatedNodesInTree) {
+    for (const node of invalidatedNodes) {
         const currentStateValue = getValueFromParent(node);
         resubscribeAndGatherCallbacks(subStore, node, currentStateValue, callbacksToFire);
     }

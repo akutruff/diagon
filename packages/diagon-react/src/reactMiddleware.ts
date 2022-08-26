@@ -1,5 +1,7 @@
 import { createSubscribingRecorder, DispatchContext, Middleware, Next, SubscribingRecorder, ensureProxy } from 'diagon';
+import { create } from 'domain';
 import ReactDOM from 'react-dom';
+import { createRecorderHooks, ReactHooks } from './reactHooks';
 
 export interface ReactStore<TState> extends SubscribingRecorder {
     state: TState,
@@ -31,8 +33,11 @@ export const configureReact = () => (context: DispatchContext, next: Next) => {
 // Recorder mutate
 // Mutator
 
-export function createReactRecorder(...middleware: Middleware<DispatchContext>[]): SubscribingRecorder {
-    return createSubscribingRecorder(configureReact(), ...middleware);
+export type ReactRecorder = ReturnType<typeof createReactRecorder>
+
+export function createReactRecorder(...middleware: Middleware<DispatchContext>[]) {
+    const recorder = createSubscribingRecorder(configureReact(), ...middleware);
+    return { ...recorder, ...createRecorderHooks(recorder) };
 }
 
 export function createReactStore<TState extends object>(state: TState, recorder?: SubscribingRecorder): ReactStore<TState> {

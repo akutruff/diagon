@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { SubscribingRecorder } from 'diagon';
 import React, { createContext, FC, PropsWithChildren } from 'react';
+import { ReactRecorder } from './reactMiddleware';
 
 export interface StoreContextValue {
     state?: any,
-    recorder: SubscribingRecorder
+    recorder: ReactRecorder
 }
 
 export const StoreContext: React.Context<StoreContextValue> = createContext(undefined as any as StoreContextValue);

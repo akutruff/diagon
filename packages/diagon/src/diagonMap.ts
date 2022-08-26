@@ -2,7 +2,6 @@ import { tryGetProxy, asOriginal, proxify, patchToSource, modified } from './dia
 import { ORIGINAL, NO_ENTRY, MapPatch, DiagonProxyMetadata, DIAGON_ID, DiagonId } from './types';
 
 export class DiagonMap<K, V> extends Map<K, V> implements DiagonProxyMetadata {
-
     constructor(private target: Map<K, V>) {
         super();
         // Object.defineProperties(target, { [PROXY]: { value: this, enumerable: false, configurable: true, writable: true } });

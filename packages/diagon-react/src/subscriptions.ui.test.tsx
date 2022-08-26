@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
-import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
-import { SubscribingRecorder } from 'packages/diagon/dist';
+import { SubscribingRecorder, createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
+
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
 import { createReactRecorder, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
 
