@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { SubscribingRecorder } from 'diagon';
 import React, { createContext, FC, PropsWithChildren } from 'react';
 import { ReactRecorder } from './reactMiddleware';
 
