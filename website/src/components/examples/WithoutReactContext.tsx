@@ -1,13 +1,15 @@
-import { createReactRecorder, StoreProvider, useMutator, useRootState, useSnapshot } from 'diagon-react';
-import React, { FC, useState } from 'react';
+import { createReactRecorder } from 'diagon-react';
+import React, { FC } from 'react';
 
 const recorder = createReactRecorder();
+// highlight-next-line
+const { useSnapshot, useMutator } = recorder;
 
-type State = { counter: number };
+const state = {
+    counter: 0
+};
 
 export const Incrementor: FC = React.memo(() => {
-    const state = useRootState() as State;
-
     const counter = useSnapshot(state, state => state.counter);
     const increment = useMutator(state, state => state.counter++);
 
@@ -20,11 +22,7 @@ export const Incrementor: FC = React.memo(() => {
 });
 
 export const App: FC = () => {
-    const [store] = useState(() => ({ state: { counter: 0 }, recorder }));
-
     return (
-        <StoreProvider {...store}>
-            <Incrementor />
-        </StoreProvider>
+        <Incrementor />
     );
 };

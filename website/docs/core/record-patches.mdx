@@ -1,10 +1,13 @@
 ---
-title: 'recordPatches'
 description: 'See how a function changes an object.'
+sidebar_position: 1
 ---
 
-# recordPatches
+# JavaScript Object Change Recording
 ## Change Recording with Patches
+
+At the core of Diagon, is a system that let's you execute your code, and see what changed.  Rather than other libraries that have to deeply compare your entire state tree after the fact, Diagon keeps track of what's changed as you go and returns a list of object patches that you can analyze, save, and use for undo/redo for time travel!
+
 
 ```typescript
 import recordPatches from 'diagon'

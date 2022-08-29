@@ -1,21 +1,17 @@
 ---
 description: 'Wraps an object in aproxy ta.'
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 import CodeBlock from '@theme/CodeBlock';
-import StoreSource from '!!raw-loader!/src/components/examples/state';
+import MinimalFullExample from '!!raw-loader!/src/components/examples/MinimalFullExample';
 
 # useRootState
 
-Accesses the topmost state that you gave to the `StoreProvider`.
+Accesses the topmost state that you gave to the `StoreProvider`. 
 
 It returns an untyped value, so it is a good idea to have a simple wrapper function around the hook that casts to your root type.  You can get a wrapper with `getTypedUseRootState` and passing it your state.
 
 ## Usage
 
-<CodeBlock language="ts">{StoreSource}</CodeBlock>
-
-## Return Value
-
-The root state that was given to the `SubscriptionContext` via `useSubscriptionContextValue`. 
+<CodeBlock language="ts">{MinimalFullExample}</CodeBlock>
