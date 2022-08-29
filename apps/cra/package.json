@@ -1,6 +1,7 @@
 {
   "name": "@akutruff/diagon-examples",
   "description": "Diagon examples",
+  "homepage": "https://akutruff.github.io/diagon/",
   "private": true,
   "version": "1.0.0",
   "dependencies": {
