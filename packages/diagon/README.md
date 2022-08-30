@@ -11,7 +11,7 @@ State-management designed to minimize renders while staying out of your way and 
 npm install diagon diagon-react # core and react bindings
 ```
 
-Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/cra) and sample app [here](https://akutruff.github.io/diagon)
+Full React sandbox [here](https://codesandbox.io/s/github/akutruff/diagon/tree/master/apps/demo) and sample app [here](https://akutruff.github.io/diagon)
 
 
 Read the [Full Documenation](https://www.diagon.dev/)
