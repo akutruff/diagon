@@ -8,7 +8,7 @@ import BrowserOnly from '@docusaurus/BrowserOnly';
 import {Incrementor} from '@site/src/components/examples/Incrementor';
 import {ExampleApp} from '@site/src/components/examples/ExampleApp';
 import {Demo} from '@site/src/components/examples/Demo';
-import StoreSource from '!!raw-loader!/src/components/examples/state';
+import StateSource from '!!raw-loader!/src/components/examples/state';
 import IncrementorSource from '!!raw-loader!/src/components/examples/Incrementor';
 import ExampleAppSource from '!!raw-loader!/src/components/examples/ExampleApp';
 import WithoutReactContext from '!!raw-loader!/src/components/examples/WithoutReactContext';
@@ -25,17 +25,31 @@ import WithoutReactContext from '!!raw-loader!/src/components/examples/WithoutRe
     }
   }/>
 
-## Create your state
+## A Simple Incrementor
 
-<CodeBlock language="ts">{StoreSource}</CodeBlock>
+<CodeBlock language="tsx">{WithoutReactContext}</CodeBlock>
 
-First, you need to define a `Recorder` which is the brains of Diagon. This object your main way to make changes to your state that trigger optimized re-renders in your application.
+Setting up a quick app with global state is very straightforward.  Your application state is a plain JavaScript object. 
 
-Your application state is a plain JavaScript object. Simple!
+First, you need to define a global `Recorder` that is shared with every component in your app. This object is your main way to make changes to your state and trigger optimized re-renders in your application, and the recorder has member functions that define all the hooks you need for your components.  
+
+Here you see a simple counter component showing the main pattern when using Diagon with React:  
+
+1. Get access to the state you want to use. Any state source will work!
+    - You can use a global state, or props, or any other JavaScript object is perfectly fine to use.  They don't have to be in your root state and can come from anywhere!
+1. Subscribe to the properties of the state that you want to observe with [`useSnap`](use-snap.mdx). When those properties change, your component will re-render.
+1. Define mutators with [`useMutator`](use-mutator.mdx) to make modifications to your state.
+1. Wrap your components in `memo` and you're good!
+
+## StoreProvider (Optional)
+
+You may also use Diagon through React's Context functionality with the `StoreProvider.` It is completely optional but if you want a more traditional way of accessing your state and only using directly imported hooks from Diagon, here you go.  
+
+## Create your State
+
+<CodeBlock language="ts">{StateSource}</CodeBlock>
 
 For TypeScript convenience, there is `getTypedUseRootState` to wrap the [`useRootState`](use-root-state.mdx) hook so that it will return a strongly typed version of the state for your components.
-
-You can also use Diagon [without a React Context](#react-context-not-required)
 
 ## Create a Store
 
@@ -63,7 +77,7 @@ The state is optional, but since most React applications tend to have a single s
 
 <CodeBlock language="tsx">{IncrementorSource}</CodeBlock>
 
-Here you see a simple counter component showing the main pattern when using Diagon with React:  
+When using the store provider you simply do similar to the above, but tend to access your state with `useAppState`.
 
 1. Get access to the state you want to use. Any state source will work!
     - You can get the root state from the `useAppState` hook you defined.  
@@ -71,9 +85,4 @@ Here you see a simple counter component showing the main pattern when using Diag
 1. Subscribe to the properties of the state that you want to observe with [`useSnap`](use-snap.mdx). When those properties change, your component will re-render.
 1. Define mutators with [`useMutator`](use-mutator.mdx) to make modifications to your state.
 
-## React Context not Required
-
-<CodeBlock language="tsx">{WithoutReactContext}</CodeBlock>
-
-Using the `StoreProvider` is completely optional.  For simple application, you may want your state and the hooks be accessed from elsewhere.  The hooks you use are on your `recorder` object and you may destructure them for convenience like in the examples.  You can put this destructing in a separate file to conveniently import them as well.
 
