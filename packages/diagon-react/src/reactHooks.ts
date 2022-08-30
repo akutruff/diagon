@@ -34,98 +34,98 @@ export const createRecorderHooks = (recorder: SubscribingRecorder) => {
         useMutatorAsync: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) =>
             useCallback((...args: TArgs) => recorder.mutateAsync(state, mutator, ...args), [recorder, state, ...deps]),
 
-        useSnap: <TState extends object, TSnap>(state: TState, selector: (state: TState) => TSnap, deps: Array<unknown> = []): TSnap => {
+        useSnapshot: <TState extends object, TSnapshot>(state: TState, selector: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot => {
             state = asOriginal(state);
             const { subStore } = recorder;
 
-            const getSnapCallback = useMemoizedSnapCallback(selector, state, subStore, deps);
+            const getSnapshotCallback = useMemoizedSnapshotCallback(selector, state, subStore, deps);
 
             const sub = useCallback((tellReactToRerender: any) => {
                 const subscriptions = subscribe(subStore, state, selector, tellReactToRerender);
                 return () => unsubscribe(subscriptions);
-            }, [subStore, getSnapCallback]);
-            return useSyncExternalStore(sub, getSnapCallback);
+            }, [subStore, getSnapshotCallback]);
+            return useSyncExternalStore(sub, getSnapshotCallback);
         },
 
-        //Allows the subscription function to be different from the snap.  This is important if you want to calculate values in the getSnap function
+        //Allows the subscription function to be different from the snapshot.  This is important if you want to calculate values in the getSnapshot function
         //  and wish to return the previous value to prevent a re-render.
-        useProjectionSnap: <TState extends object, TSnap>(
+        useProjectedSnapshot: <TState extends object, TSnapshot>(
             state: TState,
             subscriber: (state: TState) => any,
-            selector: (state: TState, previousSnap?: TSnap) => TSnap,
-            deps: Array<any> = []): TSnap => {
+            selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+            deps: Array<any> = []): TSnapshot => {
             state = asOriginal(state);
             const { subStore } = recorder;
 
-            const getSnapCallback = useMemoizedSnapCallback(selector, state, subStore, deps);
+            const getSnapshotCallback = useMemoizedSnapshotCallback(selector, state, subStore, deps);
 
             const sub = useCallback((tellReactToRerender: any) => {
                 const subscriptions = subscribe(subStore, state, subscriber, tellReactToRerender);
                 return () => unsubscribe(subscriptions);
-            }, [subStore, getSnapCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
-            return useSyncExternalStore(sub, getSnapCallback);
+            }, [subStore, getSnapshotCallback, subscriber]); //TODO: subscriber will likely change every call! should only rely on deps?
+            return useSyncExternalStore(sub, getSnapshotCallback);
         },
 
-        useSubscribedSnap: <TState extends object, TSnap>(
+        useSubscribedSnapshot: <TState extends object, TSnapshot>(
             state: TState,
             subscriber: (subStore: SubscriptionStore, state: TState, callback: () => void) => Subscription,
-            selector: (state: TState, previousSnap?: TSnap) => TSnap,
+            selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
             deps: Array<unknown> = [])
-            : TSnap => {
+            : TSnapshot => {
             state = asOriginal(state);
             const { subStore } = recorder;
 
-            const getSnapCallback = useMemoizedSnapCallback(selector, state, subStore, deps);
+            const getSnapshotCallback = useMemoizedSnapshotCallback(selector, state, subStore, deps);
             const subscriberCallback = useCallback(subscriber, []);
 
             const sub = useCallback((tellReactToRerender: any) => {
                 const subscriptions = subscriber(subStore, state, tellReactToRerender);
                 return () => unsubscribe(subscriptions);
-            }, [subStore, getSnapCallback, subscriberCallback]);
+            }, [subStore, getSnapshotCallback, subscriberCallback]);
 
-            return useSyncExternalStore(sub, getSnapCallback);
+            return useSyncExternalStore(sub, getSnapshotCallback);
         },
 
-        useRecursiveSnap: <TState extends object, TChildState, TSnap>(
+        useRecursiveSnapshot: <TState extends object, TChildState, TSnapshot>(
             state: TState,
             childSelector: (state: TState) => TChildState,
             subscribeToChildren: ChildSubscriberRecursive<TChildState>,
-            selector: (state: TState, previousSnap?: TSnap) => TSnap,
+            selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
             deps: Array<unknown> = [])
-            : TSnap => {
+            : TSnapshot => {
             state = asOriginal(state);
             const { subStore } = recorder;
 
-            const getSnapCallback = useMemoizedSnapCallback(selector, state, subStore, deps);
+            const getSnapshotCallback = useMemoizedSnapshotCallback(selector, state, subStore, deps);
             const childSelectorCallback = useCallback(childSelector, []);
             const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
             const sub = useCallback((tellReactToRerender: any) => {
                 const subscriptions = subscribeRecursive(subStore, state, childSelector, subscribeToChildren, tellReactToRerender);
                 return () => unsubscribe(subscriptions);
-            }, [subStore, getSnapCallback, childSelectorCallback, subscribeToChildrenCallback]);
+            }, [subStore, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
 
-            return useSyncExternalStore(sub, getSnapCallback);
+            return useSyncExternalStore(sub, getSnapshotCallback);
         },
 
-        useDeepSnap: <TState extends object, TChildState, TSnap>(
+        useDeepSnapshot: <TState extends object, TChildState, TSnapshot>(
             state: TState,
             childSelector: (state: TState) => TChildState,
             subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => Subscription,
-            selector: (state: TState, previousSnap?: TSnap) => TSnap,
+            selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
             deps: Array<unknown> = [])
-            : TSnap => {
+            : TSnapshot => {
             state = asOriginal(state);
             const { subStore } = recorder;
 
-            const getSnapCallback = useMemoizedSnapCallback(selector, state, subStore, deps);
+            const getSnapshotCallback = useMemoizedSnapshotCallback(selector, state, subStore, deps);
             const childSelectorCallback = useCallback(childSelector, []);
             const subscribeToChildrenCallback = useCallback(subscribeToChildren, []);
             const sub = useCallback((tellReactToRerender: any) => {
                 const subscriptions = subscribeDeep(subStore, state, childSelector, subscribeToChildren, tellReactToRerender);
                 return () => unsubscribe(subscriptions);
-            }, [subStore, getSnapCallback, childSelectorCallback, subscribeToChildrenCallback]);
+            }, [subStore, getSnapshotCallback, childSelectorCallback, subscribeToChildrenCallback]);
 
-            return useSyncExternalStore(sub, getSnapCallback);
+            return useSyncExternalStore(sub, getSnapshotCallback);
         }
     };
 };
@@ -144,58 +144,58 @@ export const useMutatorWithPatches = <TPatchHandlerState extends object, TState 
 export const useMutatorAsync = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) =>
     useStore().recorder.useMutatorAsync(state, mutator, deps);
 
-export const useSnap = <TState extends object, TSnap>(state: TState, selector: (state: TState) => TSnap, deps: Array<unknown> = []): TSnap =>
-    useStore().recorder.useSnap(state, selector, deps);
+export const useSnapshot = <TState extends object, TSnapshot>(state: TState, selector: (state: TState) => TSnapshot, deps: Array<unknown> = []): TSnapshot =>
+    useStore().recorder.useSnapshot(state, selector, deps);
 
-//Allows the subscription function to be different from the snap.  This is important if you want to calculate values in the getSnap function
+//Allows the subscription function to be different from the snapshot.  This is important if you want to calculate values in the getSnapshot function
 //  and wish to return the previous value to prevent a re-render.
-export const useProjectionSnap = <TState extends object, TSnap>(
+export const useProjectedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
     subscriber: (state: TState) => any,
-    selector: (state: TState, previousSnap?: TSnap) => TSnap,
-    deps: Array<any> = []): TSnap =>
-    useStore().recorder.useProjectionSnap(state, subscriber, selector, deps);
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
+    deps: Array<any> = []): TSnapshot =>
+    useStore().recorder.useProjectedSnapshot(state, subscriber, selector, deps);
 
-export const useSubscribedSnap = <TState extends object, TSnap>(
+export const useSubscribedSnapshot = <TState extends object, TSnapshot>(
     state: TState,
     subscriber: (subStore: SubscriptionStore, state: TState, callback: () => void) => Subscription,
-    selector: (state: TState, previousSnap?: TSnap) => TSnap,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
-    : TSnap =>
-    useStore().recorder.useSubscribedSnap(state, subscriber, selector, deps);
+    : TSnapshot =>
+    useStore().recorder.useSubscribedSnapshot(state, subscriber, selector, deps);
 
-export const useRecursiveSnap = <TState extends object, TChildState, TSnap>(
+export const useRecursiveSnapshot = <TState extends object, TChildState, TSnapshot>(
     state: TState,
     childSelector: (state: TState) => TChildState,
     subscribeToChildren: ChildSubscriberRecursive<TChildState>,
-    selector: (state: TState, previousSnap?: TSnap) => TSnap,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
-    : TSnap =>
-    useStore().recorder.useRecursiveSnap(state, childSelector, subscribeToChildren, selector, deps);
+    : TSnapshot =>
+    useStore().recorder.useRecursiveSnapshot(state, childSelector, subscribeToChildren, selector, deps);
 
-export const useDeepSnap = <TState extends object, TChildState, TSnap>(
+export const useDeepSnapshot = <TState extends object, TChildState, TSnapshot>(
     state: TState,
     childSelector: (state: TState) => TChildState,
     subscribeToChildren: (subStore: SubscriptionStore, selectedChild: TChildState, callback: () => void) => Subscription,
-    selector: (state: TState, previousSnap?: TSnap) => TSnap,
+    selector: (state: TState, previousSnapshot?: TSnapshot) => TSnapshot,
     deps: Array<unknown> = [])
-    : TSnap =>
-    useStore().recorder.useDeepSnap(state, childSelector, subscribeToChildren, selector, deps);
+    : TSnapshot =>
+    useStore().recorder.useDeepSnapshot(state, childSelector, subscribeToChildren, selector, deps);
 
-function useMemoizedSnapCallback<TState extends object, TSnap>(
-    getSnap: (state: TState, previousSnap?: TSnap | undefined) => TSnap,
+function useMemoizedSnapshotCallback<TState extends object, TSnapshot>(
+    getSnapshot: (state: TState, previousSnapshot?: TSnapshot | undefined) => TSnapshot,
     state: TState,
     subStore: SubscriptionStore,
     deps: Array<unknown> = []) {
     return useMemo(() => {
         let previousVersion: number | undefined = undefined;
-        let currentSnap: TSnap | undefined = undefined;
+        let currentSnapshot: TSnapshot | undefined = undefined;
         return () => {
             if (previousVersion === undefined || previousVersion !== subStore.version) {
-                currentSnap = getSnap(state, currentSnap);
+                currentSnapshot = getSnapshot(state, currentSnapshot);
                 previousVersion = subStore.version;
             }
-            return currentSnap as TSnap;
+            return currentSnapshot as TSnapshot;
         };
     }, [subStore, state, ...deps]);
 }

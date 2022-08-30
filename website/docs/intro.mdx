@@ -58,7 +58,7 @@ const patches = recordPatches(state, state => state.counter += 1);
 const state = { counter: 0 };  // Can come from anywhere or be a component prop!
 
 const Incrementor: FC = React.memo(() => {
-  const counter = useSnap(state, state => state.counter);
+  const counter = useSnapshot(state, state => state.counter);
   const increment = useMutator(state, state => state.counter++);
 
   return (

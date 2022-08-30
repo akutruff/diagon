@@ -15,7 +15,7 @@ const state = {
 };
 
 const PersonDetails : FC = React.memo(() => {
-  const [name, age] = useSnap(state, state => [state.name, state.age]);
+  const [name, age] = useSnapshot(state, state => [state.name, state.age]);
   return (
     <div>Name: {name}</div>
     <div>Age: {age}</div>
@@ -23,7 +23,7 @@ const PersonDetails : FC = React.memo(() => {
 });
 ```
 
-`useSnap` is the main way to achieve reactivity against your state.  The first parameter is the state you wish to observe, and the second parameter is a selector function.
+`useSnapshot` is the main way to achieve reactivity against your state.  The first parameter is the state you wish to observe, and the second parameter is a selector function.
 
 In the above example, by accessing `person.name` and `person.age` in the selector, the component will rerender ONLY when the `name` or `age` properties change on the person object.  
 
@@ -40,13 +40,13 @@ There is an optional third parameter that allows you to pass a dependency list t
 ### Deep values
 
 ```tsx
-const [name] = useSnap(state, state => [state.person.friend.name]);
+const [name] = useSnapshot(state, state => [state.person.friend.name]);
 ```
 If any property value in the chain changes the component will re-render. This includes if `state.person` is reassigned.
 
 ### Subscribing to an array index
 ```tsx
-const [name] = useSnap(state, state => [state.people[0].name]);
+const [name] = useSnapshot(state, state => [state.people[0].name]);
 ```
 In the above example, the array index is respected.
 
@@ -54,7 +54,7 @@ In the above example, the array index is respected.
 
 ```tsx
 const ObserveArrayIndex : FC<{index: number}> = ({index}) => {    
-    const [name] = useSnap(state, state => [state.people[index].name], [index]);
+    const [name] = useSnapshot(state, state => [state.people[index].name], [index]);
 }
 ```
 
@@ -66,12 +66,12 @@ The selector function can include pattern functions that allow you to control ho
 
 ### `all()`
 ```tsx
-const [person] = useSnap(state, state => [all(state.person)]);
+const [person] = useSnapshot(state, state => [all(state.person)]);
 ```
 Subscribes to **all** property changes on the person object only.  Will re-render if **any** property on the person object changes.
 
 ```tsx
-const [value] = useSnap(state, state => [all(state.person).friend.name]);
+const [value] = useSnapshot(state, state => [all(state.person).friend.name]);
 ```
 Note that you can also make complicated chains.  Here, any property change on `state.person` will trigger a re-render as well as the subproperty `friend.name`.
 
@@ -85,7 +85,7 @@ const state = {
 }
 
 const ObserveAllArrayChanges : FC = React.memo(() => {
-    const [people] = useSnap(state, state => [elements(state.people)]);
+    const [people] = useSnapshot(state, state => [elements(state.people)]);
 });
 ```
 
@@ -105,7 +105,7 @@ const state = {
 }
 
 const MapGetter : FC = () => {    
-    const [theWizard] = useSnap(state, state => [map_get(state.myMap, 'wizard')]);
+    const [theWizard] = useSnapshot(state, state => [map_get(state.myMap, 'wizard')]);
 }
 ```
 Subscribes to individual `Map` keys and will call `Map.get` on your state.
@@ -113,7 +113,7 @@ Subscribes to individual `Map` keys and will call `Map.get` on your state.
 ## Usage
 
 ```typescript
-const [name, age] = useSnap(person, person => [person.name, person.age]);
+const [name, age] = useSnapshot(person, person => [person.name, person.age]);
 ```
 
 ## Return Value

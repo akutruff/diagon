@@ -7,7 +7,7 @@ sidebar_position: 5
 ```tsx
 const state = useAppState();
 
-const [isLoading, value] = useSnap(state, state => [state.isLoading, state.value]);
+const [isLoading, value] = useSnapshot(state, state => [state.isLoading, state.value]);
 
 const loadWords = useMutatorAsync(state, async function* asyncFunction(state) {
     state.isLoading = true;
@@ -44,7 +44,7 @@ Again, there is an optional dependency list parameter as well in order to use pr
 ```tsx
 const state = useAppState();
 
-const [isLoading, value] = useSnap(state, state => [state.isLoading, state.value]);
+const [isLoading, value] = useSnapshot(state, state => [state.isLoading, state.value]);
 
 async function* myFetcher(state: State) {
     

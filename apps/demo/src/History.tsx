@@ -1,5 +1,5 @@
 import { applyPatchTo, asOriginal, createReversePatchFrom, elements, ensureProxy, getPatchSource, Patch } from 'diagon';
-import { useMutator, useSnap } from 'diagon-react';
+import { useMutator, useSnapshot } from 'diagon-react';
 import React, { CSSProperties, FC } from 'react';
 import { RootState, useAppState } from './app';
 
@@ -42,7 +42,7 @@ export const savePatchesToHistory = (state: RootState, patches: Patch[]) => {
 export const History: FC = React.memo(() => {
     const state = useAppState();
 
-    const [entries, timeTravelOffset] = useSnap(state, state => [elements(state.history.entries), state.history.timeTravelOffset]);
+    const [entries, timeTravelOffset] = useSnapshot(state, state => [elements(state.history.entries), state.history.timeTravelOffset]);
     const currentHistoryIndex = entries.length + timeTravelOffset;
 
     const goBack = useMutator(state, ({ history }) => {

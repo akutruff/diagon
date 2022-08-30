@@ -1,11 +1,11 @@
-import { useMutator, useSnap } from 'diagon-react';
+import { useMutator, useSnapshot } from 'diagon-react';
 import React, { FC } from 'react';
 import { useAppState } from './state';
 
 export const Incrementor: FC = React.memo(() => {
     const state = useAppState();
 
-    const counter = useSnap(state, state => state.counter);
+    const counter = useSnapshot(state, state => state.counter);
     const increment = useMutator(state, state => state.counter++);
 
     return (

@@ -1,4 +1,4 @@
-import { useMutator, useSnap } from 'diagon-react';
+import { useMutator, useSnapshot } from 'diagon-react';
 import React, { FC } from 'react';
 import { useAppState } from './state';
 
@@ -7,7 +7,7 @@ type Props = { multiplier: number }
 export const UseMutatorExample: FC<Props> = React.memo(({ multiplier }) => {
     const state = useAppState();
 
-    const counter = useSnap(state, state => state.counter);
+    const counter = useSnapshot(state, state => state.counter);
 
     //A mutator without any arguments or dependencies.
     const incrementByOne = useMutator(state, state => state.counter += 1.);
