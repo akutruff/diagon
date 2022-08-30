@@ -3,13 +3,23 @@ import { useMutator, useSnapshot } from 'diagon-react';
 import React, { CSSProperties, FC } from 'react';
 import { RootState, useAppState } from './app';
 
+function stringifyNode(key: any, value: any) {
+    if (key === 'parent') { return `<node>`; }
+    if (key === 'children') { return `<children> ${value?.length}`; }
+    else { return value; }
+}
+
+function stringify(obj: any) {
+    return JSON.stringify(obj, stringifyNode);
+}
+
 function mapToString<TKey, TValue>(map: Map<TKey, TValue>) {
     const obj = {} as any;
 
     for (const [key, value] of map.entries()) {
         obj[key] = value;
     }
-    return JSON.stringify(obj);
+    return stringify(obj);
 }
 
 function patchToString(patch: Patch) {
@@ -17,15 +27,19 @@ function patchToString(patch: Patch) {
     if (patch instanceof Map) {
         return mapToString(patch);
     } else if (Array.isArray(patch)) {
-        return JSON.stringify(patch);
+        return stringify(patch);
     } else {
-        return JSON.stringify(patch);
+        return stringify(patch);
     }
 }
 
 export const savePatchesToHistory = (state: RootState, patches: Patch[]) => {
     const history = state.history;
     try {
+        if (patches.length === 0) {
+            return;
+        }
+
         if (!history.isTimeTraveling) {
             if (history.timeTravelOffset < 0) {
                 history.entries = history.entries.slice(0, history.timeTravelOffset);
