@@ -1,6 +1,6 @@
 {
   "name": "diagon",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Mutable state management for object graphs and React",
   "homepage": "https://diagon.dev",
   "repository": {
@@ -25,6 +25,7 @@
     "build": "pnpm run clean && pnpm run compile",
     "build:inc": "pnpm run compile",
     "clean": "rimraf -rf ./dist",
+    "bump:diagon": "bump",
     "compile": "tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build",
     "test": "jest",

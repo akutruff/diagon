@@ -11,6 +11,8 @@
     "docs": "doctoc --title '**Table of content**' README.md",
     "clean": "pnpm run -r clean",
     "build": "pnpm run -r build",
+    "bump:diagon": "pnpm run -r bump:diagon",
+    "delete_node_modules": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
     "test": "pnpm run -r test",
     "lint": "eslint --ext js,ts,tsx .",
     "preinstall": "npx only-allow pnpm"
@@ -19,6 +21,7 @@
     "doctoc": "~2.2.0",
     "eslint": "~8.21.0",
     "eslint-plugin-import": "~2.26.0",
-    "typescript": "~4.7.4"
+    "typescript": "~4.7.4",
+    "@jsdevtools/version-bump-prompt": "6.1.0"
   }
 }
