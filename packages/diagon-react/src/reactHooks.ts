@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { asOriginal, AsyncMutator, ChildSubscriberRecursive, Mutator, PatchHandler, SubscriptionStore, subscribe, subscribeDeep, subscribeRecursive, Subscription, unsubscribe, SubscribingRecorder } from 'diagon';
+import { asOriginal, ChildSubscriberRecursive, Mutator, PatchHandler, SubscriptionStore, subscribe, subscribeDeep, subscribeRecursive, Subscription, unsubscribe, SubscribingRecorder } from 'diagon';
 import { useCallback, useContext, useMemo, useSyncExternalStore } from 'react';
 import { StoreContext } from '.';
 
@@ -30,9 +30,6 @@ export const createRecorderHooks = (recorder: SubscribingRecorder) => {
 
             return mutatorWithChangeTrackingAdded;
         },
-
-        useMutatorAsync: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) =>
-            useCallback((...args: TArgs) => recorder.mutateAsync(state, mutator, ...args), [recorder, state, ...deps]),
 
         useSnap: <TState extends object, TSnap>(state: TState, selector: (state: TState) => TSnap, deps: Array<unknown> = []): TSnap => {
             state = asOriginal(state);
@@ -140,9 +137,6 @@ export const useMutatorWithPatches = <TPatchHandlerState extends object, TState 
     patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
     deps: Array<unknown> = []) =>
     useStore().recorder.useMutatorWithPatches(state, mutator, patchHandlerState, patchHandler, deps);
-
-export const useMutatorAsync = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: AsyncMutator<TState, TArgs, R>, deps: Array<unknown> = []) =>
-    useStore().recorder.useMutatorAsync(state, mutator, deps);
 
 export const useSnap = <TState extends object, TSnap>(state: TState, selector: (state: TState) => TSnap, deps: Array<unknown> = []): TSnap =>
     useStore().recorder.useSnap(state, selector, deps);

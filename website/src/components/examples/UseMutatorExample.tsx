@@ -2,7 +2,7 @@ import { useMutator, useSnap } from 'diagon-react';
 import React, { FC } from 'react';
 import { useAppState } from './state';
 
-type Props = { multiplier: number }
+type Props = { multiplier: number };
 
 export const UseMutatorExample: FC<Props> = React.memo(({ multiplier }) => {
     const state = useAppState();

@@ -1,9 +1,8 @@
 import { all, elements, Patch } from 'diagon';
 import { createReactRecorder } from 'diagon-react';
 import React, { FC, memo } from 'react';
-import { recorder } from './state';
 
-const { useSnap, useMutator, useMutatorWithPatches, mutate, mutateWithPatches } = createReactRecorder();
+const { useSnap, useMutatorWithPatches, mutateWithPatches } = createReactRecorder();
 
 const state = {
     firstName: 'Allen',
