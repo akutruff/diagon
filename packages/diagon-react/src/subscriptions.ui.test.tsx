@@ -3,7 +3,7 @@ import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createReactRecorder, ReactRecorder, StoreContext, StoreContextValue, useDeepSnap, useMutator, useProjectedSnap, useSnap, useSubscribedSnap } from '.';
+import { createReactRecorder, ReactRecorder, StoreContext, StoreContextValue, useDeepSnap, useMutator, useProjectionSnap, useSnap, useSubscribedSnap } from '.';
 
 const SubscriptionApp: FC<PropsWithChildren<StoreContextValue>> = ({ children, state, recorder }) => {
     return (
@@ -34,7 +34,7 @@ describe('subscriptions', () => {
         it.todo('is tested');
     });
 
-    describe('useProjectedSnap', () => {
+    describe('useProjectionSnap', () => {
         it('updates when single property changes', async () => {
             const state = {
                 count: 0,
@@ -51,7 +51,7 @@ describe('subscriptions', () => {
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
                 // console.log('renderCount :>> ', renderCount);
-                const [ignore, count] = useProjectedSnap(state, stat => stat.count, (stat) => ['someRandomValue', stat.count]);
+                const [ignore, count] = useProjectionSnap(state, stat => stat.count, (stat) => ['someRandomValue', stat.count]);
                 expect(ignore).toEqual('someRandomValue');
 
                 return (

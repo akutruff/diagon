@@ -49,7 +49,7 @@ export const createRecorderHooks = (recorder: SubscribingRecorder) => {
 
         //Allows the subscription function to be different from the snap.  This is important if you want to calculate values in the getSnap function
         //  and wish to return the previous value to prevent a re-render.
-        useProjectedSnap: <TState extends object, TSnap>(
+        useProjectionSnap: <TState extends object, TSnap>(
             state: TState,
             subscriber: (state: TState) => any,
             selector: (state: TState, previousSnap?: TSnap) => TSnap,
@@ -149,12 +149,12 @@ export const useSnap = <TState extends object, TSnap>(state: TState, selector: (
 
 //Allows the subscription function to be different from the snap.  This is important if you want to calculate values in the getSnap function
 //  and wish to return the previous value to prevent a re-render.
-export const useProjectedSnap = <TState extends object, TSnap>(
+export const useProjectionSnap = <TState extends object, TSnap>(
     state: TState,
     subscriber: (state: TState) => any,
     selector: (state: TState, previousSnap?: TSnap) => TSnap,
     deps: Array<any> = []): TSnap =>
-    useStore().recorder.useProjectedSnap(state, subscriber, selector, deps);
+    useStore().recorder.useProjectionSnap(state, subscriber, selector, deps);
 
 export const useSubscribedSnap = <TState extends object, TSnap>(
     state: TState,
