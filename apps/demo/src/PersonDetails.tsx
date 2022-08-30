@@ -1,5 +1,5 @@
 import { areSame } from 'diagon';
-import { useProjectedSnapshot, useSnapshot } from 'diagon-react';
+import { useProjectionSnap, useSnap } from 'diagon-react';
 import React, { FC, useRef } from 'react';
 import { Person, useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
@@ -14,8 +14,8 @@ export const PersonDetails: FC<PersonDetailsProps> = React.memo(({ person, onCli
 
     const renderCount = useRef(0);
     renderCount.current += 1;
-    const isSelected = useProjectedSnapshot(state, state => state.selectedPerson, state => areSame(state.selectedPerson, person), [person]);
-    const [name, age] = useSnapshot(person, person => [person.name, person.age]);
+    const isSelected = useProjectionSnap(state, state => state.selectedPerson, state => areSame(state.selectedPerson, person), [person]);
+    const [name, age] = useSnap(person, person => [person.name, person.age]);
 
     return (
         <button className="person-details button" style={isSelected ? { backgroundColor: '#4CAF50' } : undefined} onClick={() => onClick && onClick(person)}>
