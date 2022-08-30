@@ -57,8 +57,8 @@ importers:
       tsconfig-paths-webpack-plugin: ~4.0.0
       typescript: ~4.7.4
     dependencies:
-      diagon: link:../../packages/diagon
-      diagon-react: link:../../packages/diagon-react
+      diagon: 0.12.0
+      diagon-react: 0.12.0
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -105,7 +105,7 @@ importers:
       '@types/node': ^18.6.5
       '@types/react': ^18.0.17
       '@types/react-dom': ^18.0.6
-      diagon: 0.12.0
+      diagon: 0.13.0
       jest: ~28.1.3
       jest-environment-jsdom: ^28.1.3
       react: ^18.2.0
@@ -157,8 +157,8 @@ importers:
       '@docusaurus/preset-classic': 2.0.1_ho6fjndodpbjneckqorxlgfyre
       '@mdx-js/react': 1.6.22_react@18.2.0
       clsx: 1.2.1
-      diagon: link:../packages/diagon
-      diagon-react: link:../packages/diagon-react
+      diagon: 0.12.0
+      diagon-react: 0.12.0
       prism-react-renderer: 1.3.5_react@18.2.0
       raw-loader: 4.0.2
       react: 18.2.0
@@ -6105,6 +6105,18 @@ packages:
       defined: 1.0.0
       minimist: 1.2.6
     dev: true
+
+  /diagon-react/0.12.0:
+    resolution: {integrity: sha512-Hzk0OpUFsQiukwbTLHHs2/xr8HU+r/QpxVfYePGM5g4bP7I+KWClvustaayIfy+zwe415Kr+LpUSNgeI3DR5LA==}
+    dependencies:
+      diagon: 0.12.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
+  /diagon/0.12.0:
+    resolution: {integrity: sha512-MMZgwEPefdywGNRskTRrqSAXkWWkHPyQndlcwfvFuCfSUx0XH4aj1iLP1pH+btmYJCoziNE+hUMkqAGhlnTtOA==}
+    dev: false
 
   /didyoumean/1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
