@@ -1,5 +1,5 @@
 import { areSame } from 'diagon';
-import { useProjectionSnap, useSnap } from 'diagon-react';
+import { useProjectedSnap, useSnap } from 'diagon-react';
 import React, { FC, useRef } from 'react';
 import { Person, useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
@@ -14,7 +14,7 @@ export const PersonDetails: FC<PersonDetailsProps> = React.memo(({ person, onCli
 
     const renderCount = useRef(0);
     renderCount.current += 1;
-    const isSelected = useProjectionSnap(state, state => state.selectedPerson, state => areSame(state.selectedPerson, person), [person]);
+    const isSelected = useProjectedSnap(state, state => state.selectedPerson, state => areSame(state.selectedPerson, person), [person]);
     const [name, age] = useSnap(person, person => [person.name, person.age]);
 
     return (

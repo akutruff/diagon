@@ -1,5 +1,5 @@
 import { areSame, elements } from 'diagon';
-import { useMutator, useProjectionSnap, useSnap } from 'diagon-react';
+import { useMutator, useProjectedSnap, useSnap } from 'diagon-react';
 import React, { CSSProperties, FC, useState } from 'react';
 import { RenderCounter } from './RenderCounter';
 
@@ -38,7 +38,7 @@ interface GraphNodeComponentProps {
 
 export const GraphNodeComponent: FC<GraphNodeComponentProps> = React.memo(({ node }) => {
     const [data, parentData, grandParent, children] = useSnap(node, node => [node.data, node.parent?.data, node.parent?.parent, elements(node.children)]);
-    const isLastChild = useProjectionSnap(node,
+    const isLastChild = useProjectedSnap(node,
         node => [node.data, elements(node.parent?.children)],
         node => areSame(node.parent?.children[node.parent?.children.length - 1], node));
     const onUp = useMutator(node, moveNodeUp);
