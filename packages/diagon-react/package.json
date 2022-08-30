@@ -31,7 +31,7 @@
     "test:ci": "CI=true jest"
   },
   "dependencies": {
-    "diagon": "0.11.3",
+    "diagon": "0.12.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
