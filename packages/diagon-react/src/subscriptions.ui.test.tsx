@@ -3,7 +3,7 @@ import { act, fireEvent, render, RenderOptions } from '@testing-library/react';
 import { createRecordingProxy, map_get, resetEnvironment, subscribe, subscribeDeep } from 'diagon';
 
 import React, { FC, PropsWithChildren, ReactElement, useRef } from 'react';
-import { createReactRecorder, ReactRecorder, StoreContext, StoreContextValue, useDeepSnapshot, useMutator, useProjectedSnapshot, useSnapshot, useSubscribedSnapshot } from '.';
+import { createReactRecorder, ReactRecorder, StoreContext, StoreContextValue, useDeepSnap, useMutator, useProjectedSnap, useSnap, useSubscribedSnap } from '.';
 
 const SubscriptionApp: FC<PropsWithChildren<StoreContextValue>> = ({ children, state, recorder }) => {
     return (
@@ -34,7 +34,7 @@ describe('subscriptions', () => {
         it.todo('is tested');
     });
 
-    describe('useProjectedSnapshot', () => {
+    describe('useProjectedSnap', () => {
         it('updates when single property changes', async () => {
             const state = {
                 count: 0,
@@ -51,7 +51,7 @@ describe('subscriptions', () => {
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
                 // console.log('renderCount :>> ', renderCount);
-                const [ignore, count] = useProjectedSnapshot(state, stat => stat.count, (stat) => ['someRandomValue', stat.count]);
+                const [ignore, count] = useProjectedSnap(state, stat => stat.count, (stat) => ['someRandomValue', stat.count]);
                 expect(ignore).toEqual('someRandomValue');
 
                 return (
@@ -80,7 +80,7 @@ describe('subscriptions', () => {
         });
     });
 
-    describe('useSnapshot', () => {
+    describe('useSnap', () => {
         it('updates when single property changes', async () => {
             const state = {
                 count: 0,
@@ -96,7 +96,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const count = useSnapshot(state, state => state.count);
+                const count = useSnap(state, state => state.count);
                 return (
                     <div>
                         <div>count: {count}</div>
@@ -137,7 +137,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const name = useSnapshot(state, state => state.person.name);
+                const name = useSnap(state, state => state.person.name);
                 return (
                     <div>
                         <div>name: {name}</div>
@@ -179,7 +179,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const [name, street] = useSnapshot(state, state => [state.person.name, state.person.address.street]);
+                const [name, street] = useSnap(state, state => [state.person.name, state.person.address.street]);
                 return (
                     <div>
                         <div>name: {name}</div>
@@ -229,7 +229,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const [name0, name1] = useSnapshot(state, state => [map_get(state.peopleMap, 'key0')?.name, map_get(state.peopleMap, 'key1')?.name]);
+                const [name0, name1] = useSnap(state, state => [map_get(state.peopleMap, 'key0')?.name, map_get(state.peopleMap, 'key1')?.name]);
 
                 return (
                     <div>
@@ -278,7 +278,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const people = useSnapshot(state, state => [...state.people]);
+                const people = useSnap(state, state => [...state.people]);
 
                 return (
                     <div>
@@ -302,7 +302,7 @@ describe('subscriptions', () => {
         });
     });
 
-    describe('useDeepSnapshot', () => {
+    describe('useDeepSnap', () => {
         it('updates when deep property changes', async () => {
             const state = {
                 person: { name: 'bob' }
@@ -321,7 +321,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const name = useDeepSnapshot(
+                const name = useDeepSnap(
                     state,
                     state => state.person,
                     (subStore, person, callback) => subscribe(subStore, person, person => person.name, callback),
@@ -349,7 +349,7 @@ describe('subscriptions', () => {
         });
     });
 
-    describe('useSubscribedSnapshot', () => {
+    describe('useSubscribedSnap', () => {
         it('updates when only subscribed property changes', async () => {
             const state = {
                 person: { name: 'bob' }
@@ -368,7 +368,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const name = useSubscribedSnapshot(
+                const name = useSubscribedSnap(
                     state,
                     (subStore, state, callback) => subscribe(subStore, state, state => state.person, callback),
                     state => state.person.name);
@@ -413,7 +413,7 @@ describe('subscriptions', () => {
             let renderCount = 0;
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
-                const name = useSubscribedSnapshot(
+                const name = useSubscribedSnap(
                     state,
                     (subStore, state, callback) => subscribeDeep(
                         subStore,
@@ -458,7 +458,7 @@ describe('subscriptions', () => {
             const TestComponent: FC<{ state: State }> = ({ state }) => {
                 renderCount++;
                 const increment = useMutator(state, (state, value: number) => { state.count += value; });
-                const count = useSnapshot(state, state => state.count);
+                const count = useSnap(state, state => state.count);
                 return (
                     <>
                         <div>count: {count}</div>
@@ -500,7 +500,7 @@ describe('subscriptions', () => {
                 instanceCheck.current++;
                 const increment = useMutator(state, (state, value: number) => { state.count += value; });
 
-                const count = useSnapshot(state, state => state.count);
+                const count = useSnap(state, state => state.count);
                 return (
                     <div>
                         <div>count: {count}</div>
@@ -550,7 +550,7 @@ describe('subscriptions', () => {
     }
 
     const ParentOfWeirdChildWithMemo = React.memo<ParentOfMemoChildWithMemoProps>(({ state }) => {
-        const [childState] = useSnapshot(state, state => [state.child]);
+        const [childState] = useSnap(state, state => [state.child]);
         return (
             <div>
                 <PassThroughWithMemo childState={childState} />
@@ -570,7 +570,7 @@ describe('subscriptions', () => {
     });
 
     const ChildWithMemo = React.memo<ChildWithMemoProps>(({ childState: weirdChild }) => {
-        const [status] = useSnapshot(weirdChild, weirdChild => [weirdChild.status]);
+        const [status] = useSnap(weirdChild, weirdChild => [weirdChild.status]);
         return (
             <div>
                 {status}

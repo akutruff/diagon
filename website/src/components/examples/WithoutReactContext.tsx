@@ -3,14 +3,14 @@ import React, { FC } from 'react';
 
 const recorder = createReactRecorder();
 // highlight-next-line
-const { useSnapshot, useMutator } = recorder;
+const { useSnap, useMutator } = recorder;
 
 const state = {
     counter: 0
 };
 
 export const Incrementor: FC = React.memo(() => {
-    const counter = useSnapshot(state, state => state.counter);
+    const counter = useSnap(state, state => state.counter);
     const increment = useMutator(state, state => state.counter++);
 
     return (

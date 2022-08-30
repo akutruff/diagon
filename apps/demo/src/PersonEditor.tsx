@@ -1,11 +1,11 @@
-import { useMutator, useSnapshot } from 'diagon-react';
+import { useMutator, useSnap } from 'diagon-react';
 import React, { ChangeEvent, FC, CSSProperties } from 'react';
 import { useAppState } from './app';
 import { RenderCounter } from './RenderCounter';
 
 export const PersonEditor: FC = React.memo(() => {
     const state = useAppState();
-    const [name, age] = useSnapshot(state, state => [state.selectedPerson.name, state.selectedPerson.age]);
+    const [name, age] = useSnap(state, state => [state.selectedPerson.name, state.selectedPerson.age]);
 
     const onChangeName = useMutator(state, (state, ev: ChangeEvent<HTMLInputElement>) => state.selectedPerson.name = ev.target.value);
 
