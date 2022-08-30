@@ -10,7 +10,7 @@ export const UseMutatorExample: FC<Props> = React.memo(({ multiplier }) => {
     const counter = useSnap(state, state => state.counter);
 
     //A mutator without any arguments or dependencies.
-    const incrementByOne = useMutator(state, state => state.counter += 1.);
+    const incrementByOne = useMutator(state, state => state.counter += 1);
 
     //You can give arbitrary arguments to your mutators.
     const add = useMutator(state, (state, amount: number) => state.counter += amount);
