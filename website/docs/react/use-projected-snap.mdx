@@ -1,0 +1,31 @@
+---
+description: 'Wraps an object in aproxy ta.'
+sidebar_position: 3
+---
+
+# useProjectedSnap
+
+A form of [`useSnap`](use-snap.mdx) that lets you perform a calculation on your state and further optimize control of your re-renders.  Your component will not re-render unless the result of your calculation has changed.  See [`useSnap`](use-snap.mdx) first to gain an understanding of selectors.
+
+```tsx
+const state = {    
+    name: 'Bob', 
+    numberOfVisits: 0
+};
+
+const LoyaltyDisplay : FC = React.memo(() => {
+  const isFrequentVisitor = useProjectedSnap(
+    state, 
+    state => state.numberOfVisits, 
+    state => state.numberOfVisits > 10);
+  return (
+    <div>Is frequent visitor: {isFrequentVisitor}</div>    
+  );
+});
+```
+
+The selector monitors changes to `numberOfVisits` and when that value changes, the projection is run to see if the person is a loyal customer.  If the previous render already marked the person as loyal, and they visit again, the component will not need to re-render.
+
+This may seem verbose, but it allows you to completely control when subscriptions fire as well as have different data in your projection calculation than your subscription.
+
+As usual, there is an optional argument for a dependency list.

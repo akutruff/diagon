@@ -44,7 +44,7 @@ import { StoreProvider } from 'diagon-react';
 import React, { FC, useState } from 'react';
 import { createRootState, recorder } from './state';
 
-export const App: FC = ({ children }) => {
+export const App: FC = () => {
     const [store] = useState(() => ({state: createRootState(), recorder}));
 
     return (
@@ -73,7 +73,7 @@ Here you see a simple counter component showing the main pattern when using Diag
 
 ## React Context not Required
 
-<CodeBlock language="ts" highlight="1-4">{WithoutReactContext}</CodeBlock>
+<CodeBlock language="tsx">{WithoutReactContext}</CodeBlock>
 
-Using the `StoreProvider` is completely optional.  For simple application, you may want your state and the hooks be accessed from elsewhere.  The hooks you use are on your `recorder` object and you may destructure them for convenience like in the example.
+Using the `StoreProvider` is completely optional.  For simple application, you may want your state and the hooks be accessed from elsewhere.  The hooks you use are on your `recorder` object and you may destructure them for convenience like in the examples.  You can put this destructing in a separate file to conveniently import them as well.
 

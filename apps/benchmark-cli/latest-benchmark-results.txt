@@ -1,0 +1,141 @@
+
+> benchmark-cli@0.0.0 start /workspaces/diagon/apps/benchmark-cli
+> pnpm run compile && pnpm ts-node ./dist
+
+
+> benchmark-cli@0.0.0 compile /workspaces/diagon/apps/benchmark-cli
+> tsc -p tsconfig.build.json
+
+Maps
+	Native x 101,398 ops/sec ±2.32% (85 runs sampled)
+	Immer x 920 ops/sec ±1.58% (89 runs sampled)
+	Diagon x 1,340 ops/sec ±2.40% (81 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		110.2x   faster than    Immer
+		75.7x    faster than    Diagon
+
+	2. Diagon
+		1.5x     faster than    Immer
+
+	3. Immer
+--------
+
+Maps with children
+	Native x 87,637 ops/sec ±2.27% (81 runs sampled)
+	Immer x 222 ops/sec ±1.22% (86 runs sampled)
+	Diagon x 580 ops/sec ±2.08% (83 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		394.2x   faster than    Immer
+		151.2x   faster than    Diagon
+
+	2. Diagon
+		2.6x     faster than    Immer
+
+	3. Immer
+--------
+
+Big Copies
+	Native x 643 ops/sec ±1.27% (92 runs sampled)
+	Immer x 35.95 ops/sec ±0.83% (62 runs sampled)
+	Diagon x 89.55 ops/sec ±0.74% (76 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		17.9x    faster than    Immer
+		7.2x     faster than    Diagon
+
+	2. Diagon
+		2.5x     faster than    Immer
+
+	3. Immer
+--------
+
+Walk Complicated graph
+	Native x 760 ops/sec ±0.97% (92 runs sampled)
+	Immer x 31.97 ops/sec ±0.88% (56 runs sampled)
+	Diagon x 77.33 ops/sec ±1.41% (67 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		23.8x    faster than    Immer
+		9.8x     faster than    Diagon
+
+	2. Diagon
+		2.4x     faster than    Immer
+
+	3. Immer
+--------
+
+Small object graph
+	Native x 42,459 ops/sec ±0.87% (94 runs sampled)
+	Immer x 3.74 ops/sec ±1.26% (14 runs sampled)
+	Diagon x 30.94 ops/sec ±2.75% (55 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		11358.9x faster than    Immer
+		1372.2x  faster than    Diagon
+
+	2. Diagon
+		8.3x     faster than    Immer
+
+	3. Immer
+--------
+
+Single object property setting
+	Native x 38,120 ops/sec ±0.65% (96 runs sampled)
+	Immer x 17.39 ops/sec ±1.15% (47 runs sampled)
+	Diagon x 58.86 ops/sec ±2.56% (61 runs sampled)
+
+Fastest to slowest: 
+	1. Native
+		2192.2x  faster than    Immer
+		647.7x   faster than    Diagon
+
+	2. Diagon
+		3.4x     faster than    Immer
+
+	3. Immer
+--------
+
+Drafts/proxies as source of copies
+	Native POJO spread x 74,768,207 ops/sec ±1.42% (88 runs sampled)
+	Minimal pass through proxy x 564,791 ops/sec ±1.09% (85 runs sampled)
+	Immer draft x 160,112 ops/sec ±1.17% (91 runs sampled)
+	Immer draft with overrides x 88,419 ops/sec ±0.60% (89 runs sampled)
+	Diagon proxy x 411,048 ops/sec ±1.01% (95 runs sampled)
+	Diagon proxy with overrides x 188,954 ops/sec ±0.80% (94 runs sampled)
+
+Fastest to slowest: 
+	1. Native POJO spread
+		845.6x   faster than    Immer draft with overrides
+		467.0x   faster than    Immer draft
+		395.7x   faster than    Diagon proxy with overrides
+		181.9x   faster than    Diagon proxy
+		132.4x   faster than    Minimal pass through proxy
+
+	2. Minimal pass through proxy
+		6.4x     faster than    Immer draft with overrides
+		3.5x     faster than    Immer draft
+		3.0x     faster than    Diagon proxy with overrides
+		1.4x     faster than    Diagon proxy
+
+	3. Diagon proxy
+		4.6x     faster than    Immer draft with overrides
+		2.6x     faster than    Immer draft
+		2.2x     faster than    Diagon proxy with overrides
+
+	4. Diagon proxy with overrides
+		2.1x     faster than    Immer draft with overrides
+		1.2x     faster than    Immer draft
+
+	5. Immer draft
+		1.8x     faster than    Immer draft with overrides
+
+	6. Immer draft with overrides
+--------
+

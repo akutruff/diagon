@@ -22,8 +22,8 @@ export const UseMutatorExample: FC<Props> = React.memo(({ multiplier }) => {
     return (
         <div>
             <div>value: {counter}</div>
-            <button onClick={incrementByOne}>Add Three</button>
-            <button onClick={() => add(3)}>Add By some amount</button>
+            <button onClick={incrementByOne}>Add One</button>
+            <button onClick={() => add(3)}>Add Three</button>
             <button onClick={multiply}>Multiply</button>
         </div>
     );

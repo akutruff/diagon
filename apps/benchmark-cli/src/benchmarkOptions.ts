@@ -20,11 +20,22 @@ export const suiteOptions: Benchmark.Options = {
 
         for (let i = 0; i < resultsInOrder.length; i++) {
             const nextFastest = resultsInOrder[i];
-            console.log(`\t${nextFastest.name}`);
+            console.log(`\t${i + 1}. ${nextFastest.name}`);
             for (let j = resultsInOrder.length - 1; j >= 0; j--) {
+                if (i === j) continue;
                 const benchmark = resultsInOrder[j];
-                const percentOfRuntime = nextFastest.stats.mean / benchmark.stats.mean;
-                console.log(`\t\t${(1 / percentOfRuntime).toFixed(1)}x / ${(percentOfRuntime * 100).toFixed(2)}% - ${benchmark.name}`);
+                const speedUpAmount = benchmark.stats.mean / nextFastest.stats.mean;
+
+                const rounded = parseFloat(speedUpAmount.toFixed(1));
+                if (rounded >= 1) {
+                    const description = rounded > 1 ? 'faster than' : 'same as';
+
+                    // const percent slowerThan `${(percentOfRuntime * 100).toFixed(2)}%
+                    console.log(`\t\t` + `${speedUpAmount.toFixed(1)}x`.padEnd(9) + `${description}`.padEnd(15) + `${benchmark.name}`);
+                }
+            }
+            if (i < resultsInOrder.length - 1) {
+                console.log();
             }
         }
 

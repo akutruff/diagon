@@ -2,7 +2,6 @@ import { createReactRecorder } from 'diagon-react';
 import React, { FC } from 'react';
 
 const recorder = createReactRecorder();
-// highlight-next-line
 const { useSnap, useMutator } = recorder;
 
 const state = {
@@ -21,8 +20,4 @@ export const Incrementor: FC = React.memo(() => {
     );
 });
 
-export const App: FC = () => {
-    return (
-        <Incrementor />
-    );
-};
+export const App: FC = () => <Incrementor />;
