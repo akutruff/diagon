@@ -18,17 +18,21 @@ export type CreateMutator = {
     <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>): (...args: TArgs) => R
 };
 
-//TODO: reorder state parameters with state, then mutator.
-export interface Recorder {
-    pipeline: Pipeline<DispatchContext>;
-    mutate: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs) => R;
-    mutateWithPatches: <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
+export interface MutateWithPatches {
+    <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
         state: TState,
         mutator: Mutator<TState, TArgs, R>,
         patchHandlerState: TPatchHandlerState,
         patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
         ...args: TArgs
-    ) => R;
+    ): R;
+}
+
+//TODO: reorder state parameters with state, then mutator.
+export interface Recorder {
+    pipeline: Pipeline<DispatchContext>;
+    mutate: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs) => R;
+    mutateWithPatches: MutateWithPatches;
     createMutator: CreateMutator;
 }
 
