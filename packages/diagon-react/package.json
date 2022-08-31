@@ -1,6 +1,6 @@
 {
   "name": "diagon-react",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "description": "Mutable state management for object graphs and React",
   "homepage": "https://diagon.dev",
   "repository": {
@@ -32,7 +32,7 @@
     "test:ci": "CI=true jest"
   },
   "dependencies": {
-    "diagon": "0.14.2",
+    "diagon": "0.14.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
