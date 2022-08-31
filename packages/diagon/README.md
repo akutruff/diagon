@@ -56,7 +56,7 @@ This comparison strives to be as accurate and as unbiased as possible. If you us
 | Async                                                                   | ✅ | ✅ | ✅ | ✅ |
 | Map, Set, and Array                                                     | ✅ | ✅ | ✅ | ✅ |
 | Time travel with undo/redo                                              | ✅ | ✅ | 🟥 | ✅ |
-| Performance*                                                            | 2x-8x |  1x | TBD | 1x |
+| Performance*                                                            | 2x-8x |  1x | TBD | TBD |
 
 ## React 
 
