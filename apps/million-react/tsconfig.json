@@ -23,7 +23,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "src",
+    "src/**/*",
     "custom.d.ts"
   ]
 }
