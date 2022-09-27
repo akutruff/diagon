@@ -18,6 +18,10 @@ export type CreateMutator = {
     <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>): (...args: TArgs) => R
 };
 
+export interface Mutate {
+    <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs): R
+}
+
 export interface MutateWithPatches {
     <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
         state: TState,
@@ -31,7 +35,7 @@ export interface MutateWithPatches {
 //TODO: reorder state parameters with state, then mutator.
 export interface Recorder {
     pipeline: Pipeline<DispatchContext>;
-    mutate: <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs) => R;
+    mutate: Mutate;
     mutateWithPatches: MutateWithPatches;
     createMutator: CreateMutator;
 }
@@ -57,7 +61,9 @@ export function createRecorder(...middlewares: Middleware<DispatchContext>[]): R
         },
         ...middlewares);
 
-    const mutate = <TState extends object, TArgs extends unknown[], R>(state: TState, mutator: Mutator<TState, TArgs, R>, ...args: TArgs): R => {
+    const mutate: Mutate = (state, mutator, ...args) => {
+        type TState = typeof state;
+
         const context: DispatchContext<TState> = {
             state,
             allPatchSetsFromPipeline: []
@@ -83,16 +89,18 @@ export function createRecorder(...middlewares: Middleware<DispatchContext>[]): R
             next();
         });
 
-        return context.commandResult as R;
+        return context.commandResult as ReturnType<typeof mutator>;
     };
 
-    const mutateWithPatches = <TPatchHandlerState extends object, TState extends object, TArgs extends unknown[], R>(
-        state: TState,
-        mutator: Mutator<TState, TArgs, R>,
-        patchHandlerState: TPatchHandlerState,
-        patchHandler: PatchHandler<TPatchHandlerState, TState, TArgs, R>,
-        ...args: TArgs): R => {
-
+    const mutateWithPatches: MutateWithPatches = (
+        state,
+        mutator,
+        patchHandlerState,
+        patchHandler,
+        ...args) => {
+        type TState = typeof state;
+        type TPatchHandlerState = typeof patchHandlerState;
+        
         const context: DispatchContext<TState> = {
             state,
             patchHandlerState,
@@ -131,7 +139,7 @@ export function createRecorder(...middlewares: Middleware<DispatchContext>[]): R
             next();
         });
 
-        return context.commandResult as R;
+        return context.commandResult as ReturnType<typeof mutator>;
     };
 
     const createMutator: CreateMutator = <TState extends object, TArgs extends unknown[], R>(stateOrMutator: TState | Mutator<TState, TArgs, R>, mutator?: Mutator<TState, TArgs, R>) => {

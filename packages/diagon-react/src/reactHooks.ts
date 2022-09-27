@@ -72,12 +72,7 @@ export const createRecorderHooks = (recorder: SubscribingRecorder) => {
     const useMutator: UseMutator = (state, mutator, deps = []) =>
         useCallback((...args) => recorder.mutate(state, mutator, ...args), [recorder, state, ...deps]);
 
-    const useMutatorWithPatches: UseMutatorWithPatches = (
-        state,
-        mutator,
-        patchHandlerState,
-        patchHandler,
-        deps = []) => {
+    const useMutatorWithPatches: UseMutatorWithPatches = (state, mutator, patchHandlerState, patchHandler, deps = []) => {
 
         const patchHandlerCallback = useCallback(patchHandler, [recorder, state, patchHandlerState, ...deps]);
         const mutatorWithChangeTrackingAdded = useCallback((...args: MutatorArgs<typeof mutator>) =>
@@ -165,6 +160,7 @@ export const createRecorderHooks = (recorder: SubscribingRecorder) => {
         useDeepSnap
     };
 };
+
 
 export const useMutator: UseMutator = (state, ...args) => useStore().recorder.useMutator(state, ...args);
 
